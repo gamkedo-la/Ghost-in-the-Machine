@@ -47,7 +47,6 @@ function gamestart() {
 }
 
 function gameloop(time) {
-
 	time /= 1000;
 	var deltaTime = time - lastTime;
 	lastTime = time;
@@ -65,7 +64,7 @@ function gameloop(time) {
 		colorRect(0,0,800,600, "black");
 		canvasContext.translate(canvas.width/2, canvas.height/2);
 		canvasContext.rotate(-player.ang + 3*pi/2);
-		canvasContext.translate(-player.pos.x, -player.pos.y);
+		canvasContext.translate(-player.x, -player.y);
 
 		//2D draw loops
 		for (var i = 0; i < walls.length; i++) {
@@ -77,18 +76,17 @@ function gameloop(time) {
 		}
 
 		for (var i in printlist) {
-			colorText(i + ": " +printlist[i], player.pos.x - 350, player.pos.y - 250 + i * 10, "white")
+			colorText(i + ": " +printlist[i], player.x - 350, player.y - 250 + i * 10, "white")
 		}
 		printlist.length = 0;
 
 	} else {
-
 		canvasContext.resetTransform();//reset the transform matrix as it is cumulative
 		canvasContext.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
 		colorRect(0,0,canvas.width,canvas.height/2, topColor);
 		colorRect(0,canvas.height/2,canvas.width,canvas.height/2, bottomColor);
 
-		//var thisTime = window.performance.now();
+		// var thisTime = window.performance.now();
 		//3D
 		var numRays = canvas.width;
 		var drawWidth = canvas.width / numRays;
@@ -97,7 +95,7 @@ function gameloop(time) {
 		var rays = [];
 		for (var i = 0; i < numRays; i ++) {
 			// From half of FOV left, to half of FOV right
-			var angle = degToRad(-(FOV/2) + ((FOV / numRays) * i)) + player.ang;
+			var angle = degToRad(-(FOV/2) + ((FOV / numRays) * i)) + player.rot;
 			var rayEnd = {x:Math.cos(angle) * drawDistance + player.x, y:Math.sin(angle) * drawDistance + player.y};
 			var hit = getClosestIntersection(player.pos, rayEnd);
 
@@ -134,7 +132,7 @@ function gameloop(time) {
 			}
 
 			// Correct for fisheye, TODO - Fix texture lookup as well
-			var cameraAng = player.ang - angle;
+			var cameraAng = player.rot - angle;
 			//if (cameraAng > 2*pi) cameraAng -= 2*pi;
 			//if (cameraAng < 0) cameraAng += 2*pi;
 			cameraAng = wrap(cameraAng, 0, 2*pi);
@@ -160,7 +158,7 @@ function gameloop(time) {
 		for (objectIndex; objectIndex < gameObjects.length; objectIndex++) {
 			gameObjects[objectIndex].draw3D();
 		}
-		//console.log(window.performance.now() - thisTime);
+		// console.log(window.performance.now() - thisTime);
 
 	}
 
