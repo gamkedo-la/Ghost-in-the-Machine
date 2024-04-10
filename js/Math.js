@@ -95,6 +95,11 @@ function normalizeVector(v) {
 	return scaleVector(v, 1/magnitudeOfVector(v));
 }
 
+function dotProductOfVectors(a, b) {
+	return a.x * b.x + a.y * b.y;
+}
+
+
 function distanceBetweenTwoPoints(a,b) {
 	var dx = a.x - b.x;
 	var dy = a.y - b.y;
