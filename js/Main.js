@@ -44,9 +44,6 @@ function gamestart() {
 	window.requestAnimationFrame(gameloop);
 
 	currentMap = testLevel1.load();
-
-	populateAudioNodesFromWallEdges();
-	cullAudioNodesThatDontConnectToPoint(player.pos);
 }
 
 function gameloop(time) {

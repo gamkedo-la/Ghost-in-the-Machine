@@ -8,6 +8,9 @@ class EntityClass {
 		this.forward = {x:0, y:0};
 		this.forward.x = Math.cos(this.ang);
 		this.forward.y = Math.sin(this.ang);
+		this.right = {x:0, y:0};
+		this.right.x =  this.forward.y;
+		this.right.y = -this.forward.x;
 		this.distance = Infinity;
 
 		gameObjects.push(this);

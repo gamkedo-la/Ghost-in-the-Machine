@@ -23,6 +23,8 @@ class PlayerClass extends EntityClass{
 		//calculate forward vector
 		this.forward.x = Math.cos(this.ang);
 		this.forward.y = Math.sin(this.ang);
+		this.right.x =  this.forward.y;
+		this.right.y = -this.forward.x;
 
 		//player move and collision checking
 		var deltaX = 0;
