@@ -1,6 +1,5 @@
 var pMouseX, pMouseY;
 var player = {x:0, y: 0, ang: d270, forwardX: 0, forwardY: 0};
-var gameObjects = [];
 var currentMap = new LevelClass();
 var objectImage = new Image();
 objectImage.src = './images/testEntity.png';
@@ -174,15 +173,15 @@ window.onload = function() {
 	currentMap.walls.push(newWall);
 
 	var testEntity = {name:"Rob", x: 0, y:0, distance: Infinity};
-	gameObjects.push(testEntity);
+	currentMap.entities.push(testEntity);
 	var testEntity1 = {name:"Cat", x: 50, y:50, distance: Infinity};
-	gameObjects.push(testEntity1);
+	currentMap.entities.push(testEntity1);
 	var testEntity2 = {name:"Benny", x: -50, y:50, distance: Infinity};
-	gameObjects.push(testEntity2);
+	currentMap.entities.push(testEntity2);
 	var testEntity3 = {name:"Hanna", x: 50, y:-50, distance: Infinity};
-	gameObjects.push(testEntity3);
+	currentMap.entities.push(testEntity3);
 	var testEntity4 = {name:"Hector", x: -50, y:-50, distance: Infinity};
-	gameObjects.push(testEntity4);
+	currentMap.entities.push(testEntity4);
 
 	setupUI(eCanvas.width, eCanvas.height);
 
@@ -319,19 +318,19 @@ function drawPreview() {
 	}
 
 
-	for (var i = 0; i < gameObjects.length; i++) {
-		gameObjects[i].distance = distanceBetweenTwoPoints(gameObjects[i], player);
+	for (var i = 0; i < currentMap.entities.length; i++) {
+		currentMap.entities[i].distance = distanceBetweenTwoPoints(currentMap.entities[i], player);
 	}
 	rays.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
-	gameObjects.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
+	currentMap.entities.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 
 	var objectIndex = 0;
 	for (var i = 0; i < rays.length; i ++) {
 		//colorLine(player.x, player.y, rays[i].x, rays[i].y, 1, rays[i].wall.color); //2d
 
 		//Draw game objects that have a greater depth than the current ray
-		for (objectIndex; objectIndex < gameObjects.length; objectIndex++) {
-			if (gameObjects[objectIndex].distance > rays[i].distance) DrawEntity(gameObjects[objectIndex]);
+		for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
+			if (currentMap.entities[objectIndex].distance > rays[i].distance) DrawEntity(currentMap.entities[objectIndex]);
 			else break;
 		}
 
@@ -358,8 +357,8 @@ function drawPreview() {
 		}
 		//colorRect(x, y, w, h, fullColorHex(20, 10, 30, distance/drawDistance * 384));
 	}
-	for (objectIndex; objectIndex < gameObjects.length; objectIndex++) {
-		DrawEntity(gameObjects[objectIndex]);
+	for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
+		DrawEntity(currentMap.entities[objectIndex]);
 	}
 }
 

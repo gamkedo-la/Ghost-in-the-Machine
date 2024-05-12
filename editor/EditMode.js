@@ -191,8 +191,8 @@ function outputLevelJSONtoConsole() {
 	if (currentMap.walls.length > 0) {
 		newLevel.walls = currentMap.walls;
 	}
-	if (gameObjects.length > 0) {
-		newLevel.entities = gameObjects;
+	if (currentMap.entities.length > 0) {
+		newLevel.entities = currentMap.entities;
 		for(var i = 0; i < newLevel.entities.length; i++) {
 			delete newLevel.entities[i].distance;
 		}
@@ -208,7 +208,6 @@ function createLevelFromJSON(levelJSON) {
 }
 
 function loadLevel(level) {
-	gameObjects.length = 0;
 	level.onLoad = function(){};
 	currentMap = level.load();
 }
