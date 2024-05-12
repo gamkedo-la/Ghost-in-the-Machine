@@ -483,7 +483,7 @@ for (var i = 0; i < fauxAudGeo.length; i++) {
 	//audGeoPoints.push(fauxAudGeo[i]);
 }
 
-function populateAudioNodesFromWallEdges() {
+function populateAudioNodesFromWallEdges(walls) {
 	audGeoPoints.length = 0;
 	var positions = [];
 	var snapDistance = 5;
@@ -503,7 +503,7 @@ function populateAudioNodesFromWallEdges() {
 		var audGeoPoint = JSON.parse(positions[j]);
 
 		// Code to push position away from edges
-		var overlapingPointsList = getOverlappingWallEdgesAsPointPairList(audGeoPoint);
+		var overlapingPointsList = getOverlappingWallEdgesAsPointPairList(audGeoPoint, walls);
 		var pushVector = {x:0, y:0};
 		for (var i = 0; i < overlapingPointsList.length; i++) {
 			var pointPairAsDirection = subtractVectors(overlapingPointsList[i][0], overlapingPointsList[i][1]);
@@ -517,10 +517,10 @@ function populateAudioNodesFromWallEdges() {
 		audGeoPoints.push(audGeoPoint);
 	}
 
-	generateAudGeo();
+	generateAudGeo(walls);
 }
 
-function cullAudioNodesThatDontConnectToPoint(point) {
+function cullAudioNodesThatDontConnectToPoint(point, walls) {
 	var visited = [];
 	var stack = [];
 	audGeoPoints.length = 0;
@@ -560,7 +560,7 @@ function cullAudioNodesThatDontConnectToPoint(point) {
 	generateAudGeo();
 }
 
-function generateAudGeo() {
+function generateAudGeo(walls) {
 	currentAudGeo = new Array();
 
 	for (var i in audGeoPoints) {

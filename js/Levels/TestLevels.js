@@ -16,6 +16,7 @@ testLevel1.onLoad = function() {
 		y += rndFloat(-25, 25);
 		newWall.p2 = {x:x, y:y};
 		newWall.texture = wallTexture;
+		this.walls.push(newWall);
 	}
 	//console.log("x:" + x + "," + "y:" + y);
 	for (var i = 0; i < 10; i++) {
@@ -25,6 +26,7 @@ testLevel1.onLoad = function() {
 		y += rndFloat(0, 50);
 		newWall.p2 = {x:x, y:y};
 		newWall.texture = wallTexture;
+		this.walls.push(newWall);
 	}
 	for (var i = 0; i < 10; i++) {
 		var newWall = new WallClass();
@@ -33,6 +35,7 @@ testLevel1.onLoad = function() {
 		y += rndFloat(-25, 25);
 		newWall.p2 = {x:x, y:y};
 		newWall.texture = wallTexture;
+		this.walls.push(newWall);
 	}
 	//console.log("x:" + x + "," + "y:" + y);
 	for (var i = 0; i < 10; i++) {
@@ -42,8 +45,9 @@ testLevel1.onLoad = function() {
 		y += rndFloat(0, -50);
 		newWall.p2 = {x:x, y:y};
 		newWall.texture = wallTexture;
+		this.walls.push(newWall);
 	}
 	//console.log("x:" + x + "," + "y:" + y);
-	walls[walls.length-1].p2 = walls[walls.length-40].p1;
+	this.walls[this.walls.length-1].p2 = this.walls[this.walls.length-40].p1;
 
 }

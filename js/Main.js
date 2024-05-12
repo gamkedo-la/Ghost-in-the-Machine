@@ -62,8 +62,8 @@ function gameloop(time) {
 		canvasContext.translate(-player.x, -player.y);
 
 		//2D draw loops
-		for (var i = 0; i < walls.length; i++) {
-			walls[i].draw2D();
+		for (var i = 0; i < currentMap.walls.length; i++) {
+			currentMap.walls[i].draw2D();
 		}
 
 		for (var i = 0; i < gameObjects.length; i++) {
@@ -93,7 +93,7 @@ function gameloop(time) {
 			var angle = degToRad(-(FOV/2) + ((FOV / numRays) * i)) + player.rot;
 			var rayEnd = {x:Math.cos(angle) * drawDistance + player.x, y:Math.sin(angle) * drawDistance + player.y};
 			
-			var hits = getAllIntersections(player.pos, rayEnd);
+			var hits = getAllIntersections(player.pos, rayEnd, currentMap.walls);
 			for (var j = 0; j < hits.length; j++) {
 				var hit = hits[j];
 				hit.i = i;

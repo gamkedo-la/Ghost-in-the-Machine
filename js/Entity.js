@@ -13,6 +13,7 @@ class EntityClass {
 		this.rotateSpeed = 2;
 		this.moveDelta = {x:0, y:0};
 		this.rotateDelta = 0;
+		this.level = null
 		this.distance = Infinity;
 	}
 
@@ -45,8 +46,8 @@ class EntityClass {
 		//collision checking
 		if (this.moveDelta.y != 0 || this.moveDelta.x != 0) {
 			var newPos = {x:this.pos.x + deltaX*5*deltaTime, y:this.pos.y + deltaY*5*deltaTime};
-			for (var i in walls) {
-				if (isLineIntersecting(this.pos, newPos, walls[i].p1, walls[i].p2)) {
+			for (var i in this.level.walls) {
+				if (isLineIntersecting(this.pos, newPos, this.level.walls[i].p1, this.level.walls[i].p2)) {
 					deltaX = 0;
 					deltaY = 0;
 					break;

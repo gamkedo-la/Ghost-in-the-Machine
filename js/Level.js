@@ -28,6 +28,7 @@ function LevelClass() {
 			if (parsedLevel.entities) {
 				for (let i = 0; i < parsedLevel.entities.length; i++) {
 					let newEntity = new SceneEntity(parsedLevel.entities[i]);
+					newEntity.level = this;
 					this.entities.push(newEntity);
 				}
 			}
@@ -47,8 +48,9 @@ function LevelClass() {
 
 		this.onLoad();
 		
-		populateAudioNodesFromWallEdges();
-		cullAudioNodesThatDontConnectToPoint(this.playerStart);
+		populateAudioNodesFromWallEdges(this.walls);
+		cullAudioNodesThatDontConnectToPoint(this.playerStart, this.walls);
+		player.level = this;
 
 		return this;
 	}
