@@ -14,8 +14,6 @@ class EntityClass {
 		this.moveDelta = {x:0, y:0};
 		this.rotateDelta = 0;
 		this.distance = Infinity;
-
-		gameObjects.push(this);
 	}
 
 	get x() {return this.pos.x;}

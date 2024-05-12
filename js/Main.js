@@ -3,13 +3,9 @@ var canvas;
 
 var debug = false;
 
-var gameObjects = [];
-var distanceBuffer = [];
-
 var player = new PlayerClass();
 var currentMap = new LevelClass();
 
-//var deltaTime = window.performance.now();
 var lastTime = window.performance.now();
 
 var FOV = 60;
@@ -51,10 +47,9 @@ function gameloop(time) {
 	var deltaTime = time - lastTime;
 	lastTime = time;
 
-	//Update loop
-	for (var i = 0; i < gameObjects.length; i++) {
-		gameObjects[i].update(deltaTime);
-	}
+	//Update
+	player.update(deltaTime);
+	currentMap.update(deltaTime);
 
 	if (debug) {
 
@@ -97,15 +92,8 @@ function gameloop(time) {
 			// From half of FOV left, to half of FOV right
 			var angle = degToRad(-(FOV/2) + ((FOV / numRays) * i)) + player.rot;
 			var rayEnd = {x:Math.cos(angle) * drawDistance + player.x, y:Math.sin(angle) * drawDistance + player.y};
-			var hit = getClosestIntersection(player.pos, rayEnd);
-
-			/*if (hit != null) {
-				hit.i = i;
-				rays.push(hit);
-			}*/
-
+			
 			var hits = getAllIntersections(player.pos, rayEnd);
-
 			for (var j = 0; j < hits.length; j++) {
 				var hit = hits[j];
 				hit.i = i;
@@ -119,24 +107,22 @@ function gameloop(time) {
 		}
 
 		rays.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
-		gameObjects.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
+		currentMap.entities.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 
 		var objectIndex = 0;
 		for (var i = 0; i < rays.length; i ++) {
 			//colorLine(player.x, player.y, rays[i].x, rays[i].y, 1, rays[i].wall.color); //2d
 
 			//Draw game objects that have a greater depth than the current ray
-			for (objectIndex; objectIndex < gameObjects.length; objectIndex++) {
-				if (gameObjects[objectIndex].distance > rays[i].distance) gameObjects[objectIndex].draw3D();
+			for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
+				if (currentMap.entities[objectIndex].distance > rays[i].distance) currentMap.entities[objectIndex].draw3D();
 				else break;
 			}
 
-			// Correct for fisheye, TODO - Fix texture lookup as well
+			// Correct for fisheye
 			var cameraAng = player.rot - angle;
-			//if (cameraAng > 2*pi) cameraAng -= 2*pi;
-			//if (cameraAng < 0) cameraAng += 2*pi;
 			cameraAng = wrap(cameraAng, 0, 2*pi);
-			var distance = rays[i].distance// * Math.cos(cameraAng); //comment out solution while looking for texture fix
+			var distance = rays[i].distance * Math.cos(cameraAng);
 
 			var x = rays[i].i * drawWidth;
 			var y = canvas.height/2 - wallHeight*canvas.height*0.5/distance;
@@ -155,8 +141,8 @@ function gameloop(time) {
 			colorRect(x, y, w, h, fullColorHex(20, 10, 20, distance/drawDistance/2 * 512));
 		}
 
-		for (objectIndex; objectIndex < gameObjects.length; objectIndex++) {
-			gameObjects[objectIndex].draw3D();
+		for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
+			currentMap.entities[objectIndex].draw3D();
 		}
 		// console.log(window.performance.now() - thisTime);
 

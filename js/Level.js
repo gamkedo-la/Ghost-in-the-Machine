@@ -7,7 +7,7 @@ function LevelClass() {
 	this.bottomColor = "gray";
 
 	this.update = function(deltaTime) {
-		for (let i = 0; i < entities.length; i++) {
+		for (let i = 0; i < this.entities.length; i++) {
 			this.entities[i].update(deltaTime);
 		}
 	}
