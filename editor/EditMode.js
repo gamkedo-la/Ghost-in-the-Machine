@@ -112,10 +112,10 @@ function runWallMode() {
 		if (wallMode == SELECT_WALL) {
 			selectedElement = null;
 			var lastDistance = selectDistance*2;
-			for (var i = 0; i < walls.length; i++) {
-				var newDistance = distanceBetweenTwoPoints(mousePos, getNearestPointOnLine(walls[i].p1, walls[i].p2, mousePos));
+			for (var i = 0; i < currentMap.walls.length; i++) {
+				var newDistance = distanceBetweenTwoPoints(mousePos, getNearestPointOnLine(currentMap.walls[i].p1, currentMap.walls[i].p2, mousePos));
 				if (newDistance < selectDistance && newDistance < lastDistance) {
-					selectedElement = walls[i];
+					selectedElement = currentMap.walls[i];
 					lastDistance = newDistance;
 				}
 			}
@@ -188,8 +188,8 @@ function outputLevelJSONtoConsole() {
 	newLevel.playerStart = currentMap.playerStart;
 	newLevel.topColor = currentMap.topColor;
 	newLevel.bottomColor = currentMap.bottomColor;
-	if (walls.length > 0) {
-		newLevel.walls = walls;
+	if (currentMap.walls.length > 0) {
+		newLevel.walls = currentMap.walls;
 	}
 	if (gameObjects.length > 0) {
 		newLevel.entities = gameObjects;
@@ -209,7 +209,6 @@ function createLevelFromJSON(levelJSON) {
 
 function loadLevel(level) {
 	gameObjects.length = 0;
-	walls.length = 0;
 	level.onLoad = function(){};
 	currentMap = level.load();
 }
@@ -220,17 +219,17 @@ function getMousePositionInWorldSpace() {
 	var lastDistance = snapDistance * 2;
 
 	if (snapToNearWallPoint) {
-		for (var i = 0; i < walls.length; i++) {
-			var newDistanceP1 = distanceBetweenTwoPoints(pos, walls[i].p1);
-			var newDistanceP2 = distanceBetweenTwoPoints(pos, walls[i].p2);
+		for (var i = 0; i < currentMap.walls.length; i++) {
+			var newDistanceP1 = distanceBetweenTwoPoints(pos, currentMap.walls[i].p1);
+			var newDistanceP2 = distanceBetweenTwoPoints(pos, currentMap.walls[i].p2);
 
 			if (newDistanceP1 < snapDistance && newDistanceP1 < lastDistance) {
-				newPos = walls[i].p1;
+				newPos = currentMap.walls[i].p1;
 				lastDistance = newDistanceP1;
 			}
 
 			if (newDistanceP2 < snapDistance && newDistanceP2 < lastDistance) {
-				newPos = walls[i].p2;
+				newPos = currentMap.walls[i].p2;
 				lastDistance = newDistanceP2;
 			}
 		}
@@ -279,6 +278,7 @@ function addWallAction(point1, point2) {
 		wall.p2 = point2;
 		wall.color = wallColor;
 		wall.texture = wallTexture;
+		currentMap.walls.push(wall);
 
 		lastSelected = selectedElement;
 		selectedElement = wall;
@@ -287,7 +287,7 @@ function addWallAction(point1, point2) {
 	}
 
 	this.undo = function() {
-		walls.splice(walls.indexOf(wall), 1);
+		currentMap.walls.splice(currentMap.walls.indexOf(wall), 1);
 
 		selectedElement = lastSelected;
 		if (lastPoint == wall.p2) {
@@ -296,7 +296,7 @@ function addWallAction(point1, point2) {
 	}
 
 	this.redo = function() {
-		walls.push(wall);
+		currentMap.walls.push(wall);
 
 		selectedElement = wall;
 		if (lastPoint == wall.p1) {
@@ -311,20 +311,20 @@ function deleteWallAction() {
 	this.execute = function() {
 		wall = selectedElement;
 
-		walls.splice(walls.indexOf(wall), 1);
+		currentMap.walls.splice(currentMap.walls.indexOf(wall), 1);
 		selectedElement = null;
 
 		return this;
 	}
 
 	this.undo = function() {
-		walls.push(wall);
+		currentMap.walls.push(currentMap.wall);
 
 		selectedElement = wall;
 	}
 
 	this.redo = function() {
-		walls.splice(walls.indexOf(selectedElement), 1);
+		currentMap.walls.splice(currentMap.walls.indexOf(selectedElement), 1);
 
 		selectedElement = null;
 	}

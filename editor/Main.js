@@ -156,18 +156,22 @@ window.onload = function() {
 	newWall.p1 = {x:-100, y:-100};
 	newWall.p2 = {x:100, y:-100};
 	newWall.color = "red";
+	currentMap.walls.push(newWall);
 	newWall = new WallClass();
 	newWall.p1 = {x:100, y:-100};
 	newWall.p2 = {x:100, y:100};
 	newWall.color = "orange";
+	currentMap.walls.push(newWall);
 	newWall = new WallClass();
 	newWall.p1 = {x:100, y:100};
 	newWall.p2 = {x:-100, y:100};
 	newWall.color = "yellow";
+	currentMap.walls.push(newWall);
 	newWall = new WallClass();
 	newWall.p1 = {x:-100, y:100};
 	newWall.p2 = {x:-100, y:-100};
 	newWall.color = "green";
+	currentMap.walls.push(newWall);
 
 	var testEntity = {name:"Rob", x: 0, y:0, distance: Infinity};
 	gameObjects.push(testEntity);
@@ -259,8 +263,8 @@ function drawMapView() {
 	canvasContext.translate(-player.x, -player.y);
 
 	//2D draw loops
-	for (var i = 0; i < walls.length; i++) {
-		walls[i].draw2D();
+	for (var i = 0; i < currentMap.walls.length; i++) {
+		currentMap.walls[i].draw2D();
 	}
 	colorLine(currentMap.playerStart.x + 5, currentMap.playerStart.y, currentMap.playerStart.x - 5, currentMap.playerStart.y, 1, "darkgrey");
 	colorLine(currentMap.playerStart.x, currentMap.playerStart.y + 5, currentMap.playerStart.x, currentMap.playerStart.y - 5, 1, "darkgrey");
@@ -306,7 +310,7 @@ function drawPreview() {
 		// From half of FOV left, to half of FOV right
 		var angle = degToRad(-(FOV/2) + ((FOV / numRays) * i)) + player.ang;
 		var rayEnd = {x:Math.cos(angle) * drawDistance + player.x, y:Math.sin(angle) * drawDistance + player.y};
-		var hit = getClosestIntersection(player, rayEnd);
+		var hit = getClosestIntersection(player, rayEnd, currentMap.walls);
 
 		if (hit != null) {
 			hit.i = i;
