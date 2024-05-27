@@ -1,7 +1,7 @@
 class EntityClass {
 	constructor(entityClone = {}) {
 		this.name = entityClone.name || "";
-		this.pos =  entityClone.pos || {x:0, y:0};
+        this.pos = entityClone.pos ? {x:entityClone.pos.x, y:entityClone.pos.y} : {x:0, y:0};
 		this.rot = entityClone.rot || d270;
 		this.forward = {x:0, y:0};
 		this.forward.x = Math.cos(this.rot);
