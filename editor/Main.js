@@ -274,10 +274,7 @@ function drawMapView() {
 				var pos = {x: currentAudGeo[currentAudGeo[i].connections[j]].point.x, y: currentAudGeo[currentAudGeo[i].connections[j]].point.y}
 				colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, pos.x, pos.y, 0.5, "blue");
 			}
-			if (lineOfSight(currentAudGeo[i].point, currentMap.playerStart)) {
-				colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, currentMap.playerStart.x, currentMap.playerStart.y, 1, "darkblue");
-			}
-			if (lineOfSight(currentAudGeo[i].point, player)) {
+			if (lineOfSight(currentAudGeo[i].point, player, currentMap.walls)) {
 				colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, player.x, player.y, 1, "darkblue");
 			}
 		}

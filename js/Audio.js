@@ -105,7 +105,7 @@ function AudioManager() {
 				colorEmptyCircle(currentSoundSources[i].pos.x, currentSoundSources[i].pos.y, 3, "green");
 				colorLine(currentSoundSources[i].pos.x, currentSoundSources[i].pos.y, listener.pos.x, listener.pos.y, 1, distanceBetweenTwoPoints(listener.pos, currentSoundSources[i].pos) < DROPOFF_MAX ? "green" : "darkgreen");
 				for (var j in currentAudGeo) {
-					if (lineOfSight(currentAudGeo[j].point, currentSoundSources[i].parent.pos)) {
+					if (lineOfSight(currentAudGeo[j].point, currentSoundSources[i].parent.pos, currentMap.walls)) {
 						colorLine(currentSoundSources[i].parent.pos.x, currentSoundSources[i].parent.pos.y, 
 							currentAudGeo[j].point.x, currentAudGeo[j].point.y, 0.5, "darkgreen");
 					}
@@ -114,7 +114,7 @@ function AudioManager() {
 
 			/*for (var i in currentAudGeo) {
 				colorEmptyCircle(currentAudGeo[i].point.x, currentAudGeo[i].point.y, 3, "blue");
-				if (lineOfSight(currentAudGeo[i].point, listener.pos)) {
+				if (lineOfSight(currentAudGeo[i].point, listener.pos, currentMap.walls)) {
 					colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, listener.pos.x, listener.pos.y, 1, "blue");
 					for (var j in currentAudGeo[i].connections) {
 						colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, 
@@ -391,7 +391,7 @@ function AudioManager() {
 
 	function calculatePropogationPosition(location) {
 		//Return if in line of sight
-		if (lineOfSight(location, listener.pos)) {
+		if (lineOfSight(location, listener.pos, currentMap.walls)) {
 			//printlist.push("lineOfSight");
 			return location;
 		}
@@ -402,7 +402,7 @@ function AudioManager() {
 		var pos = location;
 		for (var i in currentAudGeo) {
 			//If AudGeo has lineOfSight to the listener, use checkAudGeo() to find the distance through the network back to the sound location
-			if (lineOfSight(listener.pos, currentAudGeo[i].point)) { //LineOfSight to listener
+			if (lineOfSight(listener.pos, currentAudGeo[i].point, currentMap.walls)) { //LineOfSight to listener
 				//printlist.push("* checking from " + i);
 				var newDistance = checkAudGeo(i, location, []); //Recursive function to find shortest distance through node netowrk
 				if (newDistance < distance) { //If a shorter distance than curent holding, replace with this distance and AudGeo
@@ -431,7 +431,7 @@ function AudioManager() {
 		var pos = location;
 
 		//In line of sight to source, no more work for this branch
-		if (lineOfSight(currentAudGeo[pointToCheck].point, location)) {
+		if (lineOfSight(currentAudGeo[pointToCheck].point, location, currentMap.walls)) {
 			//printlist.push(pointToCheck + " lineOfSight");
 			return distanceBetweenTwoPoints(currentAudGeo[pointToCheck].point, location);
 		}
@@ -525,10 +525,11 @@ function cullAudioNodesThatDontConnectToPoint(point, walls) {
 	var stack = [];
 	audGeoPoints.length = 0;
 
+
 	for (var i = 0; i < currentAudGeo.length; i++) {
 		var clear = true;
-		for (var k in walls) {
-			if (isLineIntersecting(point, currentAudGeo[i].point, walls[k].p1, walls[k].p2)) {
+		for (var w in walls) {
+			if (isLineIntersecting(point, currentAudGeo[i].point, walls[w].p1, walls[w].p2)) {
 				clear = false;
 			}
 		}

@@ -317,93 +317,14 @@ function deleteWallAction() {
 	}
 
 	this.undo = function() {
-		currentMap.walls.push(currentMap.wall);
+		currentMap.walls.push(wall);
 
 		selectedElement = wall;
 	}
 
 	this.redo = function() {
-		currentMap.walls.splice(currentMap.walls.indexOf(selectedElement), 1);
+		currentMap.walls.splice(currentMap.walls.indexOf(wall), 1);
 
 		selectedElement = null;
-	}
-}
-
-function addAudioNodeAction(position) {
-	var audGeoPoint = null;
-	var lastSelected = null;
-
-	this.execute = function() {
-		audGeoPoint = position;
-
-		// Code to push position away from edges
-		var overlapingPointsList = getOverlappingWallEdgesAsPointPairList(audGeoPoint);
-		var pushVector = {x:0, y:0};
-		for (var i = 0; i < overlapingPointsList.length; i++) {
-			var pointPairAsDirection = subtractVectors(overlapingPointsList[i][0], overlapingPointsList[i][1]);
-			pointPairAsDirection = normalizeVector(pointPairAsDirection);
-			pointPairAsDirection = scaleVector(pointPairAsDirection, (snapDistance - distanceBetweenTwoPoints(audGeoPoint, overlapingPointsList[i][0])) / snapDistance);
-			pushVector = addVectors(pushVector, pointPairAsDirection);
-		}
-		pushVector = normalizeVector(pushVector);
-		audGeoPoint = addVectors(audGeoPoint, pushVector);
-
-		audGeoPoints.push(audGeoPoint);
-
-		lastSelected = selectedElement;
-		selectedElement = audGeoPoint;
-
-		generateAudGeo();
-
-		return this;
-	}
-
-	this.undo = function() {
-		audGeoPoints.splice(audGeoPoints.indexOf(audGeoPoints), 1);
-
-		selectedElement = lastSelected;
-		
-		generateAudGeo();
-	}
-
-	this.redo = function() {
-		audGeoPoints.push(audGeoPoint);
-		selectedElement = audGeoPoints[audGeoPoints.length-1];	
-
-		selectedElement = audGeoPoint;	
-		
-		generateAudGeo();
-	}
-}
-
-function deleteAudioNodeAction() {
-	var audGeoPoint = null;
-
-	this.execute = function() {
-		audGeoPoint = selectedElement;
-
-		audGeoPoints.splice(audGeoPoints.indexOf(audGeoPoint), 1);
-
-		selectedElement = null;
-		
-		generateAudGeo();
-
-		return this;
-	}
-
-	this.undo = function() {
-		audGeoPoints.push(audGeoPoint);
-
-		selectedElement = audGeoPoint;
-		
-		generateAudGeo();
-	}
-
-	this.redo = function() {
-		audGeoPoints.splice(audGeoPoints.indexOf(audGeoPoint), 1);
-
-		selectedElement = null;
-		
-		generateAudGeo();
 	}
 }
