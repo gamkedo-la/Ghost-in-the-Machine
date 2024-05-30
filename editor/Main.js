@@ -172,15 +172,15 @@ window.onload = function() {
 	newWall.color = "green";
 	currentMap.walls.push(newWall);
 
-	var testEntity = {name:"Rob", x: 0, y:0, distance: Infinity};
+	var testEntity = {name:"Rob", pos: {x: 0, y:0}, distance: Infinity};
 	currentMap.entities.push(testEntity);
-	var testEntity1 = {name:"Cat", x: 50, y:50, distance: Infinity};
+	var testEntity1 = {name:"Cat", pos: {x: 50, y:50}, distance: Infinity};
 	currentMap.entities.push(testEntity1);
-	var testEntity2 = {name:"Benny", x: -50, y:50, distance: Infinity};
+	var testEntity2 = {name:"Benny", pos: {x: -50, y:50}, distance: Infinity};
 	currentMap.entities.push(testEntity2);
-	var testEntity3 = {name:"Hanna", x: 50, y:-50, distance: Infinity};
+	var testEntity3 = {name:"Hanna", pos: {x: 50, y:-50}, distance: Infinity};
 	currentMap.entities.push(testEntity3);
-	var testEntity4 = {name:"Hector", x: -50, y:-50, distance: Infinity};
+	var testEntity4 = {name:"Hector", pos: {x: -50, y:-50}, distance: Infinity};
 	currentMap.entities.push(testEntity4);
 
 	setupUI(eCanvas.width, eCanvas.height);
@@ -265,6 +265,11 @@ function drawMapView() {
 	for (var i = 0; i < currentMap.walls.length; i++) {
 		currentMap.walls[i].draw2D();
 	}
+	for (var i = 0; i < currentMap.entities.length; i++) {
+		var entity = currentMap.entities[i];
+		colorLine(entity.pos.x, entity.pos.y, entity.pos.x, entity.pos.y - 5, 2, "white");
+		colorEmptyCircle(entity.pos.x, entity.pos.y, 5, "grey");
+	}
 	colorLine(currentMap.playerStart.x + 5, currentMap.playerStart.y, currentMap.playerStart.x - 5, currentMap.playerStart.y, 1, "darkgrey");
 	colorLine(currentMap.playerStart.x, currentMap.playerStart.y + 5, currentMap.playerStart.x, currentMap.playerStart.y - 5, 1, "darkgrey");
 	colorEmptyCircle(currentMap.playerStart.x, currentMap.playerStart.y, 5, "darkgrey");
@@ -316,7 +321,7 @@ function drawPreview() {
 
 
 	for (var i = 0; i < currentMap.entities.length; i++) {
-		currentMap.entities[i].distance = distanceBetweenTwoPoints(currentMap.entities[i], player);
+		currentMap.entities[i].distance = distanceBetweenTwoPoints(currentMap.entities[i].pos, player);
 	}
 	rays.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 	currentMap.entities.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
@@ -360,7 +365,7 @@ function drawPreview() {
 }
 
 function DrawEntity(entity) {
-	var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player, entity) - player.ang), -180, 180);
+	var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player, entity.pos) - player.ang), -180, 180);
 
 	var size = 5 * canvas.height / entity.distance;
 	var drawX = canvas.width*0.5 - size*0.5 + drawAngle * canvas.width/FOV;

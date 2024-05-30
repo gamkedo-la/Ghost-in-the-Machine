@@ -11,8 +11,8 @@ function setupUI(screenWidth, screenHeight) {
 	mainInterface.addPart(new SelectionPane("selectionPane", 0, screenHeight, 200, 200), true);
 
 	mainInterface.parts[0].addPart(new UIButtonWToolTip("wallModeButton", 5, 5, 20, 20, "Wall Mode"));
-	mainInterface.parts[0].addPart(new UIButtonWToolTip("audioModeButton", 28, 5, 20, 20, "Audio Mode"));
-	mainInterface.parts[0].addPart(new UIButtonWToolTip("entityModeButton", 51, 5, 20, 20, "Entity Mode"));
+	mainInterface.parts[0].addPart(new UIButtonWToolTip("audioModeButton", 51, 5, 20, 20, "Audio Mode"));
+	mainInterface.parts[0].addPart(new UIButtonWToolTip("entityModeButton", 28, 5, 20, 20, "Entity Mode"));
 	mainInterface.parts[0].addPart(new UIToggleWToolTip("snapToggle", 97, 5, 20, 20, "Snap to nearest wall anchor", true));
 	mainInterface.parts[0].addPart(new UITextLabel("modetextlabel", screenWidth/2, 20, 0, 0, "", "center"));
 
@@ -96,7 +96,13 @@ class AudioPane extends UIElement {
 
 class EntityPane extends UIElement {
 	constructor(name, x, y, w, h) {
-		super(name, x, y, 30, 76, parent);
+		super(name, x, y, 30, 76);
+
+		this.addPart(new UIButtonWToolTip("addEntityMode", 5, 5, 20, 20, "Add Entities"));
+		this.addPart(new UIButtonWToolTip("addWallMode", 5, 28, 20, 20, "Select Entities"));
+
+		this.parts[0].onClick = function() {entityMode = ADD_ENTITY;};
+		this.parts[1].onClick = function() {entityMode = SELECT_ENTITY;};
 	}
 	
 }

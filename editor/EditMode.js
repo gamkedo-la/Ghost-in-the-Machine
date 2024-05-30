@@ -6,8 +6,15 @@ const ADD_SINGLE_WALL = 0;
 const ADD_MULTI_WALLS = 1;
 const SELECT_WALL = 2;
 
-const ADD_AUDIO = 0;
-const SELECT_AUDIO = 1;
+const ADD_ENTITY = 0;
+const SELECT_ENTITY = 1;
+
+var wallMode = SELECT_WALL;
+var wallColor = "purple";
+var wallTexture = new Image();
+wallTexture.src = './images/text2Texture100x100.png';
+
+var entityMode = SELECT_ENTITY;
 
 var editMode = WALL_MODE;
 var lastPoint = null;
@@ -19,13 +26,6 @@ var selectedElement = null;
 var actionListUndoStack = [];
 var actionListRedoStack = [];
 var MAX_UNDO = 200;
-
-var wallMode = SELECT_WALL;
-var wallColor = "purple";
-var wallTexture = new Image();
-wallTexture.src = './images/text2Texture100x100.png';
-
-var audioMode = SELECT_AUDIO;
 
 function driveEditor() {
 	if (ctrlKey && zKey) {
@@ -66,18 +66,18 @@ function getDisplayText() {
 			}
 			break;
 		case AUDIO_MODE:
-			returnText = "Audio: ";
-			switch (audioMode) {
-				case ADD_AUDIO:
-					returnText = returnText + "Add Audio Node";
-					break;
-				case SELECT_AUDIO:
-					returnText = returnText + "Select Audio Node";
-					break;
-			}
+			returnText = "Audio";
 			break;
 		case ENTITY_MODE:
-			returnText = "Entity: TODO";
+			returnText = "Entity: ";
+			switch (entityMode) {
+				case ADD_ENTITY:
+					returnText = returnText + "Add Entity";
+					break;
+				case SELECT_ENTITY:
+					returnText = returnText + "Select Entity";
+					break;
+			}
 			break;
 	}
 
@@ -146,20 +146,54 @@ function runWallMode() {
 }
 
 function runAudioMode() {
+	// if (mouseJustPressed) {
+	// 	var mousePos = getMousePositionInWorldSpace();
+
+	// 	if (audioMode == ADD_AUDIO) {
+	// 		performAction(new addAudioNodeAction({x: mousePos.x, y: mousePos.y}));
+	// 	}
+
+	// 	if (audioMode == SELECT_AUDIO) {
+	// 		selectedElement = null;
+	// 		var lastDistance = selectDistance*2;
+	// 		for (var i = 0; i < audGeoPoints.length; i++) {
+	// 			var newDistance = distanceBetweenTwoPoints(mousePos, audGeoPoints[i]);
+	// 			if (newDistance < selectDistance && newDistance < lastDistance) {
+	// 				selectedElement = audGeoPoints[i];
+	// 				lastDistance = newDistance;
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// if (delKey && selectedElement != null) {
+	// 	performAction(new deleteAudioNodeAction());
+	// 	delKey = false;
+	// }
+
+	// if (selectedElement != null) {
+	// 	var pos = getWorldPositionInScreenSpace(selectedElement);
+	// 	colorEmptyCircle(pos.x, pos.y, 3, "blue");
+	// }
+
+	// colorEmptyCircle(mouseX, mouseY, 5, "lightblue");
+}
+
+function runEntityMode() {
 	if (mouseJustPressed) {
 		var mousePos = getMousePositionInWorldSpace();
 
-		if (audioMode == ADD_AUDIO) {
-			performAction(new addAudioNodeAction({x: mousePos.x, y: mousePos.y}));
+		if (entityMode == ADD_ENTITY) {
+			performAction(new addEntityAction({x: mousePos.x, y: mousePos.y}));
 		}
 
-		if (audioMode == SELECT_AUDIO) {
+		if (entityMode == SELECT_ENTITY) {
 			selectedElement = null;
 			var lastDistance = selectDistance*2;
-			for (var i = 0; i < audGeoPoints.length; i++) {
-				var newDistance = distanceBetweenTwoPoints(mousePos, audGeoPoints[i]);
+			for (var i = 0; i < currentMap.entities.length; i++) {
+				var newDistance = distanceBetweenTwoPoints(mousePos, currentMap.entities[i].pos);
 				if (newDistance < selectDistance && newDistance < lastDistance) {
-					selectedElement = audGeoPoints[i];
+					selectedElement = currentMap.entities[i];
 					lastDistance = newDistance;
 				}
 			}
@@ -167,19 +201,16 @@ function runAudioMode() {
 	}
 
 	if (delKey && selectedElement != null) {
-		performAction(new deleteAudioNodeAction());
+		performAction(new deleteEntityAction());
 		delKey = false;
 	}
 
 	if (selectedElement != null) {
-		var pos = getWorldPositionInScreenSpace(selectedElement);
-		colorEmptyCircle(pos.x, pos.y, 3, "blue");
+		var pos = getWorldPositionInScreenSpace(selectedElement.pos);
+		colorEmptyCircle(pos.x, pos.y, 7, "lightblue");
 	}
 
 	colorEmptyCircle(mouseX, mouseY, 5, "lightblue");
-}
-
-function runEntityMode() {
 }
 
 function outputLevelJSONtoConsole() {
@@ -324,6 +355,58 @@ function deleteWallAction() {
 
 	this.redo = function() {
 		currentMap.walls.splice(currentMap.walls.indexOf(wall), 1);
+
+		selectedElement = null;
+	}
+}
+
+function addEntityAction(pos) {
+	var entity = null;
+	var lastSelected = null;
+
+	this.execute = function() {
+		entity = {pos: pos, name: "" + rndInt(10000000,99999999)};
+		currentMap.entities.push(entity);
+
+		lastSelected = selectedElement;
+		selectedElement = entity;
+
+		return this;
+	}
+
+	this.undo = function() {
+		currentMap.entities.splice(currentMap.entities.indexOf(entity), 1);
+
+		selectedElement = lastSelected;
+	}
+
+	this.redo = function() {
+		currentMap.entities.push(entity);
+
+		selectedElement = entity;
+	}
+}
+
+function deleteEntityAction() {
+	var entity = null;
+
+	this.execute = function() {
+		entity = selectedElement;
+
+		currentMap.entities.splice(currentMap.entities.indexOf(entity), 1);
+		selectedElement = null;
+
+		return this;
+	}
+
+	this.undo = function() {
+		currentMap.entities.push(entity);
+
+		selectedElement = entity;
+	}
+
+	this.redo = function() {
+		currentMap.entities.splice(currentMap.entities.indexOf(entity), 1);
 
 		selectedElement = null;
 	}
