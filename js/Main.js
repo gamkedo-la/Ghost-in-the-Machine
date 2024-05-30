@@ -58,7 +58,7 @@ function gameloop(time) {
 		canvasContext.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
 		colorRect(0,0,800,600, "black");
 		canvasContext.translate(canvas.width/2, canvas.height/2);
-		canvasContext.rotate(-player.ang + 3*pi/2);
+		canvasContext.rotate(-player.rot + 3*pi/2);
 		canvasContext.translate(-player.x, -player.y);
 
 		//2D draw loops
@@ -66,9 +66,10 @@ function gameloop(time) {
 			currentMap.walls[i].draw2D();
 		}
 
-		for (var i = 0; i < gameObjects.length; i++) {
-			gameObjects[i].draw2D();
+		for (var i = 0; i < currentMap.entities.length; i++) {
+			currentMap.entities[i].draw2D();
 		}
+		player.draw2D();
 
 		for (var i in printlist) {
 			colorText(i + ": " +printlist[i], player.x - 350, player.y - 250 + i * 10, "white")

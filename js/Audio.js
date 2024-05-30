@@ -24,7 +24,7 @@ function AudioManager() {
 	var musicVolume, sfxVolume;
 	var currentMusicTrack = null;
 	var currentSoundSources = [];
-	var listener = {pos:{x:0,y:0}, ang: 0};
+	var listener = {pos:{x:0,y:0}, rot: 0};
 
 	window.addEventListener('mousedown', AudioManGestureTest);
 	window.addEventListener('keydown', AudioManGestureTest);
@@ -320,7 +320,7 @@ function AudioManager() {
 
 //--//Sound spatialization functions--------------------------------------------
 	function calcuatePan(location) {
-		var direction = radToDeg(-listener.ang + angleBetweenTwoPoints(listener.pos, location));
+		var direction = radToDeg(-listener.rot + angleBetweenTwoPoints(listener.pos, location));
 		if (direction >= 360) {
 			direction -= 360;
 		}
@@ -363,7 +363,7 @@ function AudioManager() {
 
 
 		//Back of head attenuation
-		var direction = radToDeg(-listener.ang + angleBetweenTwoPoints(listener.pos, location));
+		var direction = radToDeg(-listener.rot + angleBetweenTwoPoints(listener.pos, location));
 		if (direction <= 0) {
 			direction += 360;
 		}

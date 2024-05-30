@@ -13,14 +13,17 @@ class EntityClass {
 		this.rotateSpeed = 2;
 		this.moveDelta = {x:0, y:0};
 		this.rotateDelta = 0;
-		this.level = null
+		this.level = null;
 		this.distance = Infinity;
 	}
 
 	get x() {return this.pos.x;}
 	get y() {return this.pos.y;}
 
+	onUpdate(deltaTime) {}
 	update(deltaTime) {
+		this.onUpdate(deltaTime);
+
 		//update rotation
 		this.rot += this.rotateDelta * deltaTime;
 		if (this.rot > 2*pi) this.rot -= 2*pi;
@@ -85,7 +88,7 @@ class SceneEntity extends EntityClass {
 	}
 
 	draw3D() {
-		var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player, this.pos) - player.ang), -180, 180);
+		var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player.pos, this.pos) - player.rot), -180, 180);
 
 		var size = heightScale * canvas.height / this.distance;
 		var drawX = canvas.width*0.5 - size*0.5 + drawAngle * canvas.width/FOV;

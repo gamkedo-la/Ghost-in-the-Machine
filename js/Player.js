@@ -8,7 +8,7 @@ class PlayerClass extends EntityClass{
 		this.rotateSpeed = 1.2;
 	}
 
-	update(deltaTime) {
+	onUpdate(deltaTime) {
 		//player look
 		this.rotateDelta = mouseMovementX * this._lookSpeed * this.rotateSpeed;
 		if (Key.isDown(Key.Q)) {
@@ -31,8 +31,6 @@ class PlayerClass extends EntityClass{
 		if (Key.isDown(Key.D)) {
 			this.moveDelta.y += 1;
 		}
-
-		super.update(deltaTime);
 	}
 
 	draw2D() {
