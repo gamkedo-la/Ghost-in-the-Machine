@@ -78,8 +78,8 @@ function gameloop(time) {
 	} else {
 		canvasContext.resetTransform();//reset the transform matrix as it is cumulative
 		canvasContext.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
-		colorRect(0,0,canvas.width,canvas.height/2, topColor);
-		colorRect(0,canvas.height/2,canvas.width,canvas.height/2, bottomColor);
+		
+        drawBackground();
 
 		// var thisTime = window.performance.now();
 		//3D
