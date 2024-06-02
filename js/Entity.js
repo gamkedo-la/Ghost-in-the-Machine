@@ -85,21 +85,23 @@ class SceneEntity extends EntityClass {
 
 		this._image = new Image();
 		this._image.src = './images/testEntity.png';
+
+		this.sprite = new SpriteClass(
+			'./images/testEntity.png', 
+			1, 1, 
+			100, 100
+		);
 	}
 
 	draw3D() {
 		var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player.pos, this.pos) - player.rot), -180, 180);
 
 		var size = heightScale * canvas.height / this.distance;
-		var drawX = canvas.width*0.5 - size*0.5 + drawAngle * canvas.width/FOV;
-		var drawY = canvas.height*0.5 - size*0.5;
+		var drawX = canvas.width*0.5 + drawAngle * canvas.width/FOV;
+		var drawY = canvas.height*0.5;
 
 		// Draw shadow
-		// canvasContext.fillStyle = '#00000020';
-		// canvasContext.beginPath();
-		// canvasContext.ellipse(drawX+size*0.5, drawY+size, size*0.4, size*0.05, 0, 0, Math.PI*2);
-		// canvasContext.fill();
 
-		canvasContext.drawImage(this._image, drawX, drawY, size, size);
+		this.sprite.drawAt(drawX, drawY, size);
 	}
 }
