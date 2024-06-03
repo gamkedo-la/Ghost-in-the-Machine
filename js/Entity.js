@@ -87,8 +87,8 @@ class SceneEntity extends EntityClass {
 		this._image.src = './images/testEntity.png';
 
 		this.sprite = new SpriteClass(
-			'./images/testEntity.png', 
-			1, 1, 
+			'./images/testEntitySS.png', 
+			8, 1, 
 			100, 100
 		);
 	}
@@ -101,7 +101,9 @@ class SceneEntity extends EntityClass {
 		var drawY = canvas.height*0.5;
 
 		// Draw shadow
-
+		
+		var viewRot = wrap((player.rot - this.rot) / d360 * this.sprite.getColumns(), -this.sprite.getColumns(), 0) + this.sprite.getColumns() * 1.5;
+		this.sprite.setColumn(viewRot);
 		this.sprite.drawAt(drawX, drawY, size);
 	}
 }

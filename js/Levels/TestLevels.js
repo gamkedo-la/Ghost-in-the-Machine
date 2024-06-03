@@ -51,7 +51,7 @@ testLevel1.onLoad = function() {
 	this.walls[this.walls.length-1].p2 = this.walls[this.walls.length-40].p1;
 
 	this.getEntityByName("Rob").onUpdate = function(deltaTime) {
-		this.rotateDelta = 0.25;
+		this.rotateDelta = 0.5;
 		this.moveDelta.x = 1;
 	}
 

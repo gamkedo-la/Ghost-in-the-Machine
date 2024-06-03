@@ -19,6 +19,7 @@ class SpriteClass {
 
 	setIndex(newIndex) {
 		if (newIndex > this._size) newIndex = newIndex % this._size;
+		newIndex = Math.floor(newIndex);
 
 		this._index = newIndex;
 		this._xOff = this.getColumn() * this._w;
