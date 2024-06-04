@@ -50,19 +50,24 @@ testLevel1.onLoad = function() {
 	//console.log("x:" + x + "," + "y:" + y);
 	this.walls[this.walls.length-1].p2 = this.walls[this.walls.length-40].p1;
 
+	this.getEntityByName("Rob").sprite.setRow(1);
 	this.getEntityByName("Rob").onUpdate = function(deltaTime) {
 		this.rotateDelta = 0.5;
 		this.moveDelta.x = 1;
 	}
 
+	this.getEntityByName("Cat").sprite.setRow(2);
 	this.getEntityByName("Cat").onUpdate = function(deltaTime) {
 		this.rotateDelta += dotProductOfVectors(this.right, normalizeVector(subtractVectors(this.pos, player.pos)));
 	}
 
+	this.getEntityByName("Benny").sprite.setRow(3);
 	this.getEntityByName("Benny").tickTime = 0;
 	this.getEntityByName("Benny").onUpdate = function(deltaTime) {
 		this.sprite.xScale = 0.5 * Math.sin(this.tickTime) + 1;
 		this.sprite.yScale = 0.5 * Math.cos(this.tickTime) + 1;
 		this.tickTime += deltaTime;
 	}
+
+	this.getEntityByName("Hanna").sprite.setRow(4);
 }

@@ -88,7 +88,7 @@ class SceneEntity extends EntityClass {
 
 		this.sprite = new SpriteClass(
 			'./images/testEntitySS.png', 
-			8, 1, 
+			8, 6, 
 			100, 100
 		);
 	}
