@@ -84,7 +84,7 @@ class SceneEntity extends EntityClass {
 		super(entityClone);
 
 		this._image = new Image();
-		this._image.src = './images/testEntity.png';
+		this._image.src = './images/shadow.png';
 
 		this.sprite = new SpriteClass(
 			'./images/testEntitySS.png', 
@@ -101,6 +101,11 @@ class SceneEntity extends EntityClass {
 		var drawY = canvas.height*0.5;
 
 		// Draw shadow
+		canvasContext.drawImage(
+			this._image, 
+			drawX - size/2, drawY + size * 0.3, 
+			size, size * 0.5
+		);
 		
 		var viewRot = wrap((player.rot - this.rot) / d360 * this.sprite.getColumns(), -this.sprite.getColumns(), 0) + this.sprite.getColumns() * 1.5;
 		this.sprite.setColumn(viewRot);
