@@ -34,7 +34,7 @@ function isMouseInArea(x, y, width, height) {
 
 function mouseDown(event) {
 	Key.onKeydown(event.button + 300);
-	canvas.requestPointerLock()
+	lockPointer()
 }
 
 function mouseUp(event) {
@@ -60,6 +60,7 @@ const Key = {
 	_down: {},
 	_pressed: {},
 	_released: {},
+	callback: {},
 
 	TAB: 9,
 	ENTER: 13,
@@ -136,11 +137,19 @@ const Key = {
 			this._pressed[event.keyCode] = true;
 		}
 		this._down[event.keyCode] = true;
+
+		if (this.callback[event.keyCode]) {
+			this.callback[event.keyCode](true);
+		}
 	},
 
 	onKeyup(event) {
 		this._released[event.keyCode] = true;
 		delete this._down[event.keyCode];
+
+		if (this.callback[event.keyCode]) {
+			this.callback[event.keyCode](false);
+		}
 	},
 
 	update() {
@@ -150,9 +159,23 @@ const Key = {
 		mouseMovementX = 0;
 		mouseMovementY = 0;
 		mouseScrollY = 0;
+	}
+};
 
-		if (Key.isJustPressed(Key.ESC)) {
-			unlockPointer();
-		}
+Key.callback[Key.ESC] = function(keyDown) {
+	if (!keyDown) {
+		unlockPointer();
+	}
+};
+
+Key.callback[Key.MINUS] = function(keyDown) {
+	if (keyDown) {
+		AudioMan.turnVolumeDown();
+	}
+};
+
+Key.callback[Key.PLUS] = function(keyDown) {
+	if (keyDown) {
+		AudioMan.turnVolumeUp();
 	}
 };

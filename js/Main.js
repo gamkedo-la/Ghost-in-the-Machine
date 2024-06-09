@@ -173,13 +173,6 @@ function gameloop(time) {
 
 	}
 
-	if (Key.isJustPressed(Key.MINUS)){
-		AudioMan.turnVolumeDown();
-	}
-	if (Key.isJustPressed(Key.PLUS)){
-		AudioMan.turnVolumeUp();
-	}
-
 	Key.update();
 	AudioMan.update();
 	
