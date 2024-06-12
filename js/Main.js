@@ -16,6 +16,9 @@ var heightScale = 8;
 var topColor = "lightgrey";
 var bottomColor = "gray";
 
+var mainMenuImage = document.createElement("img"); // create element for main menu background
+mainMenuImage.src = "./source_art/Main_Menu/MainMenu.png"; // attach source for main menu
+
 window.onload = function() {
 	canvas = document.getElementById('gameCanvas');
 	canvasContext = canvas.getContext('2d');
@@ -25,8 +28,9 @@ window.onload = function() {
 
 function waitingforgesture() {
 
-	colorRect(0,0,canvas.width,canvas.height, "black");
+	canvasContext.drawImage(mainMenuImage, 0, 0); // load image for main menu
 	colorText("Press Space to Play", canvas.width/2 - 120, canvas.height/2, "white", "30px Arial");
+
 
 	if (Key.isDown(Key.SPACE)) {
 		window.requestAnimationFrame(gamestart);
