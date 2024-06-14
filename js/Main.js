@@ -41,22 +41,17 @@ function waitingforgesture() {
 	Key.update();
 }
 
-// Next two functions handle pausing for the game (pauses player movement and perspective)
-function togglePause() {
+// This function is for non-player key handling (pause, esc, mute, etc.)
+function checkUIKeys() {
 	if(Key.isJustPressed(Key.P)){
 		isPaused = !isPaused; // toggle Pause here
 	}
 }
-function pauseGame(){
-	if(!isPaused){ // if it is Not paused ...
-		window.requestAnimationFrame(gameloop); // show game animation again
-	} else { // if it is paused...
-		colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
-		colorText("PAUSED", canvas.width/2 - 120, canvas.height/2, "white", "30px Arial");
-		colorText("Press P to Return to Game", canvas.width/2 - 120, canvas.height/2 + 50, "white", "30px Arial");
-		
-		window.requestAnimationFrame(gameloop); // needs to be included or else when it's unpaused, Pause Screen stays instead of animation 
-	}
+
+function drawPauseScreen(){
+	colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
+	colorText("PAUSED", canvas.width/2 - 120, canvas.height/2, "white", "30px Arial");
+	colorText("Press P to Return to Game", canvas.width/2 - 120, canvas.height/2 + 50, "white", "30px Arial");
 }
 
 function gamestart() {
@@ -67,12 +62,11 @@ function gamestart() {
 }
 
 function gameloop(time) {
-	togglePause(); //check if player wants to (un)pause the game at the start of every loop
-
 	time /= 1000;
 	var deltaTime = time - lastTime;
 	lastTime = time;
 	
+	checkUIKeys();
 	if(!isPaused){
 		//Update, only when the game is not paused
 		player.update(deltaTime);
@@ -177,8 +171,14 @@ function gameloop(time) {
 
 	}
 
+	if(isPaused){
+		drawPauseScreen();
+	}
+	// end of draw block
+
 	Key.update();
 	AudioMan.update();
+
+	window.requestAnimationFrame(gameloop);
 	
-	pauseGame(); // check if game is paused/unpaused, this line replaced "window.requestAnimationFrame(gameloop);" which is now done in pauseGame() function
 };
