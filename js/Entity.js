@@ -80,16 +80,16 @@ class EntityClass {
 }
 
 class SceneEntity extends EntityClass {
-	constructor(entityClone = {}) {
+	constructor(entityClone = {}, shadowImageURL='./images/shadow.png', spritesheetURL='./images/testEntitySS.png', sCols=8, sRows=6, sWidth=100, sHeight=100) {
 		super(entityClone);
 
 		this._image = new Image();
-		this._image.src = './images/shadow.png';
+		this._image.src = shadowImageURL;
 
 		this.sprite = new SpriteClass(
-			'./images/testEntitySS.png', 
-			8, 6, 
-			100, 100
+			spritesheetURL, 
+            sCols, sRows, 
+            sWidth, sHeight
 		);
 	}
 
