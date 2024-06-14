@@ -19,11 +19,22 @@ var bottomColor = "gray";
 var mainMenuImage = document.createElement("img"); // create element for main menu background
 mainMenuImage.src = "./source_art/Main_Menu/MainMenu.png"; // attach source for main menu
 
+var titleAnimElem;
+
 window.onload = function() {
 	canvas = document.getElementById('gameCanvas');
 	canvasContext = canvas.getContext('2d');
+	
+	titleAnimElem = document.getElementById("titleAnimation");
+	var titleAnimationLengthMS = 7000;
+	setTimeout(switchTitleAnimForGameCanvas, titleAnimationLengthMS);
 
 	waitingforgesture();
+}
+
+function switchTitleAnimForGameCanvas() {
+	titleAnimElem.style.display = "none";
+	canvas.style.display = "block";
 }
 
 function waitingforgesture() {
@@ -33,6 +44,7 @@ function waitingforgesture() {
 
 
 	if (Key.isDown(Key.SPACE)) {
+		switchTitleAnimForGameCanvas();
 		window.requestAnimationFrame(gamestart);
 	} else {
 		window.requestAnimationFrame(waitingforgesture);
