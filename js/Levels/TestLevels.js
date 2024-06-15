@@ -70,4 +70,10 @@ testLevel1.onLoad = function() {
 	}
 
 	this.getEntityByName("Hanna").sprite.setRow(4);
+
+	
+	let newEnemy = new BitBunnyRobot({pos:{x:50,y:50}});
+	newEnemy.level = this;
+	newEnemy.name = "testBunny";
+	this.entities.push(newEnemy);
 }

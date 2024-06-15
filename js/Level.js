@@ -1,5 +1,3 @@
-const DEBUG_TEST_ENEMY = true;
-
 function LevelClass() {
 	this.playerStart = {x:0, y:0};
 	this.walls = [];
@@ -47,17 +45,6 @@ function LevelClass() {
 				this.bottomColor = parsedLevel.bottomColor;
 			}
 		}
-
-        // FIXME: this is just to test the new robot spritesheet!
-        // TODO: tie into level editor + parsing above
-        // TODO: create Enemy class that inherits SceneEntity
-        if (DEBUG_TEST_ENEMY) {
-            console.log("DEBUG: adding an enemy to the world");
-            let newEnemy = new SceneEntity({pos:{x:50,y:50}},'./images/shadow.png','./images/cubeRobotSS.png',12,1,400,400);
-            newEnemy.level = this;
-            this.entities.push(newEnemy);
-        }
-
 
 		this.onLoad();
 		
