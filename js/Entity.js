@@ -1,6 +1,7 @@
 class EntityClass {
 	constructor(entityToOverride = {}) {
 		this.name = entityToOverride.name || "";
+		this.pos = entityToOverride.pos || {x:0, y:0};
 		this.rot = entityToOverride.rot || d270;
 		this.forward = {x:0, y:0};
 		this.forward.x = Math.cos(this.rot);
@@ -27,14 +28,14 @@ class EntityClass {
 	update(deltaTime) {
 		this.onUpdatePre(deltaTime);
 
-		this.brain.think();
+		this.brain.think(deltaTime);
 
 		if (this.actionTriggered) {
 			this.action(deltaTime);
 		}
 
 		//update rotation
-		this.rot += this.rotateDelta * deltaTime;
+		this.rot += this.rotateDelta * this.rotateSpeed * deltaTime;
 		if (this.rot > 2*pi) this.rot -= 2*pi;
 		if (this.rot < 0) this.rot += 2*pi;
 
