@@ -13,6 +13,7 @@ class EntityClass {
 		this.rotateSpeed = 2;
 		this.moveDelta = {x:0, y:0};
 		this.rotateDelta = 0;
+		this.actionTriggered = false;
 		this.level = null;
 		this.distance = Infinity;
 	}
@@ -23,6 +24,11 @@ class EntityClass {
 	onUpdate(deltaTime) {}
 	update(deltaTime) {
 		this.onUpdate(deltaTime);
+
+		if (this.actionTriggered) {
+			this.action(deltaTime);
+			this.actionTriggered = false;
+		}
 
 		//update rotation
 		this.rot += this.rotateDelta * deltaTime;
@@ -66,6 +72,11 @@ class EntityClass {
 		this.moveDelta.x = 0;
 		this.moveDelta.y = 0;
 	}
+
+	onAction(deltaTime) {};
+	action(deltaTime) {
+		this.onAction(deltaTime);
+	};
 
 	draw2D() {
 		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * 10, this.pos.y +this.forward.y * 10, 2, "white");

@@ -3,14 +3,14 @@ class PlayerClass extends EntityClass{
 		super();
 		this.name = "Player";
 
-		this._lookSpeed = 0.75;
+		this.lookSpeed = 0.75;
 		this.moveSpeed = 50;
 		this.rotateSpeed = 1.2;
 	}
 
 	onUpdate(deltaTime) {
 		//player look
-		this.rotateDelta = mouseMovementX * this._lookSpeed * this.rotateSpeed;
+		this.rotateDelta = mouseMovementX * this.lookSpeed * this.rotateSpeed;
 		if (Key.isDown(Key.Q)) {
 			this.rotateDelta -= this.rotateSpeed;
 		}
@@ -31,6 +31,15 @@ class PlayerClass extends EntityClass{
 		if (Key.isDown(Key.D)) {
 			this.moveDelta.y += 1;
 		}
+
+		//player action button
+		if (Key.isJustPressed(Key.MOUSE_LEFT)) {
+			this.actionTriggered = true;
+		}
+	}
+
+	onAction(deltaTime) {
+		console.log("Action");
 	}
 
 	draw2D() {

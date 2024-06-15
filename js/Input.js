@@ -1,5 +1,5 @@
-window.addEventListener('keyup', function (event) { Key.onKeyup(event); event.preventDefault();});
-window.addEventListener('keydown', function (event) { Key.onKeydown(event); event.preventDefault();});
+window.addEventListener('keydown', function (event) { Key.receivekeydown(event.keyCode); event.preventDefault();});
+window.addEventListener('keyup', function (event) { Key.receiveKeyup(event.keyCode); event.preventDefault();});
 
 document.getElementById('gameCanvas').addEventListener('mousedown', mouseDown);
 document.getElementById('gameCanvas').addEventListener('mouseup', mouseUp);
@@ -33,12 +33,12 @@ function isMouseInArea(x, y, width, height) {
 }
 
 function mouseDown(event) {
-	Key.onKeydown(event.button + 300);
-	lockPointer()
+	Key.receivekeydown(event.button + 300);
+	lockPointer();
 }
 
 function mouseUp(event) {
-	Key.onKeyup(event.button + 300);
+	Key.receiveKeyup(event.button + 300);
 }
 
 function lockPointer() {
@@ -132,23 +132,21 @@ const Key = {
 		return this._released[keyCode];
 	},
 
-	onKeydown(event) {
-		if (this._down[event.keyCode] != true) {
-			this._pressed[event.keyCode] = true;
-		}
-		this._down[event.keyCode] = true;
+	receivekeydown(keyCode) {
+		this._pressed[keyCode] = true;
+		this._down[keyCode] = true;
 
-		if (this.callback[event.keyCode]) {
-			this.callback[event.keyCode](true);
+		if (this.callback[keyCode]) {
+			this.callback[keyCode](true);
 		}
 	},
 
-	onKeyup(event) {
-		this._released[event.keyCode] = true;
-		delete this._down[event.keyCode];
+	receiveKeyup(keyCode) {
+		this._released[keyCode] = true;
+		this._down[keyCode] = false;
 
-		if (this.callback[event.keyCode]) {
-			this.callback[event.keyCode](false);
+		if (this.callback[keyCode]) {
+			this.callback[keyCode](false);
 		}
 	},
 
