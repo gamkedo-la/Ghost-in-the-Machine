@@ -52,13 +52,13 @@ testLevel1.onLoad = function() {
 
 	this.getEntityByName("Rob").sprite.setRow(1);
 	this.getEntityByName("Rob").brain.think = function(deltaTime) {
-		this.body.rotateDelta = 0.5;
-		this.body.moveDelta.x = 1;
+		this.rotateDelta = 0.5;
+		this.moveDelta.x = 1;
 	}
 
 	this.getEntityByName("Cat").sprite.setRow(2);
 	this.getEntityByName("Cat").brain.think = function(deltaTime) {
-		this.body.rotateDelta += dotProductOfVectors(this.right, normalizeVector(subtractVectors(this.pos, player.pos)));
+		this.rotateDelta += dotProductOfVectors(this.right, normalizeVector(subtractVectors(this.pos, player.pos)));
 	}
 
 	this.getEntityByName("Benny").sprite.setRow(3);
@@ -72,8 +72,6 @@ testLevel1.onLoad = function() {
 	this.getEntityByName("Hanna").sprite.setRow(4);
 
 	
-	let newEnemy = new BitBunnyRobot({pos:{x:50,y:50}});
-	newEnemy.level = this;
-	newEnemy.name = "testBunny";
+	let newEnemy = new BitBunnyRobot({name: "testBunny", pos:{x:50,y:50}, level: this});
 	this.entities.push(newEnemy);
 }

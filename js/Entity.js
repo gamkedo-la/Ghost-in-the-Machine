@@ -14,7 +14,7 @@ class EntityClass {
 		this.moveDelta = {x:0, y:0};
 		this.rotateDelta = 0;
 		this.actionTriggered = false;
-		this.level = null;
+		this.level = entityToOverride.level || null;
 		this.distance = Infinity;
 
 		this.brain = entityToOverride.brain || new Brain(this);
@@ -94,7 +94,7 @@ class EntityClass {
 	draw3D() {}
 
 	destroy() {
-		gameObjects.splice(gameObjects.indexoOf(this), 2);
+		this.level.entities.splice(this.level.entities.indexoOf(this), 2);
 	}
 }
 
@@ -135,10 +135,25 @@ class SceneEntity extends EntityClass {
 class Brain {
 	constructor(body) {
 		this.body = body;
-		this.pos = body.pos;
-		this.forward = body.forward;
-		this.right = body.right;
 	}
+
+	get name() {return this.body.name;}
+	get pos() {return this.body.pos;}
+	get x() {return this.body.pos.x;}
+	get y() {return this.body.pos.y;}
+	get rot() {return this.body.pos.y;}
+	get forward() {return this.body.forward;}
+	get right() {return this.body.right;}
+	get moveSpeed() {return this.body.moveSpeed;}
+	get rotateSpeed() {return this.body.rotateSpeed;}
+	get moveDelta() {return this.body.moveDelta;}
+	get rotateDelta() {return this.body.rotateDelta;}
+	get actionTriggered() {return this.body.actionTriggered;}
+	get level() {return this.body.level;}
+
+	set moveDelta(value) {this.body.moveDelta = value;}
+	set rotateDelta(value) {this.body.rotateDelta = value;}
+	set actionTriggered(value) {this.body.actionTriggered = value;}
 
 	think(deltaTime) {}
 }

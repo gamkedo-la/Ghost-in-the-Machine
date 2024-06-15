@@ -1,10 +1,8 @@
-class PlayerClass extends EntityClass{
+class PlayerClass extends BitBunnyRobot{
 	constructor() {
 		super();
 
 		this.name = "Player";
-		this.moveSpeed = 50;
-		this.rotateSpeed = 1.2;
 
 		this.brain = new PlayerBrain(this);
 	}
@@ -27,6 +25,25 @@ class PlayerBrain extends Brain {
 	}
 
 	think(deltaTime) {
+		// Check for swap
+		if (Key.isJustPressed(Key.SPACE)) {
+			var focusEntity;
+			var focusOffset = -1;
+			for (let i = 0; i < this.level.entities.length; i++) {
+				var dotProduct = dotProductOfVectors(this.forward, normalizeVector(subtractVectors(this.level.entities[i].pos, this.pos)));
+				if (dotProduct >= focusOffset) {
+					focusEntity = this.level.entities[i]
+					focusOffset = dotProduct
+				}
+			}
+
+			if (focusOffset > 0.9) {
+				swapBrains(this.body, focusEntity);
+			}
+
+			return;
+		}
+
 		//player look
 		this.body.rotateDelta = mouseMovementX * this.lookSpeed;
 		if (Key.isDown(Key.Q)) {
@@ -54,5 +71,24 @@ class PlayerBrain extends Brain {
 		if (Key.isJustPressed(Key.MOUSE_LEFT)) {
 			this.body.actionTriggered = true;
 		}
+	}
+}
+
+function swapBrains(entity1, entity2) {
+	var cacheBrain = entity1.brain;
+	var cacheName = entity1.name;
+
+	entity1.brain = entity2.brain;
+	entity1.brain.body = entity1;
+	entity1.name = entity2.name;
+
+	entity2.brain = cacheBrain;
+	entity2.brain.body = entity2;
+	entity2.name = cacheName;
+
+	if (player == entity1) {
+		player = entity2;
+	} else if (player == entity2) {
+		player = entity1;
 	}
 }
