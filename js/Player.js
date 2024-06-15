@@ -8,7 +8,7 @@ class PlayerClass extends EntityClass{
 		this.rotateSpeed = 1.2;
 	}
 
-	onUpdate(deltaTime) {
+	onUpdatePre(deltaTime) {
 		//player look
 		this.rotateDelta = mouseMovementX * this.lookSpeed * this.rotateSpeed;
 		if (Key.isDown(Key.Q)) {

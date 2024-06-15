@@ -1,6 +1,6 @@
 class BitBunnyRobot extends SceneEntity {
-	constructor(entityClone = {}) {
-		super(entityClone);
+	constructor(entityToOverride = {}) {
+		super(entityToOverride);
 
 		this.sprite = new SpriteClass(
 			'./images/cubeRobotSS.png', 

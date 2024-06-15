@@ -1,8 +1,7 @@
 class EntityClass {
-	constructor(entityClone = {}) {
-		this.name = entityClone.name || "";
-        this.pos = entityClone.pos ? {x:entityClone.pos.x, y:entityClone.pos.y} : {x:0, y:0};
-		this.rot = entityClone.rot || d270;
+	constructor(entityToOverride = {}) {
+		this.name = entityToOverride.name || "";
+		this.rot = entityToOverride.rot || d270;
 		this.forward = {x:0, y:0};
 		this.forward.x = Math.cos(this.rot);
 		this.forward.y = Math.sin(this.rot);
@@ -16,18 +15,22 @@ class EntityClass {
 		this.actionTriggered = false;
 		this.level = null;
 		this.distance = Infinity;
+
+		this.brain = entityToOverride.brain || new Brain(this);
 	}
 
 	get x() {return this.pos.x;}
 	get y() {return this.pos.y;}
 
-	onUpdate(deltaTime) {}
+	onUpdatePre(deltaTime) {}
+	onUpdatePost(deltaTime) {}
 	update(deltaTime) {
-		this.onUpdate(deltaTime);
+		this.onUpdatePre(deltaTime);
+
+		this.brain.think();
 
 		if (this.actionTriggered) {
 			this.action(deltaTime);
-			this.actionTriggered = false;
 		}
 
 		//update rotation
@@ -71,11 +74,15 @@ class EntityClass {
 		this.rotateDelta = 0;
 		this.moveDelta.x = 0;
 		this.moveDelta.y = 0;
+
+
+		this.onUpdatePost(deltaTime);
 	}
 
 	onAction(deltaTime) {};
 	action(deltaTime) {
 		this.onAction(deltaTime);
+		this.actionTriggered = false;
 	};
 
 	draw2D() {
@@ -91,11 +98,11 @@ class EntityClass {
 }
 
 class SceneEntity extends EntityClass {
-	constructor(entityClone = {}) {
-		super(entityClone);
+	constructor(entityToOverride = {}) {
+		super(entityToOverride);
 
-		this._image = new Image();
-		this._image.src = './images/shadow.png';
+		this._shadowImage = new Image();
+		this._shadowImage.src = './images/shadow.png';
 
 		this.sprite = new SpriteClass(
 			'./images/testEntitySS.png', 
@@ -113,7 +120,7 @@ class SceneEntity extends EntityClass {
 
 		// Draw shadow
 		canvasContext.drawImage(
-			this._image, 
+			this._shadowImage, 
 			drawX - size/2, drawY + size * 0.3, 
 			size, size * 0.5
 		);
@@ -122,4 +129,15 @@ class SceneEntity extends EntityClass {
 		this.sprite.setColumn(viewRot);
 		this.sprite.drawAt(drawX, drawY, size);
 	}
+}
+
+class Brain {
+	constructor(body) {
+		this.body = body;
+		this.pos = body.pos;
+		this.forward = body.forward;
+		this.right = body.right;
+	}
+
+	think(deltaTime) {}
 }
