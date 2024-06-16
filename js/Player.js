@@ -27,18 +27,31 @@ class PlayerBrain extends Brain {
 	think(deltaTime) {
 		// Check for swap
 		if (Key.isJustPressed(Key.SPACE)) {
-			var focusEntity;
-			var focusOffset = -1;
-			for (let i = 0; i < this.level.entities.length; i++) {
-				var dotProduct = dotProductOfVectors(this.forward, normalizeVector(subtractVectors(this.level.entities[i].pos, this.pos)));
-				if (dotProduct >= focusOffset) {
-					focusEntity = this.level.entities[i]
-					focusOffset = dotProduct
-				}
-			}
+			let rayEnd = addVectors(this.pos, scaleVector(this.forward, 200));
+			let closestIntersection = getClosestIntersection(this.pos, rayEnd, this.level.walls);
+			let maxDistance = closestIntersection ? distanceBetweenTwoPoints(closestIntersection, this.pos) : 200;
+			//console.log("Max Distance: " + maxDistance);
+			for (let i = this.level.entities.length - 1; i >= 0; i--) {
+				if (this.level.entities[i] == player) continue;
 
-			if (focusOffset > 0.9) {
-				swapBrains(this.body, focusEntity);
+				let nearestPoint = getNearestPointOnLine(this.pos, rayEnd, this.level.entities[i].pos);
+				let distance = distanceBetweenTwoPoints(this.level.entities[i].pos, nearestPoint);
+				//console.log(this.level.entities[i].name + ": " + distance);
+
+				if (distance < 5) {
+					let name = this.name;
+					player.brain = this.level.entities[i].brain;
+					player.brain.body = player;
+					player.name = this.level.entities[i].name;
+
+					this.level.entities[i].brain = this;
+					this.body = this.level.entities[i];
+					this.body.name = name;
+
+					player = this.body;
+					
+					return;
+				}
 			}
 
 			return;
@@ -71,24 +84,5 @@ class PlayerBrain extends Brain {
 		if (Key.isJustPressed(Key.MOUSE_LEFT)) {
 			this.body.actionTriggered = true;
 		}
-	}
-}
-
-function swapBrains(entity1, entity2) {
-	var cacheBrain = entity1.brain;
-	var cacheName = entity1.name;
-
-	entity1.brain = entity2.brain;
-	entity1.brain.body = entity1;
-	entity1.name = entity2.name;
-
-	entity2.brain = cacheBrain;
-	entity2.brain.body = entity2;
-	entity2.name = cacheName;
-
-	if (player == entity1) {
-		player = entity2;
-	} else if (player == entity2) {
-		player = entity1;
 	}
 }

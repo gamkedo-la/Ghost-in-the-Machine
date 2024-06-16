@@ -3,52 +3,52 @@ testLevel1.levelJSON = '{"walls":[{"p1":{"x":-100,"y":-100},"p2":{"x":300,"y":-1
 testLevel1.topColor = "lightblue";
 testLevel1.bottomColor = "lightgreen";
 testLevel1.onLoad = function() {
-	//generate a random room
-	var x = -250;
-	var y = -250;
-	var wallTexture = new Image();
-	wallTexture.src = './images/text2Texture100x100.png';
-	//console.log("x:" + x + "," + "y:" + y);
-	for (var i = 0; i < 10; i++) {
-		var newWall = new WallClass();
-		newWall.p1 = {x:x, y:y};
-		x += rndFloat(0, 50);
-		y += rndFloat(-25, 25);
-		newWall.p2 = {x:x, y:y};
-		newWall.texture = wallTexture;
-		this.walls.push(newWall);
-	}
-	//console.log("x:" + x + "," + "y:" + y);
-	for (var i = 0; i < 10; i++) {
-		var newWall = new WallClass();
-		newWall.p1 = {x:x, y:y};
-		x += rndFloat(-25, 25);
-		y += rndFloat(0, 50);
-		newWall.p2 = {x:x, y:y};
-		newWall.texture = wallTexture;
-		this.walls.push(newWall);
-	}
-	for (var i = 0; i < 10; i++) {
-		var newWall = new WallClass();
-		newWall.p1 = {x:x, y:y};
-		x += rndFloat(0, -50);
-		y += rndFloat(-25, 25);
-		newWall.p2 = {x:x, y:y};
-		newWall.texture = wallTexture;
-		this.walls.push(newWall);
-	}
-	//console.log("x:" + x + "," + "y:" + y);
-	for (var i = 0; i < 10; i++) {
-		var newWall = new WallClass();
-		newWall.p1 = {x:x, y:y};
-		x += rndFloat(-25, 25);
-		y += rndFloat(0, -50);
-		newWall.p2 = {x:x, y:y};
-		newWall.texture = wallTexture;
-		this.walls.push(newWall);
-	}
-	//console.log("x:" + x + "," + "y:" + y);
-	this.walls[this.walls.length-1].p2 = this.walls[this.walls.length-40].p1;
+	// //generate a random room
+	// var x = -250;
+	// var y = -250;
+	// var wallTexture = new Image();
+	// wallTexture.src = './images/text2Texture100x100.png';
+	// //console.log("x:" + x + "," + "y:" + y);
+	// for (var i = 0; i < 10; i++) {
+	// 	var newWall = new WallClass();
+	// 	newWall.p1 = {x:x, y:y};
+	// 	x += rndFloat(0, 50);
+	// 	y += rndFloat(-25, 25);
+	// 	newWall.p2 = {x:x, y:y};
+	// 	newWall.texture = wallTexture;
+	// 	this.walls.push(newWall);
+	// }
+	// //console.log("x:" + x + "," + "y:" + y);
+	// for (var i = 0; i < 10; i++) {
+	// 	var newWall = new WallClass();
+	// 	newWall.p1 = {x:x, y:y};
+	// 	x += rndFloat(-25, 25);
+	// 	y += rndFloat(0, 50);
+	// 	newWall.p2 = {x:x, y:y};
+	// 	newWall.texture = wallTexture;
+	// 	this.walls.push(newWall);
+	// }
+	// for (var i = 0; i < 10; i++) {
+	// 	var newWall = new WallClass();
+	// 	newWall.p1 = {x:x, y:y};
+	// 	x += rndFloat(0, -50);
+	// 	y += rndFloat(-25, 25);
+	// 	newWall.p2 = {x:x, y:y};
+	// 	newWall.texture = wallTexture;
+	// 	this.walls.push(newWall);
+	// }
+	// //console.log("x:" + x + "," + "y:" + y);
+	// for (var i = 0; i < 10; i++) {
+	// 	var newWall = new WallClass();
+	// 	newWall.p1 = {x:x, y:y};
+	// 	x += rndFloat(-25, 25);
+	// 	y += rndFloat(0, -50);
+	// 	newWall.p2 = {x:x, y:y};
+	// 	newWall.texture = wallTexture;
+	// 	this.walls.push(newWall);
+	// }
+	// //console.log("x:" + x + "," + "y:" + y);
+	// this.walls[this.walls.length-1].p2 = this.walls[this.walls.length-40].p1;
 
 	this.getEntityByName("Rob").sprite.setRow(1);
 	this.getEntityByName("Rob").brain.think = function(deltaTime) {
@@ -74,4 +74,6 @@ testLevel1.onLoad = function() {
 	
 	let newEnemy = new BitBunnyRobot({name: "testBunny", pos:{x:50,y:50}, level: this});
 	this.entities.push(newEnemy);
+
+	this.entities.push(player);
 }
