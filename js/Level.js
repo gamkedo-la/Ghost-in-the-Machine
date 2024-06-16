@@ -3,8 +3,6 @@ function LevelClass() {
 	this.walls = [];
 	this.entities = [];
 	this.levelJSON = "{}";
-	this.topColor = "lightgrey";
-	this.bottomColor = "gray";
 
 	this.update = function(deltaTime) {
 		for (let i = 0; i < this.entities.length; i++) {
@@ -35,15 +33,11 @@ function LevelClass() {
 
 			if (parsedLevel.playerStart) {
 				this.playerStart = parsedLevel.playerStart;
+				player.pos.x = this.playerStart.x;
+				player.pos.y = this.playerStart.y;
 			}
 
-			if (parsedLevel.topColor) {
-				this.topColor = parsedLevel.topColor;
-			}
-			
-			if (parsedLevel.bottomColor) {
-				this.bottomColor = parsedLevel.bottomColor;
-			}
+			this.entities.push(player);
 		}
 
 		this.onLoad();
@@ -65,6 +59,7 @@ function LevelClass() {
 				return this.entities[i];
 			}
 		}
+		return null;
 	}
 
 	this.onLoad = function() {}
