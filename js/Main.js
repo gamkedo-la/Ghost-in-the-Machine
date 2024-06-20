@@ -83,6 +83,7 @@ function gameloop(time) {
 		//Update, only when the game is not paused
 		player.update(deltaTime);
 		currentMap.update(deltaTime);
+        particles.update(deltaTime);
 	}
 
 	if (debug) {
