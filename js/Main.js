@@ -11,7 +11,7 @@ var currentMap = new LevelClass();
 var lastTime = window.performance.now();
 
 var FOV = 60;
-var heightScale = 8;
+var heightScale = 8; // note: editor uses a different scale
 
 var topColor = "lightgrey";
 var bottomColor = "gray";
