@@ -63,7 +63,7 @@ class Particle  {
 }
 
 function sparksFX(x=0,y=0,num=1) {
-    console.log("spawning "+num+" sparks!");
+    //console.log("spawning "+num+" sparks!");
     //console.log("player pos is: "+player.pos.x+","+player.pos.y);
     //x = x+player.pos.x;
     //y = y+player.pos.y + 5;
