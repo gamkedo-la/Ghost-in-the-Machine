@@ -5,38 +5,31 @@
 // this cheap hack may never line up 100% perfectly...
 
 // for some reason changing the css has no effect,
-// the values stay "locked" and are read-only???
-const FLOOR_ENABLED = false; // what a stupid waste of time
+const FLOOR_ENABLED = true;
 
 class TheFloorClass {
 
     constructor() {
         if (!FLOOR_ENABLED) return;
         
-        //console.log("initializing the floor");
-        //document.body.style.perspective = "888px"; // hmmmmmm
+        console.log("initializing the floor");
 
         this.floorHOLDER = document.createElement("DIV");
         this.floorHOLDER.style = `
-            position:absolute;
             perspective:256px;
             display:block;
             width:800px;
             height:300px;
-            top:50%;
-            bottom:50%;
-            left:0%;
-            right:100%;
             overflow:hidden;
-            background:cyan;
-            margin:0;
+            background:none;
+            margin:auto;
             padding:0;`;
         document.getElementById("gameDiv").appendChild(this.floorHOLDER);
 
         this.floor = document.createElement("DIV");
         this.floor.style = `
-            image-rendering:pixelated; /*no effect*/
-            OMITbackground-size:128px; /*blurry if we scale this way*/
+            OMITimage-rendering:pixelated; /*no effect*/
+            OMITbackground-size:16px; /*blurry if we scale this way*/
             position:absolute;
             display:block;
             background:red;
@@ -54,19 +47,12 @@ class TheFloorClass {
     draw(x=0,y=0,rot=0) {
         if (!FLOOR_ENABLED) return;
 
-        // spin around for now
-        rot = Math.sin(performance.now()/1000)*360;
+        // wobble back and forth - just a tech demo for now
+        rot = Math.sin(performance.now()/2000)*45;
         // console.log("floor rot="+rot.toFixed(2));
         
-        // NO EFFECT? WTF!!!!!!!!!!!!!!!!!!!!!!
-        // this does NOT change the value?!?!?
-        let xform = "rotate3d(1, "+rot+"deg, 0, 90deg) translate3d(-512px, 0px, 792px)";
-        this.floor.style.transform = xform; // NO EFFECT?!
-
-        // these two values "should" be identical but are NOT
-        console.log("the xform="+xform); // expected value
-        console.log("css xform="+this.floor.style.transform); // no change!
-        // LIES LIES LIES
+        let xform = "rotate3d(1, 0, 0, 90deg) translate3d(-512px, 0px, 792px) rotate3d(0,0,1,"+rot+"deg)";
+        this.floor.style.transform = xform;
 
     }
 
