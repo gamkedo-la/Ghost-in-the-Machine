@@ -1,10 +1,6 @@
 // a hack to give cheap and fast floor rendering
 // that uses a single div with a 3d css transform
-// this is not proper raycasting floor rendering 
-// which requires trigonometry I have yet to master
-// this cheap hack may never line up 100% perfectly...
 
-// for some reason changing the css has no effect,
 const FLOOR_ENABLED = true;
 
 class TheFloorClass {
@@ -28,15 +24,12 @@ class TheFloorClass {
 
         this.floor = document.createElement("DIV");
         this.floor.style = `
-            OMITimage-rendering:pixelated; /*no effect*/
-            OMITbackground-size:16px; /*blurry if we scale this way*/
             position:absolute;
             display:block;
             background:red;
             background-image:url(images/floorTile.png);
             width:2048px;
             height:2048px;
-            /* HUH? changing this in code has no effect: */
             transform:rotate3d(1,0,0,90deg) translate3d(-512px, 0px, 792px);
             margin:0;
             padding:0;`;
