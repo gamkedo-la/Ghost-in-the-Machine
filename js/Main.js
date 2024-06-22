@@ -8,6 +8,8 @@ var isPaused = false;
 var player = new PlayerClass();
 var currentMap = new LevelClass();
 
+if (FLOOR_ENABLED) var theFloor = new TheFloorClass();
+
 var lastTime = window.performance.now();
 
 var FOV = 60;
@@ -118,6 +120,8 @@ function gameloop(time) {
 		canvasContext.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
 		
         drawBackground();
+
+        if (FLOOR_ENABLED) theFloor.draw(player.pos.x,player.pos.y,cameraAng);
 
 		// var thisTime = window.performance.now();
 		//3D
