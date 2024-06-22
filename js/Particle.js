@@ -34,8 +34,8 @@ class Particle  {
         this.timeLeft -= deltaTime;
         if (this.timeLeft <= 0) {
             // console.log("particle needs to be destroyed!");
-            // this.destroy(); // BUGS OUT THE ENGINE? FIXME
-            currentMap.entities.splice(currentMap.entities.indexOf(this), 2);
+            // this.destroy(); // BUGS OUT THE ENGINE.FIXME
+            currentMap.entities.splice(currentMap.entities.indexOf(this), 1);
             // TODO: pool!!!!!!!!!!!!! or truly destroy the object
         }
         // friction
