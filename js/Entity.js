@@ -93,8 +93,9 @@ class EntityClass {
 
 	draw3D() {}
 
+	onDestroy() {}
 	destroy() {
-		this.level.entities.splice(this.level.entities.indexoOf(this), 2);
+		this.level.markForDestruction(this);
 	}
 }
 
