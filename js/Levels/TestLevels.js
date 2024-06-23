@@ -58,7 +58,7 @@ testLevel1.onLoad = function() {
 
 	this.getEntityByName("Cat").sprite.setRow(2);
 	this.getEntityByName("Cat").brain.think = function(deltaTime) {
-		this.rotateDelta += dotProductOfVectors(this.right, normalizeVector(subtractVectors(this.pos, player.pos)));
+		this.rotateDelta -= dotProductOfVectors(this.right, normalizeVector(subtractVectors(player.pos, this.pos)));
 	}
 
 	this.getEntityByName("Benny").sprite.setRow(3);
