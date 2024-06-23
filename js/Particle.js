@@ -60,6 +60,8 @@ class Particle  {
 		//console.log("particle is being rendered in 3d at "+drawX.toFixed(2)+","+drawY.toFixed(2)+" size:"+size.toFixed(2)+" dist:"+this.distance.toFixed(2));
 		this.sprite.drawAt(drawX, drawY, size);
 	}
+
+    draw2D() {}
 }
 
 function sparksFX(x=0,y=0,num=1) {
