@@ -60,6 +60,10 @@ function checkUIKeys() {
 	if(Key.isJustPressed(Key.P)){
 		isPaused = !isPaused; // toggle Pause here
 	}
+	
+	if(Key.isJustPressed(Key.M)){
+		AudioMan.toggleMute(); // toggle Mute here
+	}
 }
 
 function drawPauseScreen(){
