@@ -23,21 +23,25 @@ class BitBunnyBrain extends Brain {
 	constructor(body) {
 		super(body);
 
-		this.minDistance = 50;
-		this.maxDistance = 200;
+		this.minDistance = 50 + rndFloat(-10.10);
+		this.maxDistance = 150 + rndFloat(-50.10);
+
+		this.turnPreferance = rndFloat(-1, 1);
 	}
 
 	think(deltaTime) {
 		if (lineOfSight(this.pos, player.pos, this.level.walls)) {
 			var directionVector = normalizeVector(subtractVectors(player.pos, this.pos));
 
-			if (dotProductOfVectors(this.forward, directionVector) > 0.7) {
+			if (dotProductOfVectors(this.forward, directionVector) > 0.3) {
 				this.rotateDelta -= dotProductOfVectors(this.right, directionVector);
 
 				if (this.distance > this.maxDistance) {
 					this.moveDelta.x += 1;
+					this.rotateDelta += this.turnPreferance * 0.5;
 				} else if (this.distance < this.minDistance) {
 					this.moveDelta.x -= 1;
+					this.rotateDelta += this.turnPreferance;
 				}
 
 				this.actionTrigger = true;
