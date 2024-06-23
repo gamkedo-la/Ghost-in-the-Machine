@@ -58,31 +58,31 @@ class PlayerBrain extends Brain {
 		}
 
 		//player look
-		this.body.rotateDelta = mouseMovementX * this.lookSpeed;
+		this.rotateDelta = mouseMovementX * this.lookSpeed;
 		if (Key.isDown(Key.Q)) {
-			this.body.rotateDelta -= this.lookSpeed;
+			this.rotateDelta -= this.lookSpeed;
 		}
 		if (Key.isDown(Key.E)) {
-			this.body.rotateDelta += this.lookSpeed;
+			this.rotateDelta += this.lookSpeed;
 		}
 
 		//player move
 		if (Key.isDown(Key.W)) {
-			this.body.moveDelta.x += 1;
+			this.moveDelta.x += 1;
 		}
 		if (Key.isDown(Key.S)) {
-			this.body.moveDelta.x -= 1;
+			this.moveDelta.x -= 1;
 		}
 		if (Key.isDown(Key.A)) {
-			this.body.moveDelta.y -= 1;
+			this.moveDelta.y -= 1;
 		}
 		if (Key.isDown(Key.D)) {
-			this.body.moveDelta.y += 1;
+			this.moveDelta.y += 1;
 		}
 
 		//player action button
 		if (Key.isJustPressed(Key.MOUSE_LEFT)) {
-			this.body.actionTriggered = true;
+			this.actionTriggered = true;
 		}
 	}
 }

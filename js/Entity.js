@@ -151,6 +151,7 @@ class Brain {
 	get rotateDelta() {return this.body.rotateDelta;}
 	get actionTriggered() {return this.body.actionTriggered;}
 	get level() {return this.body.level;}
+	get distance() {return this.body.distance;}
 
 	set moveDelta(value) {this.body.moveDelta = value;}
 	set rotateDelta(value) {this.body.rotateDelta = value;}
