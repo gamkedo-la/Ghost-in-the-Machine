@@ -13,6 +13,10 @@ class BitBunnyRobot extends SceneEntity {
 
 		this.brain = new BitBunnyBrain(this);
 	}
+
+	onAction(deltaTime) {
+		console.log("Action");
+	}
 }
 
 class BitBunnyBrain extends Brain {
@@ -29,12 +33,14 @@ class BitBunnyBrain extends Brain {
 
 			if (dotProductOfVectors(this.forward, directionVector) > 0.7) {
 				this.rotateDelta -= dotProductOfVectors(this.right, directionVector);
-				
+
 				if (this.distance > this.maxDistance) {
 					this.moveDelta.x += 1;
 				} else if (this.distance < this.minDistance) {
 					this.moveDelta.x -= 1;
 				}
+
+				this.actionTrigger = true;
 			}
 
 		}

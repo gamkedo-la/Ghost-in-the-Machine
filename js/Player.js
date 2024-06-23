@@ -7,10 +7,6 @@ class PlayerClass extends BitBunnyRobot{
 		this.brain = new PlayerBrain(this);
 	}
 
-	onAction(deltaTime) {
-		console.log("Action");
-	}
-
 	draw2D() {
 		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * 10, this.pos.y +this.forward.y * 10, 2, "darkgrey");
 		colorEmptyCircle(this.pos.x, this.pos.y, 5, "darkgrey");

@@ -17,6 +17,9 @@ class EntityClass {
 		this.level = entityToOverride.level || null;
 		this.distance = Infinity;
 
+		this._actionCooldownTime = 1.5;
+		this._actionCooldown = 0;
+
 		this.brain = entityToOverride.brain || new Brain(this);
 	}
 
@@ -30,8 +33,10 @@ class EntityClass {
 
 		this.brain.think(deltaTime);
 
-		if (this.actionTriggered) {
+		this._actionCooldown -= deltaTime;
+		if (this._actionCooldown <= 0 && this.actionTriggered) {
 			this.action(deltaTime);
+			this._actionCooldown = this._actionCooldownTime;
 		}
 
 		//update rotation
