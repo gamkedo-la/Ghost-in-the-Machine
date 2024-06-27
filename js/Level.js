@@ -1,5 +1,7 @@
 function LevelClass() {
-	this.playerStart = {x:0, y:0};
+	this.playerStart = {x:0, y:0, rot:d270};
+	this.startList = [{x:0, y:0, rot:d270}];
+	this.startIndex = 0;
 	this.walls = [];
 	this.entities = [];
 	this.triggerZones = [];
@@ -64,20 +66,28 @@ function LevelClass() {
 				}
 			}
 
-			if (parsedLevel.playerStart) {
-				this.playerStart = parsedLevel.playerStart;
-				player.pos.x = this.playerStart.x;
-				player.pos.y = this.playerStart.y;
-			}
+			if (parsedLevel.startList) {
+				this.startList.length = 0;
 
-			this.entities.push(player);
+				for (let i = 0; i < parsedLevel.startList.length; i++) {
+					let newStartPoint = {x:parsedLevel.startList[i].x, y:parsedLevel.startList[i].y, rot:parsedLevel.startList[i].rot};
+					this.startList.push(newStartPoint);
+				}
+			}
 		}
 
 		this.onLoad();
 		
 		populateAudioNodesFromWallEdges(this.walls);
 		cullAudioNodesThatDontConnectToPoint(this.playerStart, this.walls);
+
+
+		this.playerStart = this.startList[this.startIndex % this.startList.length];
+		player.pos.x = this.playerStart.x;
+		player.pos.y = this.playerStart.y;
+		player.rot = this.playerStart.rot;
 		player.level = this;
+		this.entities.push(player);
 
 		return this;
 	}
