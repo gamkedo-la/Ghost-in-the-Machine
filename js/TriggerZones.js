@@ -7,7 +7,7 @@ class TriggerZone {
 	checkOverlaps() {
 		var entities = this.level.entities;
 
-		for (var i = 0; i < entities.length; i++) {
+		for (var i = entities.length - 1; i >= 0; i--) {
 			var overlapping = this.isOverlapping(entities[i]);
 			var isInZone = this._inZone.includes(entities[i]);
 
@@ -16,7 +16,7 @@ class TriggerZone {
 				this._inZone.push(entities[i]);
 			} else if (!overlapping && isInZone) {
 				this.onTriggerExit(entities[i]);
-				this._inZone.remove(entities[i]);
+				this._inZone.splice(this._inZone.indexOf(entities[i]), 1);
 			}
 		}
 	}

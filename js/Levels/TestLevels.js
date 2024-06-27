@@ -50,6 +50,13 @@ testLevel1.onLoad = function() {
 	// //console.log("x:" + x + "," + "y:" + y);
 	// this.walls[this.walls.length-1].p2 = this.walls[this.walls.length-40].p1;
 
+	var testTriggerZone = new CircleTriggerZone(this, {x:-100, y:-100}, 20);
+	testTriggerZone.onTriggerEnter = function(entity) {
+		var soundList = ["./audio/explosionLong.wav", "./audio/explosionShort.wav"]
+		AudioMan.createSound3D(rndFromList(soundList), {pos:{x:rndInt(-99,100), y:rndInt(-99,100)}}).play();
+	}
+	this.triggerZones.push(testTriggerZone);
+
 	this.getEntityByName("Rob").sprite.setRow(1);
 	this.getEntityByName("Rob").brain.think = function(deltaTime) {
 		this.rotateDelta = 0.5;
