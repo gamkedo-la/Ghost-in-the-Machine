@@ -132,7 +132,7 @@ class SceneEntity extends EntityClass {
 			size, size * 0.5
 		);
 		
-		var viewRot = wrap((angleBetweenTwoPoints(player.pos, this.pos) - this.rot) / d360 * this.sprite.getColumns(), -this.sprite.getColumns(), 0) + this.sprite.getColumns() * 1.5;
+		var viewRot = wrap((angleBetweenTwoPoints(player.pos, this.pos) - this.rot) / d360 * this.sprite.getColumns(), -this.sprite.getColumns(), 0) + this.sprite.getColumns() * 1.5 + 0.5;
 		this.sprite.setColumn(viewRot);
 		this.sprite.drawAt(drawX, drawY, size);
 	}

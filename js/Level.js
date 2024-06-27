@@ -2,19 +2,26 @@ function LevelClass() {
 	this.playerStart = {x:0, y:0};
 	this.walls = [];
 	this.entities = [];
+	this.triggerZones = [];
 	this._markedForDestruction = [];
 	this.levelJSON = "{}";
 
 	this.update = function(deltaTime) {
+		// Entity update loop
 		for (let i = 0; i < this.entities.length; i++) {
 			this.entities[i].update(deltaTime);
 		}
 
+		// TriggerZone update loop
+		for (let i = 0; i < this.triggerZones.length; i++) {
+			this.triggerZones[i].checkOverlaps();
+		}
+
+		// Entity destruction loop
 		for (let i = 0; i < this._markedForDestruction.length; i++) {
 			this._markedForDestruction[i].onDestroy();
 			this.entities.splice(this.entities.indexOf(this._markedForDestruction[i]), 1);
 		}
-
 	}
 
 	this.load = function() {
@@ -35,6 +42,25 @@ function LevelClass() {
 					let newEntity = new SceneEntity(parsedLevel.entities[i]);
 					newEntity.level = this;
 					this.entities.push(newEntity);
+				}
+			}
+
+			if (parsedLevel.triggerZones) {
+				for (let i = 0; i < parsedLevel.triggerZones.length; i++) {
+					var newTriggerZone;
+
+					switch(parsedLevel.triggerZones[i].type) {
+					case "circle":
+						newTriggerZone = new CircleTriggerZone(this, parsedLevel.triggerZones[i].pos, parsedLevel.triggerZones[i].radius);
+						break;
+					case "AABB":
+						newTriggerZone = new AABBTriggerZone(this, parsedLevel.triggerZones[i].topleftpos, parsedLevel.triggerZones[i].bottomrightpos);
+						break;
+					default:
+						newTriggerZone = new TriggerZone(this);
+					}
+
+					this.triggerZones.push(newTriggerZone);
 				}
 			}
 
