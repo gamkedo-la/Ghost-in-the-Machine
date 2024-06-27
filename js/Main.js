@@ -154,11 +154,18 @@ function gameloop(time) {
 
 		rays.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 		currentMap.entities.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
+		particles.active.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 
 		var objectIndex = 0;
+		var particleIndex = 0;
 		for (var i = 0; i < rays.length; i ++) {
 			//colorLine(player.x, player.y, rays[i].x, rays[i].y, 1, rays[i].wall.color); //2d
 
+			//Draw particles that have a greater depth than the current ray
+			for (particleIndex; particleIndex < particles.active.length; particleIndex++) {
+				if (particles.active[particleIndex].distance > rays[i].distance) particles.active[particleIndex].draw3D();
+				else break;
+			}
 			//Draw game objects that have a greater depth than the current ray
 			for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
 				if (currentMap.entities[objectIndex].distance > rays[i].distance) currentMap.entities[objectIndex].draw3D();
@@ -187,6 +194,9 @@ function gameloop(time) {
 			colorRect(x, y, w, h, fullColorHex(20, 10, 20, distance/drawDistance/2 * 512));
 		}
 
+		for (particleIndex; particleIndex < particles.active.length; particleIndex++) {
+			particles.active[particleIndex].draw3D();
+		}
 		for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
 			currentMap.entities[objectIndex].draw3D();
 		}

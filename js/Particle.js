@@ -2,8 +2,13 @@
 // work in progress
 
 var particles = {
+    active: [],
     pool: [], // todo
     update: function(deltaTime) {
+        for (let i=0; i<particles.active.length; i++) {
+            particles.active[i].update(deltaTime);
+        }
+
         // hmm these don't seem to get rendered, not sure why =(
         if (Math.random()<0.5) {
             let px = 0;
@@ -35,7 +40,7 @@ class Particle  {
         if (this.timeLeft <= 0) {
             // console.log("particle needs to be destroyed!");
             // this.destroy(); // BUGS OUT THE ENGINE.FIXME
-            currentMap.entities.splice(currentMap.entities.indexOf(this), 1);
+            particles.active.splice(particles.active.indexOf(this), 1);
             // TODO: pool!!!!!!!!!!!!! or truly destroy the object
         }
         // friction
@@ -76,7 +81,7 @@ function sparksFX(x=0,y=0,num=1) {
         p.vel.x = Math.random()*4 - 2;
         p.vel.y = Math.random()*4 - 2;
         p.vel.z = 50 + Math.random()*50;
-        currentMap.entities.push(p); // hmm does this work???
+        particles.active.push(p);
     }
 }
 
