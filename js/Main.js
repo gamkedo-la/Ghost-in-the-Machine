@@ -7,8 +7,7 @@ var isPaused = false;
 
 var player = new PlayerClass();
 var currentMap = new LevelClass();
-
-if (FLOOR_ENABLED) var theFloor = new TheFloorClass();
+var theFloor = new TheFloorClass();
 
 var lastTime = window.performance.now();
 
@@ -125,7 +124,7 @@ function gameloop(time) {
 		
         drawBackground();
 
-        if (FLOOR_ENABLED) theFloor.draw(player.pos.x,player.pos.y,cameraAng);
+        if (FLOOR_ENABLED) theFloor.draw(player.pos.x,player.pos.y,player.rot);
 
 		// var thisTime = window.performance.now();
 		//3D

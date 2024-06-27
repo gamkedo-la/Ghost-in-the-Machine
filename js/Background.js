@@ -31,6 +31,6 @@ function drawBackground() {
   	canvasContext.drawImage(skyTexture,skyX+skyTexture.width,skyY);
 
   	// a single static floor gradient with no perspective or rotation
-    canvasContext.drawImage(floorTexture,0,canvas.height/2);
+    if (!FLOOR_ENABLED) canvasContext.drawImage(floorTexture,0,canvas.height/2);
 
 }
