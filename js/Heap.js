@@ -1,11 +1,9 @@
-const HEAP_LOOP_MAX = 10000;
+const HEAP_LOOP_MAX = 1000;
 
-// TODO Work in progress
 class Heap {
     constructor(isMaxHeap = false) {
         this.data = [];
         this.isMaxHeap = isMaxHeap;
-        this.compareAlgo = this.isMaxHeap ? this.maxCompare : this.minCompare;
     }
 
     minCompare(a, b) {
@@ -17,7 +15,25 @@ class Heap {
     }
 
     compare(a, b) {
+        let compareAlgo = this.isMaxHeap ? this.maxCompare : this.minCompare;
         return compareAlgo(a, b);
+    }
+
+    add(value) {
+        this.data.push(value); 
+        this.heapifyUp();
+    }
+
+    poll() {
+        // get root value
+        let returnValue = this.data[0];
+        let lastElement = this.data.pop();
+        if (this.data.length > 0) {
+            // move last element to root
+            this.data[0] = lastElement;
+            this.heapifyDown();
+        }
+        return returnValue;
     }
 
     heapifyUp() {
@@ -29,19 +45,19 @@ class Heap {
             let i = 0;
             function maxLoopsReached() { i++ >= HEAP_LOOP_MAX; }
 
-            keepLooping = () => 
+            const keepLooping = () => 
                 childIndex > 0 &&
                 this.compare(childValue(), parentValue()) === 1 && 
                 !maxLoopsReached();
 
-            swapValues = (iP, iC, vP, vC) => {
+            const swapValues = (iP, iC, vP, vC) => {
                 const temp = vP;
                 this.data[iP] = vC;
                 this.data[iC] = temp;
             }
 
-            while (keepLooping()) {
-                swapValues(parentIndex, chlldIndex, parentValue, childValue);
+            while (keepLooping() === true) {
+                swapValues(parentIndex(), childIndex, parentValue(), childValue());
                 childIndex = parentIndex();
             }
 
@@ -54,34 +70,38 @@ class Heap {
     heapifyDown() {
         if (this.data.length > 1) {
             let parentIndex = 0;
-            const parentValue = () => this.data[parentIndex()];
+            const parentValue = () => this.data[parentIndex];
             const childIndex2 = () => Math.floor((parentIndex + 1) * 2);
-            const childIndex1 = () => childindex2() - 1;
-            const childValue1 = () => this.data[childIndex1];
-            const childValue2 = () => this.data[childIndex2];
+            const childIndex1 = () => childIndex2() - 1;
+            const childValue1 = () => this.data[childIndex1()];
+            const childValue2 = () => this.data[childIndex2()];
             let i = 0;
             function maxLoopsReached() { i++ >= HEAP_LOOP_MAX; }
 
-            keepLooping = () => 
+            let noSwaps = false;
+            const keepLooping = () => 
                 childIndex1() < this.data.length &&
+                !noSwaps &&
                 !maxLoopsReached();
 
-            swapValues = (iP, iC, vP, vC) => {
+            const swapValues = (iP, iC, vP, vC) => {
                 const temp = vP;
                 this.data[iP] = vC;
                 this.data[iC] = temp;
             }
 
             while (keepLooping()) {
-                if (this.compare(childValue1(), parentValue()) === -1) {
-                    swapValues(parentIndex, childIndex1(), parentValue(), childValue2());
+                if (this.compare(childValue1(), parentValue()) === 1) {
+                    swapValues(parentIndex, childIndex1(), parentValue(), childValue1());
                     parentIndex = childIndex1();
                 } else if (
-                    childeIndex2() < this.data.length &&
-                    this.compare(childValue2(), parentValue()) === -1
+                    childIndex2() < this.data.length &&
+                    this.compare(childValue2(), parentValue()) === 1
                 ) {
-                    swapValues(parentIndex, childIndex1(), parentValue(), childValue2());
+                    swapValues(parentIndex, childIndex2(), parentValue(), childValue2());
                     parentIndex = childIndex2();
+                } else {
+                    noSwaps = true;
                 }
             }
 
