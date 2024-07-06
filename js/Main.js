@@ -76,6 +76,7 @@ function gamestart() {
 	window.requestAnimationFrame(gameloop);
 
 	if (debug) { testAllHeaps(); }
+	if (debug) { testPriorityQueue(); }
 
 	currentMap = testLevel1.load();
 }
