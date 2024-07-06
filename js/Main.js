@@ -1,7 +1,7 @@
 var canvasContext;
 var canvas;
 
-var debug = false;
+var debug = true;
 
 var isPaused = false;
 
@@ -74,6 +74,8 @@ function drawPauseScreen(){
 function gamestart() {
 	AudioMan.setListener(player);
 	window.requestAnimationFrame(gameloop);
+
+	if (debug) { testAllHeaps(); }
 
 	currentMap = testLevel1.load();
 }

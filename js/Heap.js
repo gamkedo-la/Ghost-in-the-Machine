@@ -1,30 +1,14 @@
 const HEAP_LOOP_MAX = 1000;
 
-class MinHeap extends Heap {
-    constructor(compareFxIn) {
-      super(false, compareFxIn)
-    }
-}
-
-class MaxHeap extends Heap {
-    constructor(compareFxIn) {
-      super(true, compareFxIn)
-    }
-}
-
 class Heap {
     #data = [];
     #basicDiff = (a, b) => a - b; 
     #compareFx = this.#basicDiff;
     #isMaxHeap = false;
 
-    constructor(isMaxHeapIn, compareFxIn) {
-        this.#isMaxHeap ??= isMaxHeapIn;
+    constructor(isMaxHeapIn = false, compareFxIn) {
+        this.#isMaxHeap ||= isMaxHeapIn;
         this.#compareFx ??= compareFxIn;
-    }
-
-    constructor() {
-        this.constructor(false);
     }
 
     get isMaxHeap() { return this.#isMaxHeap; }
@@ -35,53 +19,64 @@ class Heap {
     }
 
     poll() {
-        // get root value
-        let returnValue = this.#data[0];
-        let lastElement = this.#data.pop();
+        const lastElement = this.#data.pop() ?? null;
+        let returnValue = lastElement;
         if (this.#data.length > 0) {
-            // move last element to root
+            // move last element to root and true-up heap
+            returnValue = this.#data[0];
             this.#data[0] = lastElement;
             this.#heapifyDown();
         }
         return returnValue;
     }
 
-    #minCompare(a, b) {
-        return this.#compareFx(a, b) < 0;
-    }
-
-    #maxCompare(a, b) {
-        return this.#compareFx(a, b) > 0;
-    }
+    #minCompare = (a, b) => this.#compareFx(a, b) < 0;
+    #maxCompare = (a, b) => this.#compareFx(a, b) > 0;
 
     #compare(a, b) {
         let compareAlgo = this.#isMaxHeap ? this.#maxCompare : this.#minCompare;
         return compareAlgo(a, b);
     }
 
+    #indexInBounds = (index = this.#data.length) => 
+        index >= 0 && index < this.#data.length;
+
+    #getDataValue = (index) => 
+        this.#indexInBounds(index) ? this.#data[index] : null;
+
+    #swapValues = (iP, iC, vP, vC) => {
+        const temp = vP;
+        this.#data[iP] = vC;
+        this.#data[iC] = temp;
+    }
+
     #heapifyUp() {
         let childIndex = this.#data.length - 1;
         if (childIndex > 0) {
-            const childValue = () => this.#data[childIndex];
-            const parentIndex = () => Math.max(0, Math.floor((childIndex - 1) / 2));
-            const parentValue = () => this.#data[parentIndex()];
             let i = 0;
             function maxLoopsReached() { i++ >= HEAP_LOOP_MAX; }
 
+            let lookForSwaps = true;
             const keepLooping = () => 
                 childIndex > 0 &&
-                this.#compare(childValue(), parentValue()) && 
+                lookForSwaps && 
                 !maxLoopsReached();
 
-            const swapValues = (iP, iC, vP, vC) => {
-                const temp = vP;
-                this.#data[iP] = vC;
-                this.#data[iC] = temp;
-            }
-
             while (keepLooping() === true) {
-                swapValues(parentIndex(), childIndex, parentValue(), childValue());
-                childIndex = parentIndex();
+                let childValue = this.#getDataValue(childIndex);
+                let parentIndex =  Math.max(0, Math.floor((childIndex - 1) / 2));
+                let parentValue = this.#getDataValue(parentIndex);
+
+                if (
+                    this.#indexInBounds(childIndex) &&
+                    this.#compare(childValue, parentValue)
+                ) {
+                    this.#swapValues(parentIndex, childIndex, parentValue, childValue);
+                    childIndex = parentIndex;
+                } else {
+                    // stop if no swaps
+                    lookForSwaps = false;
+                }
             }
 
             if (debug && maxLoopsReached()) {
@@ -96,42 +91,34 @@ class Heap {
             let i = 0;
             const maxLoopsReached = () => i++ >= HEAP_LOOP_MAX;
 
-            let noSwapsYet = false;
-            const keepLooping = () => !noSwapsYet && !maxLoopsReached();
-
-            const swapValues = (iP, iC, vP, vC) => {
-                const temp = vP;
-                this.#data[iP] = vC;
-                this.#data[iC] = temp;
-            }
-
-            const indexInBounds = (index = this.#data.length) => 
-                index < this.#data.length;
-
-            const getDataValue = (index) => 
-                indexInBounds(index) ? this.#data[index] : null;
+            let lookForSwaps = true;
+            const keepLooping = () => 
+                this.#indexInBounds(parentIndex) && 
+                lookForSwaps && 
+                !maxLoopsReached();
 
             while (keepLooping()) {
-                let parentValue = this.#data[parentIndex];
+                let parentValue = this.#getDataValue(parentIndex);
                 let childIndex2 = Math.floor((parentIndex + 1) * 2);
                 let childIndex1 = childIndex2 - 1;
-                let childValue1 = getDataValue(childIndex1);
-                let childValue2 = getDataValue(childIndex2);
+                let childValue1 = this.#getDataValue(childIndex1);
+                let childValue2 = this.#getDataValue(childIndex2);
 
                 if (
-                    childIndex1 < this.#data.length &&
+                    this.#indexInBounds(childIndex1) &&
                     this.#compare(childValue1, parentValue)
                 ) {
-                    swapValues(parentIndex, childIndex1, parentValue, childValue1);
+                    this.#swapValues(parentIndex, childIndex1, parentValue, childValue1);
                     parentIndex = childIndex1;
                 } else if (
-                    childIndex2 < this.#data.length &&
+                    this.#indexInBounds(childIndex2) &&
                     this.#compare(childValue2, parentValue)
                 ) {
-                    swapValues(parentIndex, childIndex2, parentValue, childValue2);
+                    this.#swapValues(parentIndex, childIndex2, parentValue, childValue2);
                     parentIndex = childIndex2;
                 } else {
-                    noSwaps = true;
+                    // stop if no swap
+                    lookForSwaps = false;
                 }
             }
 
@@ -140,4 +127,74 @@ class Heap {
             }
         }
     }
+}
+
+class MinHeap extends Heap {
+    constructor(compareFxIn) {
+      super(false, compareFxIn)
+    }
+}
+
+class MaxHeap extends Heap {
+    constructor(compareFxIn) {
+      super(true, compareFxIn)
+    }
+}
+
+function testAllHeaps() { heapTest(); minHeapTest(); maxHeapTest(); }
+function heapTest() {
+    // Heap test
+    if (debug) { console.log("new Heap() test"); }	
+    const testHeap = new Heap();
+    testHeap.add(1);
+    testHeap.add(0);
+    testHeap.add(-1);
+    testHeap.add(-2);
+    const loopMax = 20;
+    let loop = 0;
+    let value = testHeap.poll();
+    const keepLooping = () => loop++ <= loopMax && value !== null;
+    while (keepLooping()) {
+        if (debug && value !== null) { console.log(value); }	
+        value = testHeap.poll();
+    }
+    if (debug) { console.log("new Heap() test done"); }	
+}
+
+function minHeapTest() {
+    // MinHeap test
+    if (debug) { console.log("new MinHeap() test"); }	
+    const testHeap = new MinHeap();
+    testHeap.add(4);
+    testHeap.add(3);
+    testHeap.add(2);
+    testHeap.add(1);
+    const loopMax = 20;
+    let loop = 0;
+    let value = testHeap.poll();
+    const keepLooping = () => loop++ <= loopMax && value !== null;
+    while (keepLooping()) {
+        if (debug && value !== null) { console.log(value); }	
+        value = testHeap.poll();
+    }
+    if (debug) { console.log("new MinHeap() test done"); }	
+}
+
+function maxHeapTest() {
+    // MaxHeap test
+    if (debug) { console.log("new MaxHeap() test"); }	
+    const testHeap = new MaxHeap();
+    testHeap.add(1);
+    testHeap.add(2);
+    testHeap.add(3);
+    testHeap.add(4);
+    const loopMax = 20;
+    let loop = 0;
+    let value;
+    const keepLooping = () => loop++ <= loopMax && value !== null;
+    while (keepLooping()) {
+        value = testHeap.poll();
+        if (debug && value) { console.log(value); }	
+    }
+    if (debug) { console.log("new MaxHeap() test done"); }	
 }
