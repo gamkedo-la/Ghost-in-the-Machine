@@ -1,7 +1,7 @@
 var canvasContext;
 var canvas;
 
-var debug = true;
+var debug = false;
 
 var isPaused = false;
 
