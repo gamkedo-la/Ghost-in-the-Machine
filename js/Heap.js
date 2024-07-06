@@ -3,10 +3,10 @@ const HEAP_LOOP_MAX = 1000;
 class Heap {
     #data = [];
     #basicDiff = (a, b) => a - b; 
-    #compareFx = this.#basicDiff;
+    #compareFx = null;
     #isMaxHeap = false;
 
-    constructor(isMaxHeapIn = false, compareFxIn) {
+    constructor(isMaxHeapIn = false, compareFxIn = this.#basicDiff) {
         this.#isMaxHeap ||= isMaxHeapIn;
         this.#compareFx ??= compareFxIn;
     }
