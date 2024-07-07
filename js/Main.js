@@ -9,7 +9,7 @@ var player = new PlayerClass();
 var currentMap = new LevelClass();
 var theFloor = new TheFloorClass();
 
-var lastTime = window.performance.now();
+var lastTime = window.performance.now() / 1000;
 
 var FOV = 60;
 var heightScale = 8; // note: editor uses a different scale

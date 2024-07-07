@@ -1,7 +1,7 @@
 class EntityClass {
 	constructor(entityToOverride = {}) {
 		this.name = entityToOverride.name || "";
-		this.pos = entityToOverride.pos || {x:0, y:0};
+		this.pos = entityToOverride.pos ? {x:entityToOverride.pos.x, y:entityToOverride.pos.y} : {x:0, y:0};
 		this.rot = entityToOverride.rot || d270;
 		this.forward = {x:0, y:0};
 		this.forward.x = Math.cos(this.rot);
@@ -17,8 +17,8 @@ class EntityClass {
 		this.level = entityToOverride.level || null;
 		this.distance = Infinity;
 
-		this._actionCooldownTime = 1.5;
-		this._actionCooldown = 0;
+		this.actionCooldownTime = 1.5;
+		this._actionCooldown = this.actionCooldownTime;
 
 		this.brain = entityToOverride.brain || new Brain(this);
 	}
@@ -26,6 +26,7 @@ class EntityClass {
 	get x() {return this.pos.x;}
 	get y() {return this.pos.y;}
 
+	onCollision() {}
 	onUpdatePre(deltaTime) {}
 	onUpdatePost(deltaTime) {}
 	update(deltaTime) {
@@ -36,7 +37,9 @@ class EntityClass {
 		this._actionCooldown -= deltaTime;
 		if (this._actionCooldown <= 0 && this.actionTriggered) {
 			this.action(deltaTime);
-			this._actionCooldown = this._actionCooldownTime;
+			this._actionCooldown = this.actionCooldownTime;
+		} else if (this._actionCooldown > 0.05) {
+			this.actionTriggered = false;
 		}
 
 		//update rotation
@@ -61,19 +64,23 @@ class EntityClass {
 		deltaX -= this.forward.y * this.moveSpeed * this.moveDelta.y;
 		deltaY += this.forward.x * this.moveSpeed * this.moveDelta.y;
 
+		deltaX *= deltaTime;
+		deltaY *= deltaTime;
+
 		//collision checking
 		if (this.moveDelta.y != 0 || this.moveDelta.x != 0) {
-			var newPos = {x:this.pos.x + deltaX*5*deltaTime, y:this.pos.y + deltaY*5*deltaTime};
+			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
 			for (var i in this.level.walls) {
 				if (isLineIntersecting(this.pos, newPos, this.level.walls[i].p1, this.level.walls[i].p2)) {
 					deltaX = 0;
 					deltaY = 0;
+					this.onCollision();
 					break;
 				}
 			}
 		}
-		this.pos.x += deltaX * deltaTime;
-		this.pos.y += deltaY * deltaTime;
+		this.pos.x += deltaX;
+		this.pos.y += deltaY;
 
 		//housekeeping
 		this.distance = distanceBetweenTwoPoints(this.pos, player.pos);
@@ -90,6 +97,9 @@ class EntityClass {
 		this.onAction(deltaTime);
 		this.actionTriggered = false;
 	};
+	triggerAction() {
+		this.actionTriggered = true;
+	}
 
 	draw2D() {
 		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * 10, this.pos.y +this.forward.y * 10, 2, "white");
@@ -161,6 +171,8 @@ class Brain {
 	set moveDelta(value) {this.body.moveDelta = value;}
 	set rotateDelta(value) {this.body.rotateDelta = value;}
 	set actionTriggered(value) {this.body.actionTriggered = value;}
+
+	triggerAction() {this.body.triggerAction();}
 
 	think(deltaTime) {}
 }

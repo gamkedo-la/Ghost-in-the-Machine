@@ -24,6 +24,7 @@ function LevelClass() {
 			this._markedForDestruction[i].onDestroy();
 			this.entities.splice(this.entities.indexOf(this._markedForDestruction[i]), 1);
 		}
+		this._markedForDestruction.length = 0;
 	}
 
 	this.load = function() {
