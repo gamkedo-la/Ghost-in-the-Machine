@@ -54,6 +54,9 @@ class TurretShot extends SceneEntity {
 		this.maxHealth = 1;
 		this.health = this.maxHealth;
 
+		this.explosionDamage = 50;
+		this.range = 10;
+
 		this.sprite = new SpriteClass(
 			'./images/testEntitySS.png', 
             8, 6, 
@@ -67,6 +70,10 @@ class TurretShot extends SceneEntity {
 		this.moveDelta.x = 1;
 	}
 
+	onAction() {
+		this.level.markForDestruction(this);
+	}
+
 	onCollision() {
 		this.level.markForDestruction(this);
 	}
@@ -74,5 +81,15 @@ class TurretShot extends SceneEntity {
 	onDestroy() {
 		//Explosion code
 		sparksFX(this.pos.x,this.pos.y,15);
+
+		for (let i = 0; i < this.level.entities.length; i++) {
+			let entity = this.level.entities[i];
+			let distance = distanceBetweenTwoPoints(this.pos, entity.pos);
+
+			if (distance <= this.range && lineOfSight(this.pos, entity.pos, this.level.walls)) {
+				entity.takeDamage((1 - distance/this.range) * this.explosionDamage);
+				sparksFX(entity.pos.x,entity.pos.y,5);
+			}
+		}
 	}
 }
