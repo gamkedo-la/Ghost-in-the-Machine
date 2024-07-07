@@ -17,6 +17,9 @@ class EntityClass {
 		this.level = entityToOverride.level || null;
 		this.distance = Infinity;
 
+		this.maxHealth = entityToOverride.maxHealth || 100;
+		this.health = this.maxHealth;
+
 		this.actionCooldownTime = 1.5;
 		this._actionCooldown = this.actionCooldownTime;
 
@@ -101,17 +104,25 @@ class EntityClass {
 		this.actionTriggered = true;
 	}
 
+	onTakeDamage(amount) {}
+	takeDamage(amount) {
+		this.health -= amount;
+		this.onTakeDamage(amount);
+
+		if (this.health <= 0) this.level.markForDestruction(this);
+	}
+
+	onDestroy() {}
+	destroy() {
+		this.level.markForDestruction(this);
+	}
+
 	draw2D() {
 		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * 10, this.pos.y +this.forward.y * 10, 2, "white");
 		colorEmptyCircle(this.pos.x, this.pos.y, 5, "grey");
 	}
 
 	draw3D() {}
-
-	onDestroy() {}
-	destroy() {
-		this.level.markForDestruction(this);
-	}
 }
 
 class SceneEntity extends EntityClass {
@@ -170,7 +181,6 @@ class Brain {
 
 	set moveDelta(value) {this.body.moveDelta = value;}
 	set rotateDelta(value) {this.body.rotateDelta = value;}
-	set actionTriggered(value) {this.body.actionTriggered = value;}
 
 	triggerAction() {this.body.triggerAction();}
 

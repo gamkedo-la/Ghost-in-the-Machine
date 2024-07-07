@@ -51,6 +51,9 @@ class TurretShot extends SceneEntity {
 		this.moveSpeed = 40;
 		this.rotateSpeed = 1;
 
+		this.maxHealth = 1;
+		this.health = this.maxHealth;
+
 		this.sprite = new SpriteClass(
 			'./images/testEntitySS.png', 
             8, 6, 
