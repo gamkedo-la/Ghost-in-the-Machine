@@ -75,7 +75,7 @@ class EntityClass {
 		if (this.moveDelta.y != 0 || this.moveDelta.x != 0) {
 			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
 			for (var i in this.level.walls) {
-				if (isLineIntersecting(this.pos, newPos, this.level.walls[i].p1, this.level.walls[i].p2)) {
+				if (distanceBetweenTwoPoints(getNearestPointOnLine(this.level.walls[i].p1, this.level.walls[i].p2, newPos), newPos) <= this.radius) {
 					deltaX = 0;
 					deltaY = 0;
 					this.onCollision();
