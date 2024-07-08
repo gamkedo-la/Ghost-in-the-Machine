@@ -11,8 +11,8 @@ class PlayerClass extends BitBunnyRobot{
 	takeDamage(amount) {}
 
 	draw2D() {
-		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * 10, this.pos.y +this.forward.y * 10, 2, "darkgrey");
-		colorEmptyCircle(this.pos.x, this.pos.y, 5, "darkgrey");
+		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * (this.radius + 5), this.pos.y +this.forward.y * (this.radius + 5), 2, "darkgrey");
+		colorEmptyCircle(this.pos.x, this.pos.y, this.radius, "darkgrey");
 	}
 }
 
@@ -37,7 +37,7 @@ class PlayerBrain extends Brain {
 				let distance = distanceBetweenTwoPoints(this.level.entities[i].pos, nearestPoint);
 				//console.log(this.level.entities[i].name + ": " + distance);
 
-				if (distance < 5) {
+				if (distance < this.level.entities[i].radius) {
 					let name = this.name;
 					player.brain = this.level.entities[i].brain;
 					player.brain.body = player;

@@ -31,7 +31,7 @@ class BitBunnyRobot extends SceneEntity {
 			let nearestPoint = getNearestPointOnLine(this.pos, rayEnd, entity.pos);
 			let distanceFromPoint = distanceBetweenTwoPoints(entity.pos, nearestPoint);
 
-			if (distanceFromPoint < 5) {
+			if (distanceFromPoint < entity.radius) {
 				let newDistance = distanceBetweenTwoPoints(this.pos, entity.pos);
 				if (newDistance < distance) {
 					closestEntity = entity;

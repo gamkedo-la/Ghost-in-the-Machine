@@ -112,9 +112,6 @@ function gameloop(time) {
 		for (var i = 0; i < currentMap.entities.length; i++) {
 			currentMap.entities[i].draw2D();
 		}
-		//Draw player
-		colorLine(player.pos.x, player.pos.y, player.pos.x + player.forward.x * 10, player.pos.y +player.forward.y * 10, 2, "darkgrey");
-		colorEmptyCircle(player.pos.x, player.pos.y, 5, "darkgrey");
 
 		for (var i in printlist) {
 			colorText(i + ": " +printlist[i], player.x - 350, player.y - 250 + i * 10, "white")

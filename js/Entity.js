@@ -9,6 +9,7 @@ class EntityClass {
 		this.right = {x:0, y:0};
 		this.right.x =  this.forward.y;
 		this.right.y = -this.forward.x;
+		this.radius = 5;
 		this.moveSpeed = 20;
 		this.rotateSpeed = 2;
 		this.moveDelta = {x:0, y:0};
@@ -118,8 +119,8 @@ class EntityClass {
 	}
 
 	draw2D() {
-		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * 10, this.pos.y +this.forward.y * 10, 2, "white");
-		colorEmptyCircle(this.pos.x, this.pos.y, 5, "grey");
+		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * (this.radius + 3), this.pos.y +this.forward.y * (this.radius + 3), 2, "white");
+		colorEmptyCircle(this.pos.x, this.pos.y, this.radius, "grey");
 	}
 
 	draw3D() {}
