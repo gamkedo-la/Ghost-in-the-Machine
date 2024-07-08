@@ -48,7 +48,7 @@ class TurretShot extends SceneEntity {
 	constructor(entityToOverride = {}) {
 		super(entityToOverride);
 		
-		this.moveSpeed = 40;
+		this.moveSpeed = 50;
 		this.rotateSpeed = 1;
 
 		this.maxHealth = 1;
