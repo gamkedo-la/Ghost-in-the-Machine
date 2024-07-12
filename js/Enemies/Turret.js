@@ -74,7 +74,11 @@ class TurretShot extends SceneEntity {
 		this.level.markForDestruction(this);
 	}
 
-	onCollision() {
+	onCollisionWall() {
+		this.level.markForDestruction(this);
+	}
+
+	onCollisionEntity(other) {
 		this.level.markForDestruction(this);
 	}
 

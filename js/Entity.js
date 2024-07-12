@@ -30,7 +30,8 @@ class EntityClass {
 	get x() {return this.pos.x;}
 	get y() {return this.pos.y;}
 
-	onCollision() {}
+	onCollisionWall() {}
+	onCollisionEntity(other) {}
 	onUpdatePre(deltaTime) {}
 	onUpdatePost(deltaTime) {}
 	update(deltaTime) {
@@ -76,9 +77,20 @@ class EntityClass {
 			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
 			for (var i in this.level.walls) {
 				if (distanceBetweenTwoPoints(getNearestPointOnLine(this.level.walls[i].p1, this.level.walls[i].p2, newPos), newPos) <= this.radius) {
+					// TODO: Collide and Slide
 					deltaX = 0;
 					deltaY = 0;
-					this.onCollision();
+					this.onCollisionWall();
+					break;
+				}
+			}
+			for (var i in this.level.entities) {
+				if (this.level.entities[i] == this) continue;
+				// TODO: This is janky, easy to get stuck in eachother
+				if (distanceBetweenTwoPoints(this.pos, this.level.entities[i].pos) < this.radius + this.level.entities[i].radius) {
+					deltaX -= 1;
+					deltaY -= 1;
+					this.onCollisionEntity(this.level.entities[i]);
 					break;
 				}
 			}
