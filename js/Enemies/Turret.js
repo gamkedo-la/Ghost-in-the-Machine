@@ -16,7 +16,8 @@ class TurretRobot extends SceneEntity {
 	}
 
 	onAction(deltaTime) {
-		let shot = new TurretShot({name: this.name + " shot", pos:this.pos, rot:this.rot, level: this.level});
+		let shot = new TurretShot({name: this.name + " shot", rot:this.rot, level: this.level, parent: this});
+		shot.pos = addVectors(this.pos, scaleVector(this.forward, this.radius + shot.radius + 1));
 		this.level.entities.push(shot);
 	}
 }
@@ -56,6 +57,7 @@ class TurretShot extends SceneEntity {
 
 		this.explosionDamage = 50;
 		this.range = 10;
+		this.parent = entityToOverride.parent || null;
 
 		this.sprite = new SpriteClass(
 			'./images/testEntitySS.png', 
@@ -64,6 +66,7 @@ class TurretShot extends SceneEntity {
 		);
 		this.sprite.xScale = 0.25;
 		this.sprite.yScale = 0.20;
+		this.radius = 2;
 	}
 
 	onUpdatePre(deltaTime) {
@@ -79,6 +82,8 @@ class TurretShot extends SceneEntity {
 	}
 
 	onCollisionEntity(other) {
+		if (other == this.parent) return;
+
 		this.level.markForDestruction(this);
 	}
 
@@ -88,6 +93,8 @@ class TurretShot extends SceneEntity {
 
 		for (let i = 0; i < this.level.entities.length; i++) {
 			let entity = this.level.entities[i];
+			if (entity == this.parent) continue;
+
 			let distance = distanceBetweenTwoPoints(this.pos, entity.pos);
 
 			if (distance <= this.range && lineOfSight(this.pos, entity.pos, this.level.walls)) {

@@ -88,8 +88,8 @@ class EntityClass {
 				if (this.level.entities[i] == this) continue;
 				// TODO: This is janky, easy to get stuck in eachother
 				if (distanceBetweenTwoPoints(this.pos, this.level.entities[i].pos) < this.radius + this.level.entities[i].radius) {
-					deltaX -= 1;
-					deltaY -= 1;
+					deltaX *= -1;
+					deltaY *= -1;
 					this.onCollisionEntity(this.level.entities[i]);
 					break;
 				}
