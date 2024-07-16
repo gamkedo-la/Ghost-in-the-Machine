@@ -77,6 +77,7 @@ function gamestart() {
 
 	if (debug) { testAllHeaps(); }
 	if (debug) { testPriorityQueue(); }
+//	if (debug) { testAStarSearch(); }
 
 	currentMap = testLevel1.load();
 }
