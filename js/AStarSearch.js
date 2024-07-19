@@ -67,9 +67,9 @@ function aStarSearch(base, goal) {
 	];
 
 	var lastIndex = -1;
-	const max_loops = ASTAR_MAX_SEARCH_LOOPS;
+	const maxLoops = ASTAR_MAX_SEARCH_LOOPS;
 	let loop = 0;
-	while (!frontier.empty() && loop++ < max_loops) {
+	while (!frontier.empty() && loop++ < maxLoops) {
 		const current = frontier.dequeue();
 		const curElem = current.element;
 
@@ -103,6 +103,7 @@ function aStarSearch(base, goal) {
 						next.y <= ent.y + ent.sprite._h
 					) {
 						nextTileCost = ASTAR_COST_MAX;
+						break;
 					}
 				}	
 			}
@@ -125,7 +126,7 @@ function aStarSearch(base, goal) {
 				// }
 			}
 		}
-	}
+	}	
 
 	if (debug) { console.log("lastIndex: ", lastIndex); }
 
@@ -137,7 +138,7 @@ function aStarSearch(base, goal) {
 		let currentIndex = nextIndex > -1 ? pathToGoal[nextIndex] : -1;
 		let loop = 0;
 		const keepLooping = () => 
-			loop < max_loops &&
+			loop < maxLoops &&
 			currentIndex > -1 && 
 			nextIndex > -1 &&
 			currentIndex != baseIndex;
@@ -150,7 +151,7 @@ function aStarSearch(base, goal) {
 			loop++;
 		}
 
-		if (debug && loop >= max_loops) { console.log("loop < max_loops"); }
+		if (debug && loop >= maxLoops) { console.log("loop < maxLoops"); }
 		if (debug && currentIndex <= -1) { console.log("currentIndex > -1"); }
 		if (debug && nextIndex <= -1) { console.log("nextIndex > -1"); }
 		if (debug && currentIndex === baseIndex) { console.log("currentIndex != baseIndex"); }

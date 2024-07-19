@@ -11,7 +11,7 @@ class PriorityQueue {
 	}
 
 	empty() {
-		return this.#data.length === 0;
+		return this.#data.empty();
 	}
 }
 

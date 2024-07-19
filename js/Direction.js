@@ -17,6 +17,8 @@ class Direction {
 	get moveEast() { return this.#moveEast; }
 	get moveSouth() { return this.#moveSouth; }
 	get moveWest() { return this.#moveWest; }
+	get col() { return this.#col; }
+	get row() { return this.#row; }
 	move(col, row) {
 		if (this.#col === col && this.#row === row) {
 			return { n : this.#moveNorth, e : this.#moveEast, s: this.#moveSouth, w: this.#moveWest };

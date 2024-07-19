@@ -18,6 +18,10 @@ class Heap {
         this.#heapifyUp();
     }
 
+    empty() {
+        return this.#data.length === 0;
+    }
+
     poll() {
         const lastElement = this.#data.pop() ?? null;
         let returnValue = lastElement;
