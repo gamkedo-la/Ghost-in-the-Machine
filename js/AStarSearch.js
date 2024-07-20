@@ -97,10 +97,10 @@ function aStarSearch(base, goal) {
 			// add entity collision to next tile cost
 			if (nextTileCost === ASTAR_COST_EASY) {
 				for(let ent of currentMap.entities) {
-					if (next.x >= ent.x - ent.sprite._w &&
-						next.x <= ent.x + ent.sprite._w &&
-						next.y >= ent.y - ent.sprite._h &&
-						next.y <= ent.y + ent.sprite._h
+					if (next.x >= ent.x - ent.radius &&
+						next.x <= ent.x + ent.radius &&
+						next.y >= ent.y - ent.radius &&
+						next.y <= ent.y + ent.radius
 					) {
 						nextTileCost = ASTAR_COST_MAX;
 						break;
@@ -128,7 +128,7 @@ function aStarSearch(base, goal) {
 		}
 	}	
 
-	if (debug) { console.log("lastIndex: ", lastIndex); }
+	// if (debug) { console.log("lastIndex: ", lastIndex); }
 
 	const pathAndCostToLast = () => {	
 		const baseIndex = posXYToArrayIndex(base.x, base.y);
@@ -151,10 +151,11 @@ function aStarSearch(base, goal) {
 			loop++;
 		}
 
-		if (debug && loop >= maxLoops) { console.log("loop < maxLoops"); }
-		if (debug && currentIndex <= -1) { console.log("currentIndex > -1"); }
-		if (debug && nextIndex <= -1) { console.log("nextIndex > -1"); }
-		if (debug && currentIndex === baseIndex) { console.log("currentIndex != baseIndex"); }
+		// if (debug) { console.log("loop: ", loop); }
+		// if (debug && loop >= maxLoops) { console.log("loop < maxLoops"); }
+		// if (debug && currentIndex <= -1) { console.log("currentIndex > -1"); }
+		// if (debug && nextIndex <= -1) { console.log("nextIndex > -1"); }
+		// if (debug && currentIndex === baseIndex) { console.log("currentIndex != baseIndex"); }
 
 		if (currentIndex === baseIndex) {
 			pathToLast[loop] = arrayIndexToPosXY(nextIndex);
