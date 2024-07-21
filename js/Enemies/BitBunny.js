@@ -94,6 +94,13 @@ class BitBunnyBrain extends Brain {
 		// if (debug) { console.log("think state out deltaTime", this.body.name, this.state, deltaTime); }
 	}
 
+	draw2D() {
+		if (this.#aStarPath.length > 0) {
+		colorLine(this.pos.x, this.pos.y, this.#aStarPath[0].x, this.#aStarPath[0].y, 1, "green");
+		colorEmptyCircle(this.#aStarPath[0].x, this.#aStarPath[0].y, 3, "green");
+		}
+	}
+
 	stateIdle(deltaTime) {
 		if (lineOfSight(this.pos, player.pos, this.level.walls)) {
 			var directionVector = normalizeVector(subtractVectors(player.pos, this.pos));

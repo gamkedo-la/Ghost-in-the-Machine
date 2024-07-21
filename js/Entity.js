@@ -133,6 +133,10 @@ class EntityClass {
 	draw2D() {
 		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * (this.radius + 3), this.pos.y +this.forward.y * (this.radius + 3), 2, "white");
 		colorEmptyCircle(this.pos.x, this.pos.y, this.radius, "grey");
+
+		if (this.brain.draw2D != undefined) {
+			this.brain.draw2D();
+		}
 	}
 
 	draw3D() {}
