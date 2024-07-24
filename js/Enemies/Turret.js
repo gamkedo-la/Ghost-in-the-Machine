@@ -13,12 +13,19 @@ class TurretRobot extends SceneEntity {
 		);
 
 		this.brain = new TurretBrain(this);
+
+        this.fireSound = AudioMan.createSound3D("./audio/turretFire.wav", this, false, 1, 1, false);
+        
 	}
 
 	onAction(deltaTime) {
 		let shot = new TurretShot({name: this.name + " shot", rot:this.rot, level: this.level, parent: this});
 		shot.pos = addVectors(this.pos, scaleVector(this.forward, this.radius + shot.radius + 1));
 		this.level.entities.push(shot);
+
+        this.fireSound.pos.x = this.x;
+        this.fireSound.pos.y = this.y;
+        this.fireSound.play();
 	}
 }
 
