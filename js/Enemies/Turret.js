@@ -23,8 +23,8 @@ class TurretRobot extends SceneEntity {
 		shot.pos = addVectors(this.pos, scaleVector(this.forward, this.radius + shot.radius + 1));
 		this.level.entities.push(shot);
 
-        this.fireSound.pos.x = this.x;
-        this.fireSound.pos.y = this.y;
+        //this.fireSound.pos.x = this.pos.x;
+        //this.fireSound.pos.y = this.pos.y;
         this.fireSound.play();
 	}
 }
@@ -101,8 +101,8 @@ class TurretShot extends SceneEntity {
 		//Explosion code
 		sparksFX(this.pos.x,this.pos.y,15);
 
-        this.explosionSound.pos.x = this.pos.x;
-        this.explosionSound.pos.y = this.pos.y;
+        //this.explosionSound.pos.x = this.pos.x;
+        //this.explosionSound.pos.y = this.pos.y;
         this.explosionSound.play();
 
 		for (let i = 0; i < this.level.entities.length; i++) {
