@@ -74,6 +74,9 @@ class TurretShot extends SceneEntity {
 		this.sprite.xScale = 0.25;
 		this.sprite.yScale = 0.20;
 		this.radius = 2;
+
+        this.explosionSound = AudioMan.createSound3D("./audio/explosionShort.wav", this, false, 1, 1, false);
+
 	}
 
 	onUpdatePre(deltaTime) {
@@ -97,6 +100,10 @@ class TurretShot extends SceneEntity {
 	onDestroy() {
 		//Explosion code
 		sparksFX(this.pos.x,this.pos.y,15);
+
+        this.explosionSound.pos.x = this.pos.x;
+        this.explosionSound.pos.y = this.pos.y;
+        this.explosionSound.play();
 
 		for (let i = 0; i < this.level.entities.length; i++) {
 			let entity = this.level.entities[i];
