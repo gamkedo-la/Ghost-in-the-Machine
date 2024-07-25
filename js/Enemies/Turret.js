@@ -14,7 +14,11 @@ class TurretRobot extends SceneEntity {
 
 		this.brain = new TurretBrain(this);
 
-        this.fireSound = AudioMan.createSound3D("./audio/turretFire.wav", this, false, 1, 1, false);
+       // the 3d sound code changes this.pos.x and y if we simply use "this" as the parent below
+       // let posObj = this;
+       let posObj = {pos:{x:this.pos.x,y:this.pos.y}};
+       this.fireSound = AudioMan.createSound3D("./audio/turretFire.wav", posObj, false, 1, 1, false);
+       this.explosionSound = AudioMan.createSound3D("./audio/explosionShort.wav", posObj, false, 1, 1, false);
         
 	}
 
@@ -23,8 +27,6 @@ class TurretRobot extends SceneEntity {
 		shot.pos = addVectors(this.pos, scaleVector(this.forward, this.radius + shot.radius + 1));
 		this.level.entities.push(shot);
 
-        //this.fireSound.pos.x = this.pos.x;
-        //this.fireSound.pos.y = this.pos.y;
         this.fireSound.play();
 	}
 }
@@ -74,10 +76,7 @@ class TurretShot extends SceneEntity {
 		this.sprite.xScale = 0.25;
 		this.sprite.yScale = 0.20;
 		this.radius = 2;
-
-        this.explosionSound = AudioMan.createSound3D("./audio/explosionShort.wav", this, false, 1, 1, false);
-
-	}
+ 	}
 
 	onUpdatePre(deltaTime) {
 		this.moveDelta.x = 1;
@@ -101,9 +100,11 @@ class TurretShot extends SceneEntity {
 		//Explosion code
 		sparksFX(this.pos.x,this.pos.y,15);
 
-        //this.explosionSound.pos.x = this.pos.x;
-        //this.explosionSound.pos.y = this.pos.y;
-        this.explosionSound.play();
+        if (this.parent && this.parent.explosionSound) {
+            this.parent.explosionSound.pos.x = this.pos.x;
+            this.parent.explosionSound.pos.y = this.pos.y;
+            this.parent.explosionSound.play();
+        }
 
 		for (let i = 0; i < this.level.entities.length; i++) {
 			let entity = this.level.entities[i];
