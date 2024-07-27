@@ -1,12 +1,14 @@
-const FORAGE_TIME_MAX = 15;
-const NEXT_FORAGE_DISTANCE = 200;
-
+const LONG_FORAGE_DISTANCE = 200;
+const SHORT_FORAGE_DISTANCE = 5;
+const FORAGE_TIME_MAX = LONG_FORAGE_DISTANCE;
+const BITBUNNY_ROTATE_SPEED = 1.2;
+const BITBUNNY_FORAGE_ROTATE_SPEED = 4;
 class BitBunnyRobot extends SceneEntity {
 	constructor(entityToOverride = {}) {
 		super(entityToOverride);
 		
 		this.moveSpeed = 40;
-		this.rotateSpeed = 1.2;
+		this.rotateSpeed = BITBUNNY_ROTATE_SPEED;
 
 		this.attackDamage = 10;
 
@@ -42,7 +44,6 @@ class BitBunnyRobot extends SceneEntity {
 				}
 			}
 		}
-
 		if (closestEntity == null) return;
 
 		closestEntity.takeDamage((1 - distance/maxDistance) * this.attackDamage);
@@ -54,6 +55,22 @@ class BitBunnyRobot extends SceneEntity {
 class BitBunnyBrain extends Brain {
 	#aStarPath = [];
 	#foragingTime = 0;
+	#nextForagePos = this.pos;
+	#directionVector = { x: 0, y: 0 };
+	#dPrFwDv = dotProductOfVectors(this.forward, this.#directionVector);
+	#dPrRiDv = dotProductOfVectors(this.right, this.#directionVector);
+
+    get directionVector() { return this.#directionVector; }
+	get dPrFwDv() { return this.#dPrFwDv; }
+	get dPrRiDv() { return this.#dPrRiDv; }
+    setDirectionVector(targetPos = { x: 0, y: 0 }) {
+		this.#directionVector = 
+			normalizeVector(subtractVectors(targetPos, this.pos));
+		this.#dPrFwDv =
+			dotProductOfVectors(this.forward, this.#directionVector);
+		this.#dPrRiDv = 
+			dotProductOfVectors(this.right, this.#directionVector);
+	}
 
 	constructor(body) {
 		super(body);
@@ -68,15 +85,16 @@ class BitBunnyBrain extends Brain {
 
 	think(deltaTime) {
 		// if (debug) { 
-			// console.log("entities.length: ", this.level.entities.length);
-			// console.log("aStarPath length: ", this.#aStarPath.length);
-			// console.log("first element: ", this.#aStarPath[0]); 
-			// console.log("last element: ", this.#aStarPath[this.#aStarPath.length]);
-			// console.log("name: ", this.body.name);
-			// console.log("pos: ", this.body.pos);
-			// console.log("think state in deltaTime", this.state, deltaTime);
+		// 	console.log("entities.length: ", this.level.entities.length);
+		// 	console.log("aStarPath length: ", this.#aStarPath.length);
+		// 	console.log("first element: ", this.#aStarPath[0]); 
+		// 	console.log("base element: ", this.#aStarPath[this.#aStarPath.length - 1]);
+		// 	console.log("name: ", this.name);
+		// 	console.log("pos: ", this.pos);
+		// 	console.log("think state in deltaTime", this.state, deltaTime);
 		// }
 
+		this.setDirectionVector(player?.pos);
 		switch(this.state) {
 		case "idle":
 			this.stateIdle(deltaTime);
@@ -91,25 +109,33 @@ class BitBunnyBrain extends Brain {
 			this.stateForage(deltaTime);
 			break;
 		}
-		// if (debug) { console.log("think state out deltaTime", this.body.name, this.state, deltaTime); }
+		// if (debug) { console.log("think state out deltaTime", this.name, this.state, deltaTime); }
 	}
 
 	draw2D() {
+		var nextI = this.#aStarPath.length - 1;
+		if (nextI < 0) { return; } 
+
 		var lastX = this.pos.x;
 		var lastY = this.pos.y;
-		for (let i = 0; i < this.#aStarPath.length; i++) {
+		colorEmptyCircle(lastX, lastY, 3, "green");
+		var nextE = this.#aStarPath[nextI];
+		colorLine(lastX, lastY, nextE.x, nextE.y, 1, "yellow");
+		var goalE = this.#nextForagePos;
+		colorEmptyCircle(goalE.x, goalE.y, 3, "magenta");
+		colorLine(lastX, lastY, goalE.x, goalE.y, 1, "magenta");
+		for (let i = nextI; i > 0; i--) {
 			colorLine(lastX, lastY, this.#aStarPath[i].x, this.#aStarPath[i].y, 1, "green");
-			colorEmptyCircle(this.#aStarPath[i].x, this.#aStarPath[i].y, 3, "green");
+			// colorEmptyCircle(this.#aStarPath[i].x, this.#aStarPath[i].y, 3, "green");
 			lastX = this.#aStarPath[i].x;
 			lastY = this.#aStarPath[i].y;
 		}
 	}
 
 	stateIdle(deltaTime) {
-		if (lineOfSight(this.pos, player.pos, this.level.walls)) {
-			var directionVector = normalizeVector(subtractVectors(player.pos, this.pos));
-
-			if (dotProductOfVectors(this.forward, directionVector) > 0.3) {
+		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
+		if (couldSeePlayer) {
+			if (this.dPrFwDv > 0.3) {
 				this.state = "attack";
 			} else {
 				this.state = "forage";
@@ -121,16 +147,15 @@ class BitBunnyBrain extends Brain {
 
 	stateAttack(deltaTime) {
 		this.#aStarPath = []; 
-		if (lineOfSight(this.pos, player.pos, this.level.walls)) {
-			var directionVector = normalizeVector(subtractVectors(player.pos, this.pos));
-
-			if (dotProductOfVectors(this.forward, directionVector) > 0.3) {
-				this.rotateDelta -= dotProductOfVectors(this.right, directionVector);
+		this.body.rotateSpeed = BITBUNNY_ROTATE_SPEED;
+		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
+		if (couldSeePlayer) {
+			if (this.dPrFwDv > 0.3) {
+				this.rotateDelta -= this.dPrRiDv;
 
 				if (this.distance > this.maxDistance) {
 					this.moveDelta.x += 1;
 					this.rotateDelta += this.turnPreferance * 0.5;
-					this.state = "idle";
 				} else if (this.distance < this.minDistance * 2 && this.distance > this.minDistance) {
 					this.moveDelta.x -= 1;
 					this.rotateDelta += this.turnPreferance;
@@ -147,15 +172,15 @@ class BitBunnyBrain extends Brain {
 
 	stateFlee(deltaTime) {
 		this.#aStarPath = []; 
-		var directionVector = normalizeVector(subtractVectors(player.pos, this.pos));
+		this.body.rotateSpeed = BITBUNNY_ROTATE_SPEED;
 		if (this.distance < this.maxDistance) {
-			this.rotateDelta += dotProductOfVectors(this.right, directionVector);
+			this.rotateDelta += this.#dPrRiDv;
 			this.rotateDelta += this.turnPreferance * 0.5;
-			this.moveDelta.x -= dotProductOfVectors(this.forward, directionVector);
+			this.moveDelta.x -= this.#dPrFwDv;
 		} else {
-			this.rotateDelta -= dotProductOfVectors(this.right, directionVector);
+			this.rotateDelta -= this.#dPrRiDv;
 			this.moveDelta.x += 0.1;
-			if (dotProductOfVectors(this.forward, directionVector) > 0.5) {
+			if (this.#dPrFwDv > 0.5) {
 				this.state = "idle";
 			}
 		}
@@ -163,41 +188,114 @@ class BitBunnyBrain extends Brain {
 
 	stateForage(deltaTime) {
 		if (this.#aStarPath.length === 0) {
-			let forageDirChoices = directionOptions;
+			const forageDirChoices = directionOptions;
 			const index = Math.floor(Math.random() * forageDirChoices.length);
 			const dir = forageDirChoices[index];
 			const col = dir.col;
 			const row = dir.row;
-			const dist = Math.floor(Math.random() * NEXT_FORAGE_DISTANCE);
-			const nextPos = { 
+			// seek short distance while forage time > 0, then find a
+			// further spot
+			const dist = 
+				Math.floor(
+					Math.random() *
+					(this.#foragingTime > 0 ? 
+						SHORT_FORAGE_DISTANCE : 
+						LONG_FORAGE_DISTANCE)
+				);
+			this.#nextForagePos = {
 				x: this.pos.x + dist * col, 
 				y: this.pos.y + dist * row 
 			};
-			this.#aStarPath = aStarSearch(this.pos, nextPos).path;
+			this.#aStarPath = 
+				this.pathFinder.aStarSearch(this.pos, this.#nextForagePos).path;
+			if (debug) { console.log(this.#aStarPath.length); }
+			if (debug) { console.log(this.name, this.#nextForagePos); }
+			this.#foragingTime = this.#aStarPath.length * 2;
 		}
 
-		if (this.#aStarPath && 
-			this.#aStarPath.length > 0 && 
-			lineOfSight(this.pos, this.#aStarPath[0], this.level.walls) &&
-			this.#foragingTime === 0
-		) {	
+		if (this.#foragingTime === 0) {
+			const nextForageChoice = Math.random();
+			if (nextForageChoice < 0.8) {
+				// keep trying current path to the position
+				this.#foragingTime = this.#aStarPath.length;
+				// this.#foragingTime++;
+			} else 
+			if (nextForageChoice < 0.95) {
+				// find another path to the same pos
+				this.#aStarPath = 
+					this.pathFinder.aStarSearch(
+						this.pos, this.#nextForagePos
+					).path;
+				this.#foragingTime = this.#aStarPath.length;
+				if (debug) { console.log(this.#foragingTime); }
+				if (debug) { console.log(this.name, this.#nextForagePos); }
+				if (debug) { console.log(this.#aStarPath); }
+			}
+			else {
+				// start over with a new forage pos and path
+				this.#aStarPath = [];
+				this.#foragingTime = 0;
+				this.state = "idle";
+				return;
+			}
+		}
+
+		const nextI = this.#aStarPath.length - 1;
+		const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
+		if (nextE) {
+			const canSeeNextPos = 
+				lineOfSight(this.pos, nextE, this.level.walls);
+
+			if (this.#aStarPath && 
+				this.#aStarPath.length > 0 && 
+				canSeeNextPos
+			) {	
+				this.body.rotateSpeed = BITBUNNY_FORAGE_ROTATE_SPEED;
+				this.setDirectionVector(nextE);
+	
+				// if (debug) { 
+				// 	console.log("aStarPath length: ", this.#aStarPath.length);
+				// 	console.log("base element: ", this.#aStarPath[this.#aStarPath.length - 1]);
+				// 	console.log("goal element: ", this.#aStarPath[0]); 
+				// 	console.log("this.forward", this.forward);
+				// 	console.log("this.right", this.right);
+				// 	console.log("this.pos", this.pos);
+				// 	const dPrFwDv = dotProductOfVectors(this.forward, directionVector);
+				// 	console.log("dPrFwDv", dPrFwDv);
+				// 	const dPrRiDv = dotProductOfVectors(this.right, directionVector);
+				// 	console.log("dPrRiDv", dPrRiDv);
+				// 	console.log("this.body.rot", this.body.rot);
+				// 	console.log("this.rotateDelta: ", this.rotateDelta);
+				// 	console.log("this.moveDelta.x: ", this.moveDelta.x); 
+				// 	console.log("directionVector: ", directionVector);
+				// }
+	
+				if (this.dPrFwDv > 0.95) {
+					this.moveDelta.x += this.dPrFwDv;
+					this.rotateDelta -= this.dPrRiDv;
+				} else {
+					this.rotateDelta -= this.dPrRiDv;
+					this.#foragingTime++;
+				}
+	
+				const closeEnoughX = Math.abs(this.pos.x - nextE.x) < 1;
+				const closeEnoughY = Math.abs(this.pos.y - nextE.y) < 1;
+				if (closeEnoughX && closeEnoughY) {
+					// once entity finds it's first path step, drop it, choose next
+					// making it the first (ie. located at index 0) or emptying the
+					// path completely
+					this.#aStarPath.pop();
+				}
+			}
+	
 			// if (debug) { 
-				// console.log("aStarPath length: ", this.#aStarPath.length);
-				// console.log("first element: ", this.#aStarPath[0]); 
-				// console.log("last element: ", this.#aStarPath[this.#aStarPath.length - 1]);
+			// 	console.log("this.body.rot", this.body.rot);
+			// 	console.log("this.rotateDelta: ", this.rotateDelta);
+			// 	console.log("this.moveDelta.x: ", this.moveDelta.x); 
 			// }
-			var directionVector = 
-				normalizeVector(subtractVectors(this.#aStarPath[0], this.pos));
-			this.rotateDelta -= dotProductOfVectors(this.right, directionVector);
-			this.rotateDelta += this.turnPreferance;
-			this.moveDelta.x += 0.1;
-			this.#aStarPath.unshift();
+	
+			this.#foragingTime--;
+			this.state = "idle";				
 		}
-
-		if (this.#foragingTime-- <= 0) {
-			this.#foragingTime = Math.ceil(Math.random() * FORAGE_TIME_MAX);
-		}
-
-		this.state = "idle";
 	}
 }

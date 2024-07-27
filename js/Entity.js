@@ -24,6 +24,8 @@ class EntityClass {
 		this.actionCooldownTime = 1.5;
 		this._actionCooldown = this.actionCooldownTime;
 
+		this.pathFinder = new PathFindingComponent(this);
+
 		this.brain = entityToOverride.brain || new Brain(this);
 	}
 
@@ -195,6 +197,7 @@ class Brain {
 	get actionTriggered() {return this.body.actionTriggered;}
 	get level() {return this.body.level;}
 	get distance() {return this.body.distance;}
+	get pathFinder() { return this.body.pathFinder; }
 
 	set moveDelta(value) {this.body.moveDelta = value;}
 	set rotateDelta(value) {this.body.rotateDelta = value;}
