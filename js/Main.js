@@ -85,6 +85,8 @@ function gamestart() {
 function gameloop(time) {
 	time /= 1000;
 	var deltaTime = time - lastTime;
+	// Max deltaTime to 5fps
+	if (deltaTime > 0.2) deltaTime = 0.2;
 	lastTime = time;
 	
 	checkUIKeys();
