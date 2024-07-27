@@ -95,9 +95,13 @@ class BitBunnyBrain extends Brain {
 	}
 
 	draw2D() {
-		if (this.#aStarPath.length > 0) {
-		colorLine(this.pos.x, this.pos.y, this.#aStarPath[0].x, this.#aStarPath[0].y, 1, "green");
-		colorEmptyCircle(this.#aStarPath[0].x, this.#aStarPath[0].y, 3, "green");
+		var lastX = this.pos.x;
+		var lastY = this.pos.y;
+		for (let i = 0; i < this.#aStarPath.length; i++) {
+			colorLine(lastX, lastY, this.#aStarPath[i].x, this.#aStarPath[i].y, 1, "green");
+			colorEmptyCircle(this.#aStarPath[i].x, this.#aStarPath[i].y, 3, "green");
+			lastX = this.#aStarPath[i].x;
+			lastY = this.#aStarPath[i].y;
 		}
 	}
 
