@@ -136,6 +136,19 @@ class EntityClass {
 		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * (this.radius + 3), this.pos.y +this.forward.y * (this.radius + 3), 2, "white");
 		colorEmptyCircle(this.pos.x, this.pos.y, this.radius, "grey");
 
+		// add coordinate helper at center 0, 0
+		if (debug) {
+			let colorLf = "cyan";
+			let colorRt = "orange";
+			let colorUp = "yellow";
+			let colorDn = "violet";
+			let colorNo = "none";
+			let colorLR = this.pos.x < 0 ? colorLf : this.pos.x > 0 ? colorRt : colorNo;
+			let colorUD = this.pos.y < 0 ? colorUp : this.pos.y > 0 ? colorDn : colorNo;
+			colorLine(0, this.pos.y, this.pos.x, this.pos.y, 1, colorLR);
+			colorLine(this.pos.x, 0, this.pos.x, this.pos.y, 1, colorUD);
+		}
+		
 		if (this.brain.draw2D != undefined) {
 			this.brain.draw2D();
 		}
