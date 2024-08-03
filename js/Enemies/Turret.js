@@ -11,6 +11,8 @@ class TurretRobot extends SceneEntity {
             12, 1, 
             400, 400
 		);
+		this.sprite.xScale = 1.3;
+		this.sprite.yScale = 1.3;
 
 		this.brain = new TurretBrain(this);
 
