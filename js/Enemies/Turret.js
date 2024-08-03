@@ -69,12 +69,10 @@ class TurretShot extends SceneEntity {
 		this.parent = entityToOverride.parent || null;
 
 		this.sprite = new SpriteClass(
-			'./images/testEntitySS.png', 
-            8, 6, 
-            100, 100
+			'./images/projectile-1-blue.png', 
+            12, 1, 
+            400, 400
 		);
-		this.sprite.xScale = 0.25;
-		this.sprite.yScale = 0.20;
 		this.radius = 2;
  	}
 
