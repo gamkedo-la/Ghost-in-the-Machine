@@ -365,7 +365,7 @@ function addEntityAction(pos) {
 	var lastSelected = null;
 
 	this.execute = function() {
-		entity = {pos: pos, name: "" + rndInt(100,999), rot: d270};
+		entity = {pos: pos, name: this.makeName(), rot: d270};
 		currentMap.entities.push(entity);
 
 		lastSelected = selectedElement;
@@ -384,6 +384,34 @@ function addEntityAction(pos) {
 		currentMap.entities.push(entity);
 
 		selectedElement = entity;
+	}
+
+	this.makeName = function() {
+		var syllibles = ["rob", "kat", "han", "na", "ben", "hec", "tor", "mik", "ja", "jas", "nat", "ky", "by", "bit", "joh", "hor", "as"];
+		var endSyllibles = ["na", "ben", "ny", "ey", "te", "e", "son", "an", "lie", "ty", "o"];
+
+		var name = "";
+		var numberToAdd = rndFromList([0, 1, 1, 2, 2]);
+		for (var i = 0; i <= numberToAdd; i++) {
+			var silIndex = rndInt(syllibles.length-1);
+			name = name + syllibles[silIndex];
+			syllibles.splice(silIndex, 1);
+		}
+		if (rndInt(3) > numberToAdd) {
+			name = name + rndFromList(endSyllibles);
+		}
+
+		name = name.charAt(0).toUpperCase() + name.slice(1);
+		// name = name  + "-" + rndInt(1000,9999);
+
+		for (var i = 0; i < currentMap.entities.length; i++) {
+			if (currentMap.entities[i].name == name) {
+				name = this.makeName();
+				break;
+			}
+		}
+
+		return name;
 	}
 }
 
