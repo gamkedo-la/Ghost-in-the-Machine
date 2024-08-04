@@ -28,7 +28,7 @@ var ctrlKey = false;
 var pFocus = false;
 
 var FOV = 60;
-var heightScale = 5;
+var heightScale = 8;
 
 function calculateKeyboardDown(evt) {
 	switch(evt.keyCode) {
@@ -172,15 +172,15 @@ window.onload = function() {
 	newWall.color = "green";
 	currentMap.walls.push(newWall);
 
-	var testEntity = {name:"Rob", pos: {x: 0, y:0}, distance: Infinity};
+	var testEntity = {name:"Rob", pos: {x: 0, y:0}, rot: d0, distance: Infinity};
 	currentMap.entities.push(testEntity);
-	var testEntity1 = {name:"Cat", pos: {x: 50, y:50}, distance: Infinity};
+	var testEntity1 = {name:"Cat", pos: {x: 50, y:50}, rot: d180, distance: Infinity};
 	currentMap.entities.push(testEntity1);
-	var testEntity2 = {name:"Benny", pos: {x: -50, y:50}, distance: Infinity};
+	var testEntity2 = {name:"Benny", pos: {x: -50, y:50}, rot: d270, distance: Infinity};
 	currentMap.entities.push(testEntity2);
-	var testEntity3 = {name:"Hanna", pos: {x: 50, y:-50}, distance: Infinity};
+	var testEntity3 = {name:"Hanna", pos: {x: 50, y:-50}, rot: d90, distance: Infinity};
 	currentMap.entities.push(testEntity3);
-	var testEntity4 = {name:"Hector", pos: {x: -50, y:-50}, distance: Infinity};
+	var testEntity4 = {name:"Hector", pos: {x: -50, y:-50}, rot: d360, distance: Infinity};
 	currentMap.entities.push(testEntity4);
 
 	setupUI(eCanvas.width, eCanvas.height);
@@ -267,7 +267,8 @@ function drawMapView() {
 	}
 	for (var i = 0; i < currentMap.entities.length; i++) {
 		var entity = currentMap.entities[i];
-		colorLine(entity.pos.x, entity.pos.y, entity.pos.x, entity.pos.y - 5, 2, "white");
+		var forward = {x: Math.cos(entity.rot) * 5, y: Math.sin(entity.rot) * 5};
+		colorLine(entity.pos.x, entity.pos.y, entity.pos.x + forward.x, entity.pos.y + forward.y, 2, "white");
 		colorEmptyCircle(entity.pos.x, entity.pos.y, 5, "grey");
 	}
 	colorLine(currentMap.playerStart.x + 5, currentMap.playerStart.y, currentMap.playerStart.x - 5, currentMap.playerStart.y, 1, "darkgrey");
@@ -298,8 +299,8 @@ function drawPreview() {
 	canvas = pCanvas;
 	canvasContext = pCanvasContext;
 
-	colorRect(0,0,canvas.width,canvas.height/2, currentMap.topColor);
-	colorRect(0,canvas.height/2,canvas.width,canvas.height/2, currentMap.bottomColor);
+	colorRect(0,0,canvas.width,canvas.height/2, 'lightGrey');
+	colorRect(0,canvas.height/2,canvas.width,canvas.height/2, 'grey');
 
 	//3D
 	var numRays = canvas.width;

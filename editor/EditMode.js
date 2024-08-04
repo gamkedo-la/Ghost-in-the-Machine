@@ -365,7 +365,7 @@ function addEntityAction(pos) {
 	var lastSelected = null;
 
 	this.execute = function() {
-		entity = {pos: pos, name: "" + rndInt(10000000,99999999)};
+		entity = {pos: pos, name: "" + rndInt(100,999), rot: d270};
 		currentMap.entities.push(entity);
 
 		lastSelected = selectedElement;

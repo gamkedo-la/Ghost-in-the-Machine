@@ -99,7 +99,7 @@ class EntityPane extends UIElement {
 		super(name, x, y, 30, 76);
 
 		this.addPart(new UIButtonWToolTip("addEntityMode", 5, 5, 20, 20, "Add Entities"));
-		this.addPart(new UIButtonWToolTip("addWallMode", 5, 28, 20, 20, "Select Entities"));
+		this.addPart(new UIButtonWToolTip("selectEntityMode", 5, 28, 20, 20, "Select Entities"));
 
 		this.parts[0].onClick = function() {entityMode = ADD_ENTITY;};
 		this.parts[1].onClick = function() {entityMode = SELECT_ENTITY;};
@@ -113,34 +113,44 @@ class SelectionPane extends UIElement{
 
 		this.bottom = y;
 
-		this.audioButtons = [
+		this.nudgeButtons = [
 			this.addPart(new UIButton("nudgeLeft", 150, 150, 10, 10), false),
 			this.addPart(new UIButton("nudgeUp", 160, 140, 10, 10), false),
 			this.addPart(new UIButton("nudgeRight", 170, 150, 10, 10), false),
-			this.addPart(new UIButton("nudgeDown", 160, 160, 10, 10), false)
+			this.addPart(new UIButton("nudgeDown", 160, 160, 10, 10), false),
+			this.addPart(new UIButton("nudgeClockwise", 145, 135, 10, 10), false),
+			this.addPart(new UIButton("nudgeCounterClockwise", 176, 135, 10, 10), false),
 		];
-		this.audioButtons[0].onClick = function() {
+		this.nudgeButtons[0].onClick = function() {
 			if (selectedElement!= null) {
-				selectedElement.x += -1;
-				selectedElement.x = roundToDecimalPlace(selectedElement.x, 2);
+				selectedElement.pos.x += -1;
 			}
 		};
-		this.audioButtons[1].onClick = function() {
+		this.nudgeButtons[1].onClick = function() {
 			if (selectedElement!= null) {
-				selectedElement.y += -1;
-				selectedElement.y = roundToDecimalPlace(selectedElement.y, 2);
+				selectedElement.pos.y += -1;
 			}
 		};
-		this.audioButtons[2].onClick = function() {
+		this.nudgeButtons[2].onClick = function() {
 			if (selectedElement!= null) {
-				selectedElement.x += 1;
-				selectedElement.x = roundToDecimalPlace(selectedElement.x, 2);
+				selectedElement.pos.x += 1;
 			}
 		};
-		this.audioButtons[3].onClick = function() {
+		this.nudgeButtons[3].onClick = function() {
 			if (selectedElement!= null) {
-				selectedElement.y += 1;
-				selectedElement.y = roundToDecimalPlace(selectedElement.y, 2);
+				selectedElement.pos.y += 1;
+			}
+		};
+		this.nudgeButtons[4].onClick = function() {
+			if (selectedElement!= null) {
+				selectedElement.rot += degToRad(-10);
+				selectedElement.rot = wrap(selectedElement.rot, d0, d360);
+			}
+		};
+		this.nudgeButtons[5].onClick = function() {
+			if (selectedElement!= null) {
+				selectedElement.rot += degToRad(10);
+				selectedElement.rot = wrap(selectedElement.rot, d0, d360);
 			}
 		};
 	}
@@ -195,30 +205,33 @@ class SelectionPane extends UIElement{
 					textConnected = textConnected + " ]";
 					colorText(textConnected, this.x + borderSize + 20, this.y + 30 + borderSize, "darkblue");
 				}
-
-				for (var i = 0; i < this.audioButtons.length; i++) {
-					this.audioButtons[i].setActive(true);
-				}
-
-			} else {
-				for (var i = 0; i < this.audioButtons.length; i++) {
-					this.audioButtons[i].setActive(false);
-				}
 			}
 
 			if (editMode == ENTITY_MODE) {
+				var textName = "Name: " + selectedElement.name;
+				var textPos = "Pos {x: " + selectedElement.pos.x + ", y: " + selectedElement.pos.y + "} Rot: " + Math.round(radToDeg(selectedElement.rot));
+				colorText(textName, this.x + borderSize + 20, this.y + 15 + borderSize, "darkblue");
+				colorText(textPos, this.x + borderSize + 20, this.y + 30 + borderSize, "darkblue");
+				
+				for (var i = 0; i < this.nudgeButtons.length; i++) {
+					this.nudgeButtons[i].setActive(true);
+				}
 
+			} else {
+				for (var i = 0; i < this.nudgeButtons.length; i++) {
+					this.nudgeButtons[i].setActive(false);
+				}
 			}
 
 		} else {
-			for (var i = 0; i < this.audioButtons.length; i++) {
-				this.audioButtons[i].setActive(false);
+			for (var i = 0; i < this.nudgeButtons.length; i++) {
+				this.nudgeButtons[i].setActive(false);
 			}
 		}
 
 		var pos = getMousePositionInWorldSpace();
 		var text = "{x: " + pos.x + ", y: " + pos.y + "}";
-		colorText(text, this.x + this.w*0.5, this.bottom - 13 + borderSize, "darkblue", "15px Arial", "center");
+		colorText(text, this.x + 15, this.bottom - 13 + borderSize, "darkblue", "15px Arial", "center");
 	}
 
 }
