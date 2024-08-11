@@ -16,6 +16,8 @@ wallTexture.src = './images/text2Texture100x100.png';
 
 var entityMode = SELECT_ENTITY;
 var currentEntityRoboType = "undefined";
+var defaultEntityRoboType = "undefined";
+var entityRoboTypesList = ["BitBunny", "Turret", "undefined"];
 
 var editMode = WALL_MODE;
 var lastPoint = null;
@@ -204,6 +206,8 @@ function runEntityMode() {
 				} else {
 					currentEntityRoboType = "undefined";
 				}
+			} else {
+				currentEntityRoboType = defaultEntityRoboType;
 			}
 		}
 	}
@@ -373,11 +377,12 @@ function addEntityAction(pos) {
 	var lastSelected = null;
 
 	this.execute = function() {
-		entity = {pos: pos, name: this.makeName(), rot: d270};
+		entity = {pos: pos, name: this.makeName(), rot: d270, roboType: defaultEntityRoboType};
 		currentMap.entities.push(entity);
 
 		lastSelected = selectedElement;
 		selectedElement = entity;
+		currentEntityRoboType = defaultEntityRoboType;
 
 		return this;
 	}
@@ -386,12 +391,14 @@ function addEntityAction(pos) {
 		currentMap.entities.splice(currentMap.entities.indexOf(entity), 1);
 
 		selectedElement = lastSelected;
+		currentEntityRoboType = defaultEntityRoboType;
 	}
 
 	this.redo = function() {
 		currentMap.entities.push(entity);
 
 		selectedElement = entity;
+		currentEntityRoboType = entity.roboType || defaultEntityRoboType;
 	}
 
 	this.makeName = function() {

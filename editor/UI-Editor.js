@@ -100,9 +100,25 @@ class EntityPane extends UIElement {
 
 		this.addPart(new UIButtonWToolTip("addEntityMode", 5, 5, 20, 20, "Add Entities"));
 		this.addPart(new UIButtonWToolTip("selectEntityMode", 5, 28, 20, 20, "Select Entities"));
+		this.addPart(new UIButtonWToolTip("setEntityRoboType", 5, 51, 20, 20, "Set Entity RoboType: undefined"));
+		this.addPart(new UIDropdown("defaultRobpTypeList", 5, 51, 100, 20), false);
 
 		this.parts[0].onClick = function() {entityMode = ADD_ENTITY;};
 		this.parts[1].onClick = function() {entityMode = SELECT_ENTITY;};
+
+		this.parts[2].dropdown = this.parts[3];
+		this.parts[2].onClick = function() {
+			this.dropdown.setActive();
+			this.dropdown.onLeftMouseClick();
+		}
+		this.parts[3].list = entityRoboTypesList;
+		this.parts[3].value = entityRoboTypesList.length-1;
+		this.parts[3].dropdown.toolTipButton = this.parts[2];
+		this.parts[3].dropdown.onSelect = function () {
+			defaultEntityRoboType = this.parent.list[this.parent.value];
+			this.toolTipButton.toolTip = "Set Entity RoboType: " + defaultEntityRoboType;
+			this.parent.setActive(false);
+		}
 	}
 	
 }
@@ -156,8 +172,8 @@ class SelectionPane extends UIElement{
 
 		this.robotDropdown = new UIDropdown("RobotDropdown", 10, 150, 100, 20);
 		this.addPart(this.robotDropdown, false);
-		this.robotDropdown.list = ["BitBunny", "Turret", "undefined"];
-		this.robotDropdown.value = this.robotDropdown.list.length - 1;
+		this.robotDropdown.list = entityRoboTypesList;
+		this.robotDropdown.value = entityRoboTypesList.length-1;
 		this.robotDropdown.updateListElement();
 		this.robotDropdown.dropdown.onSelect = function() {
 			if (selectedElement != null) {
