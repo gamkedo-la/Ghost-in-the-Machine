@@ -15,6 +15,7 @@ var wallTexture = new Image();
 wallTexture.src = './images/text2Texture100x100.png';
 
 var entityMode = SELECT_ENTITY;
+var currentEntityRoboType = "undefined";
 
 var editMode = WALL_MODE;
 var lastPoint = null;
@@ -195,6 +196,13 @@ function runEntityMode() {
 				if (newDistance < selectDistance && newDistance < lastDistance) {
 					selectedElement = currentMap.entities[i];
 					lastDistance = newDistance;
+				}
+			}
+			if (selectedElement != null) {
+				if (selectedElement.roboType != undefined) {
+					currentEntityRoboType = selectedElement.roboType;
+				} else {
+					currentEntityRoboType = "undefined";
 				}
 			}
 		}

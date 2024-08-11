@@ -42,7 +42,23 @@ function LevelClass() {
 
 			if (parsedLevel.entities) {
 				for (let i = 0; i < parsedLevel.entities.length; i++) {
-					let newEntity = new SceneEntity(parsedLevel.entities[i]);
+					if (parsedLevel.entities[i].roboType == undefined) {
+						parsedLevel.entities[i].roboType = "undefined";
+					}
+					let newEntity;
+					switch(parsedLevel.entities[i].roboType) {
+					case "BitBunny":
+						newEntity = new BitBunnyRobot(parsedLevel.entities[i]);
+						break;
+					case "Turret":
+						newEntity = new TurretRobot(parsedLevel.entities[i]);
+						break;
+					default:
+						newEntity = new SceneEntity(parsedLevel.entities[i]);
+						break;
+					}
+
+
 					newEntity.level = this;
 					this.entities.push(newEntity);
 				}

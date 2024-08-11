@@ -868,7 +868,7 @@ class UIDropdown extends UIElement {
 		var height = this.list.length * (this.size + 3);
 		var y = this.center ? -height * 0.5 : 0;
 		if (this.y + y < 0) y -= this.y + y;
-		if (this.y + height + y > canvas.height) y -= this.y + height + y - canvas.height;
+		if (this.y + height + y > this.mi.h) y -= this.y + height + y - this.mis.h;
 
 		this.dropdown.updatePosition(0, y, this.w, height);
 		this.dropdown.setActive(this.open);
@@ -900,6 +900,8 @@ class UIDropdownList extends UIElement {
 				this.parent.value = this.quantizeMousePositionY();
 				mouseJustPressed = false;
 				mouseJustReleased = true;
+
+				this.onSelect();
 			}
 			this.parent.closeList();
 			return;
@@ -929,4 +931,6 @@ class UIDropdownList extends UIElement {
 	quantizeMousePositionY() {
 		return Math.min(Math.floor((mouseY - this.y) / (this.parent.size + 3)), this.parent.list.length - 1);
 	}
+
+	onSelect() {}
 }

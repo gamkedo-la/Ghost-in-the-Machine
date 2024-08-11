@@ -373,4 +373,8 @@ function DrawEntity(entity) {
 	var drawY = canvas.height*0.5 - size*0.5;
 
 	canvasContext.drawImage(objectImage, drawX, drawY, size, size);
+	if (entity.roboType != null) {
+		colorText(entity.roboType, drawX+1, drawY+1, "white");
+		colorText(entity.roboType, drawX, drawY, "black");
+	}
 }

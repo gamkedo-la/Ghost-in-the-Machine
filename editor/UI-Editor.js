@@ -153,6 +153,18 @@ class SelectionPane extends UIElement{
 				selectedElement.rot = wrap(selectedElement.rot, d0, d360);
 			}
 		};
+
+		this.robotDropdown = new UIDropdown("RobotDropdown", 10, 150, 100, 20);
+		this.addPart(this.robotDropdown, false);
+		this.robotDropdown.list = ["BitBunny", "Turret", "undefined"];
+		this.robotDropdown.value = this.robotDropdown.list.length - 1;
+		this.robotDropdown.updateListElement();
+		this.robotDropdown.dropdown.onSelect = function() {
+			if (selectedElement != null) {
+				selectedElement.roboType = this.parent.list[this.parent.value];
+				currentEntityRoboType = this.parent.list[this.parent.value];
+			}
+		}
 	}
 
 	draw() {
@@ -216,17 +228,21 @@ class SelectionPane extends UIElement{
 				for (var i = 0; i < this.nudgeButtons.length; i++) {
 					this.nudgeButtons[i].setActive(true);
 				}
+				this.robotDropdown.setActive(true);
+				this.robotDropdown.value = this.robotDropdown.list.indexOf(currentEntityRoboType);
 
 			} else {
 				for (var i = 0; i < this.nudgeButtons.length; i++) {
 					this.nudgeButtons[i].setActive(false);
 				}
+				this.robotDropdown.setActive(false);
 			}
 
 		} else {
 			for (var i = 0; i < this.nudgeButtons.length; i++) {
 				this.nudgeButtons[i].setActive(false);
 			}
+			this.robotDropdown.setActive(false);
 		}
 
 		var pos = getMousePositionInWorldSpace();
