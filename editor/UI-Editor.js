@@ -177,8 +177,7 @@ class SelectionPane extends UIElement{
 		this.robotDropdown.updateListElement();
 		this.robotDropdown.dropdown.onSelect = function() {
 			if (selectedElement != null) {
-				selectedElement.roboType = this.parent.list[this.parent.value];
-				currentEntityRoboType = this.parent.list[this.parent.value];
+				performAction(new setEntityRoboType(this.parent.list[this.parent.value]))
 			}
 		}
 	}

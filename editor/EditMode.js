@@ -454,3 +454,26 @@ function deleteEntityAction() {
 		selectedElement = null;
 	}
 }
+
+function setEntityRoboType(type) {
+	var entity = null;
+	var oldType = "undefined";
+
+	this.execute = function() {
+		entity = selectedElement;
+		oldType = entity.roboType || "undefined";
+
+		entity.roboType = type;
+		currentEntityRoboType = type;
+	}
+
+	this.undo = function() {
+		entity.roboType = oldType;
+		currentEntityRoboType = oldType;
+	}
+
+	this.redo = function() {
+		entity.roboType = type;
+		currentEntityRoboType = type;
+	}
+}
