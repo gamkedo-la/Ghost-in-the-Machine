@@ -455,7 +455,7 @@ function deleteEntityAction() {
 	}
 }
 
-function setEntityRoboType(type) {
+function setEntityRoboTypeAction(type) {
 	var entity = null;
 	var oldType = "undefined";
 
@@ -477,3 +477,4 @@ function setEntityRoboType(type) {
 		currentEntityRoboType = type;
 	}
 }
+
