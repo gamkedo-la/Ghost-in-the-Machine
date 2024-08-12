@@ -189,11 +189,11 @@ class BitBunnyBrain extends Brain {
 	}
 
 	stateForage(deltaTime) {
-		if (debug && this.name !== 'testBunny1') { 
-			this.state = 'idle';
-			return;
-		}
-		debugger;
+		// if (debug && this.name !== 'testBunny1') { 
+		// 	this.state = 'idle';
+		// 	return;
+		// }
+		// debugger;
 
 		if (this.#aStarPath.length === 0) {
 			const forageDirChoices = directionOptions;
@@ -279,21 +279,21 @@ class BitBunnyBrain extends Brain {
 				this.body.rotateSpeed = BITBUNNY_FORAGE_ROTATE_SPEED;
 				this.setDirectionVector(nextE);
 	
-				if (debug) { 
-					console.log("name, nextForagePos", this.name, this.#nextForagePos);
-					console.log("aStarPath length: ", this.#aStarPath.length);
-					console.log("base element: ", this.#aStarPath[this.#aStarPath.length - 1]);
-					console.log("goal element: ", this.#aStarPath[0]); 
-					console.log("this.forward", this.forward);
-					console.log("this.right", this.right);
-					console.log("this.pos", this.pos);
-					console.log("directionVector: ", this.#directionVector);
-					console.log("dPrFwDv", this.#dPrFwDv);
-					console.log("dPrRiDv", this.#dPrRiDv);
-					console.log("this.body.rot", this.body.rot);
-					console.log("this.rotateDelta: ", this.rotateDelta);
-					console.log("this.moveDelta.x: ", this.moveDelta.x); 
-				}
+				// if (debug) { 
+				// 	console.log("name, nextForagePos", this.name, this.#nextForagePos);
+				// 	console.log("aStarPath length: ", this.#aStarPath.length);
+				// 	console.log("base element: ", this.#aStarPath[this.#aStarPath.length - 1]);
+				// 	console.log("goal element: ", this.#aStarPath[0]); 
+				// 	console.log("this.forward", this.forward);
+				// 	console.log("this.right", this.right);
+				// 	console.log("this.pos", this.pos);
+				// 	console.log("directionVector: ", this.#directionVector);
+				// 	console.log("dPrFwDv", this.#dPrFwDv);
+				// 	console.log("dPrRiDv", this.#dPrRiDv);
+				// 	console.log("this.body.rot", this.body.rot);
+				// 	console.log("this.rotateDelta: ", this.rotateDelta);
+				// 	console.log("this.moveDelta.x: ", this.moveDelta.x); 
+				// }
 	
 				// if (this.dPrFwDv > 0.999) {
 				// 	if (Math.random() < 0.2) {

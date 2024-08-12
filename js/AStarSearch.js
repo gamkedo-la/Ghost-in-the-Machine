@@ -290,7 +290,7 @@ function aStarSearchTest() {
 				const currY = currPos.y;
 				const currCost = aStarResults.cost[p]; 
 
-				if (debug) { console.log("loop, x, y, cost: ", p, currX, currY, currCost); }
+				// if (debug) { console.log("loop, x, y, cost: ", p, currX, currY, currCost); }
 
 				colorEmptyCircle(base.x, base.y, 3, "gray");
 				colorEmptyCircle(goal.x, goal.y, 3, "white");
