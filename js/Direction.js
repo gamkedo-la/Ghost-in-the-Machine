@@ -24,6 +24,10 @@ class Direction {
 			return { n : this.#moveNorth, e : this.#moveEast, s: this.#moveSouth, w: this.#moveWest };
 		}
 	}
+
+	isEqualTo(dir) {
+		return this.#col === dir.col && this.#row === dir.row;
+	}
 };
 
 const directionNoMove = new Direction(0, 0, false, false, false, false);
