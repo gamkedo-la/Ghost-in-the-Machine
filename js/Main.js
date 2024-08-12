@@ -75,11 +75,12 @@ function gamestart() {
 	AudioMan.setListener(player);
 	window.requestAnimationFrame(gameloop);
 
-	if (debug) { testAllHeaps(); }
-	if (debug) { testPriorityQueue(); }
-//	if (debug) { testAStarSearch(); }
-
+	// if (debug) { testAllHeaps(); }
+	// if (debug) { testPriorityQueue(); }
+	// if (debug) { testAStarSearch(); }
+	// if (debug) { testCircleIsOnLineSegment(); }
 	currentMap = testLevel1.load();
+	// if (debug) { testCircleIsOnWall(currentMap.walls); }
 }
 
 function gameloop(time) {
@@ -210,6 +211,8 @@ function gameloop(time) {
 		drawPauseScreen();
 	}
 	// end of draw block
+
+	// if (debug) { testAStarSearch(); }
 
 	Key.update();
 	AudioMan.update();
