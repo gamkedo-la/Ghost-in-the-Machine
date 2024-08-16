@@ -1,9 +1,9 @@
 const ASTAR_LEVEL_COLS = 1000;
 const ASTAR_LEVEL_ROWS = 1000;
 const ASTAR_LEVEL_GRID = ASTAR_LEVEL_COLS * ASTAR_LEVEL_ROWS;
-const ASTAR_MAX_SEARCH_LOOPS = 100000;
+const ASTAR_MAX_SEARCH_LOOPS = 10000;
 const ASTAR_PATH_INIT = -1;
-const ASTAR_COST_MAX = 10000;
+const ASTAR_COST_MAX = 100000;
 const ASTAR_COST_INIT = ASTAR_COST_MAX;
 const ASTAR_COST_EASY = 1;
 
@@ -122,10 +122,10 @@ class PathFindingComponent {
 				// set next tile cost to 1 for walkable and higher for less so
 				let nextTileCost = ASTAR_COST_EASY;
 
-			    const nextAndRadX = nextX + radius - 1;
-				const nextNetRadX = nextX - radius + 1;
-				const nextAndRadY = nextY + radius - 1;
-				const nextNetRadY = nextY - radius + 1;
+			    const nextAndRadX = nextX + radius;
+				const nextNetRadX = nextX - radius;
+				const nextAndRadY = nextY + radius;
+				const nextNetRadY = nextY - radius;
 
 				const nextXnextY = { x: nextX, y: nextY }
 				const nextXAndRadY = { x: nextX, y: nextAndRadY }
@@ -181,7 +181,7 @@ class PathFindingComponent {
 							nextNetRadY < entY + entRad;
 
 						if (collisionFound) {
-							nextTileCost = entRad * 10000;
+							nextTileCost = ASTAR_COST_MAX;
 							break;
 						}
 					}	

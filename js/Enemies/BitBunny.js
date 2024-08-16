@@ -58,22 +58,6 @@ class BitBunnyBrain extends Brain {
 	#aStarPath = [];
 	#foragingTime = 0;
 	#nextForagePos = this.pos;
-	// point to the north initially
-	#directionVector = { x: 0, y: -1 };
-	#dPrFwDv = dotProductOfVectors(this.forward, this.#directionVector);
-	#dPrRiDv = dotProductOfVectors(this.right, this.#directionVector);
-
-    get directionVector() { return this.#directionVector; }
-	get dPrFwDv() { return this.#dPrFwDv; }
-	get dPrRiDv() { return this.#dPrRiDv; }
-    setDirectionVector(targetPos = { x: 0, y: 0 }) {
-		this.#directionVector = 
-			normalizeVector(subtractVectors(targetPos, this.pos));
-		this.#dPrFwDv =
-			dotProductOfVectors(this.forward, this.#directionVector);
-		this.#dPrRiDv = 
-			dotProductOfVectors(this.right, this.#directionVector);
-	}
 
 	constructor(body) {
 		super(body);
@@ -176,13 +160,13 @@ class BitBunnyBrain extends Brain {
 		this.#aStarPath = []; 
 		this.body.rotateSpeed = BITBUNNY_ROTATE_SPEED;
 		if (this.distance < this.maxDistance) {
-			this.rotateDelta += this.#dPrRiDv;
+			this.rotateDelta += this.dPrRiDv;
 			this.rotateDelta += this.turnPreferance * 0.5;
-			this.moveDelta.x -= this.#dPrFwDv;
+			this.moveDelta.x -= this.dPrFwDv;
 		} else {
-			this.rotateDelta -= this.#dPrRiDv;
+			this.rotateDelta -= this.dPrRiDv;
 			this.moveDelta.x += 0.1;
-			if (this.#dPrFwDv > 0.5) {
+			if (this.dPrFwDv > 0.5) {
 				this.state = "idle";
 			}
 		}
@@ -201,8 +185,8 @@ class BitBunnyBrain extends Brain {
 			// grab a random direction, skip first element
 			const index = Math.floor(Math.random() * (dirCount - 1)) + 1;
 			const dir = forageDirChoices[index];
-			const col = dir.col;
-			const row = dir.row;
+			const col = dir.col * 1;
+			const row = dir.row * 1;
 			let loop = 0;
 			let loopMax = 10;
 			const keepLooping = () => 
@@ -225,18 +209,18 @@ class BitBunnyBrain extends Brain {
 
 			} while (keepLooping());
 
-			if (debug) { console.log(this.#aStarPath.length); }
-			if (debug) { console.log(this.name, this.#nextForagePos); }
-			if (debug) { console.log(this.#aStarPath); }
+			// if (debug) { console.log(this.#aStarPath.length); }
+			// if (debug) { console.log(this.name, this.#nextForagePos); }
+			// if (debug) { console.log(this.#aStarPath); }
 
 			this.#foragingTime = this.#aStarPath?.length * 2 ?? 0;				
 		}
 
-		if (debug) { // } && this.name === 'testBunny1') { 
-			console.log(this.name, this.#foragingTime); 
-			console.log(this.name, this.#nextForagePos); 
-			console.log(this.name, this.#aStarPath.length);
-		}
+		// if (debug) { // } && this.name === 'testBunny1') { 
+		// 	console.log(this.name, this.#foragingTime); 
+		// 	console.log(this.name, this.#nextForagePos); 
+		// 	console.log(this.name, this.#aStarPath.length);
+		// }
 
 		if (this.#foragingTime === 0) {
 			const nextForageChoice = Math.random();
@@ -248,9 +232,9 @@ class BitBunnyBrain extends Brain {
 				// find another path to the same pos
 				this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextForagePos).path;
 				this.#foragingTime = this.#aStarPath?.length * 2 ?? 0;
-				if (debug) { console.log(this.#foragingTime); }
-				if (debug) { console.log(this.name, this.#nextForagePos); }
-				if (debug) { console.log(this.#aStarPath); }
+				// if (debug) { console.log(this.#foragingTime); }
+				// if (debug) { console.log(this.name, this.#nextForagePos); }
+				// if (debug) { console.log(this.#aStarPath); }
 			} else {
 				// start over with a new forage pos and path
 				this.#aStarPath = [];
@@ -287,34 +271,43 @@ class BitBunnyBrain extends Brain {
 				// 	console.log("this.forward", this.forward);
 				// 	console.log("this.right", this.right);
 				// 	console.log("this.pos", this.pos);
-				// 	console.log("directionVector: ", this.#directionVector);
-				// 	console.log("dPrFwDv", this.#dPrFwDv);
-				// 	console.log("dPrRiDv", this.#dPrRiDv);
+				// 	console.log("directionVector: ", this.directionVector);
+				// 	console.log("dPrFwDv", this.dPrFwDv);
+				// 	console.log("dPrRiDv", this.dPrRiDv);
 				// 	console.log("this.body.rot", this.body.rot);
 				// 	console.log("this.rotateDelta: ", this.rotateDelta);
 				// 	console.log("this.moveDelta.x: ", this.moveDelta.x); 
 				// }
 	
-				// if (this.dPrFwDv > 0.999) {
-				// 	if (Math.random() < 0.2) {
-				// 		// this.moveDelta.x -= this.dPrFwDv;
-				// 		this.#foragingTime += 2;
-				// 	} else {
-				// 		this.moveDelta.x += this.dPrFwDv;
-				// 		this.#foragingTime += 1;
-				// 	}					
-				// 	// this.moveDelta.x += this.dPrFwDv;
-				// 	// this.rotateDelta += this.turnPreferance;
-				// 	// // if (debug && this.name === 'testBunny1') { console.log("move", this.dPrFwDv); }
-				// } else 
+				if (this.dPrFwDv > 0.999) {
+					if (Math.random() < 0.2) {
+						// this.moveDelta.x -= this.dPrFwDv;
+						this.#foragingTime += 2;
+					} else {
+						this.moveDelta.x += this.dPrFwDv;
+						this.#foragingTime += 1;
+					}					
+					// this.moveDelta.x += this.dPrFwDv;
+					// this.rotateDelta += this.turnPreferance;
+					// // if (debug && this.name === 'testBunny1') { console.log("move", this.dPrFwDv); }
+				} else 
 				if (this.dPrFwDv > 0.99) {
 					if (Math.random() < 0.1) {
 						this.moveDelta.x -= this.dPrFwDv;
 						this.rotateDelta -= this.dPrRiDv;
+						this.#foragingTime += 2;
+
+						if (Math.random() < 0.5) {
+							this.moveDelta.y -= 2;
+						} else {
+							this.moveDelta.y += 2;
+						}
+						this.#foragingTime += 1;
 					} else {
 						this.moveDelta.x += this.dPrFwDv;
 						this.rotateDelta += this.dPrRiDv;
 					}
+
 					// this.moveDelta.x += this.dPrFwDv;
 					// this.rotateDelta += this.turnPreferance;
 					// // if (debug && this.name === 'testBunny1') { console.log("move", this.dPrFwDv); }	

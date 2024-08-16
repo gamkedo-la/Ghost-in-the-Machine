@@ -1,4 +1,4 @@
-class EntityClass {
+class EntityClass {	
 	constructor(entityToOverride = {}) {
 		this.name = entityToOverride.name || "";
 		this.pos = entityToOverride.pos ? {x:entityToOverride.pos.x, y:entityToOverride.pos.y} : {x:0, y:0};
@@ -76,16 +76,6 @@ class EntityClass {
 
 		//collision checking
 		if (this.moveDelta.y != 0 || this.moveDelta.x != 0) {
-			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
-			for (var i in this.level.walls) {
-				if (distanceBetweenTwoPoints(getNearestPointOnLine(this.level.walls[i].p1, this.level.walls[i].p2, newPos), newPos) <= this.radius) {
-					// TODO: Collide and Slide
-					deltaX = 0;
-					deltaY = 0;
-					this.onCollisionWall();
-					break;
-				}
-			}
 			for (var i in this.level.entities) {
 				if (this.level.entities[i] == this) continue;
 				// TODO: This is janky, easy to get stuck in eachother
@@ -93,6 +83,17 @@ class EntityClass {
 					deltaX *= -1;
 					deltaY *= -1;
 					this.onCollisionEntity(this.level.entities[i]);
+					break;
+				}
+			}
+
+			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
+			for (var i in this.level.walls) {
+				if (distanceBetweenTwoPoints(getNearestPointOnLine(this.level.walls[i].p1, this.level.walls[i].p2, newPos), newPos) <= this.radius) {
+					// TODO: Collide and Slide
+					deltaX = 0;
+					deltaY = 0;
+					this.onCollisionWall();
 					break;
 				}
 			}
@@ -192,8 +193,14 @@ class SceneEntity extends EntityClass {
 }
 
 class Brain {
+	// point to North initially
+	#directionVector = { x: 0, y: -1 };
+	#dPrFwDv = 0;
+	#dPrRiDv = 0;
+	
 	constructor(body) {
 		this.body = body;
+		this.setDirectionVector();
 	}
 
 	get name() {return this.body.name;}
@@ -218,4 +225,16 @@ class Brain {
 	triggerAction() {this.body.triggerAction();}
 
 	think(deltaTime) {}
+
+	get directionVector() { return this.#directionVector; }
+	get dPrFwDv() { return this.#dPrFwDv; }
+	get dPrRiDv() { return this.#dPrRiDv; }
+	setDirectionVector = (targetPos = { x: 0, y: 0 }) => {
+		this.#directionVector = 
+			normalizeVector(subtractVectors(targetPos, this.pos));
+		this.#dPrFwDv =
+			dotProductOfVectors(this.forward, this.#directionVector);
+		this.#dPrRiDv = 
+			dotProductOfVectors(this.right, this.#directionVector);
+	}
 }
