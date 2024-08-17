@@ -262,8 +262,7 @@ function runAreaMode() {
 			areaMode = SET_CIRCLE_AREA;
 		} else if (areaMode == SET_CIRCLE_AREA) {
 			selectedElement.radius = distanceBetweenTwoPoints(mousePos, selectedElement.pos);
-			currentMap.triggerZones.push(selectedElement);
-			selectedElement = null;
+			performAction(new addAreaAction(selectedElement));
 			areaMode = ADD_CIRCLE_AREA;
 		}
 
@@ -281,8 +280,7 @@ function runAreaMode() {
 			selectedElement.bottomright = {x:topleftpos.x > bottomrightpos.x ? topleftpos.x : bottomrightpos.x, 
 			y:topleftpos.y > bottomrightpos.y ? topleftpos.y : bottomrightpos.y};
 
-			currentMap.triggerZones.push(selectedElement);
-			selectedElement = null;
+			performAction(new addAreaAction(selectedElement));
 			areaMode = ADD_AABB_AREA;
 		}
 
@@ -594,3 +592,28 @@ function setEntityRoboTypeAction(type) {
 	}
 }
 
+function addAreaAction(areaObject) {
+	var area = null;
+
+	this.execute = function() {
+		area = areaObject;
+		currentMap.triggerZones.push(area);
+
+		selectedElement = area;
+
+		return this;
+	}
+
+	this.undo = function() {
+		currentMap.triggerZones.splice(currentMap.triggerZones.indexOf(area), 1);
+
+		selectedElement = null;
+	}
+
+	this.redo = function() {
+		currentMap.triggerZones.push(area);
+
+		selectedElement = area;
+	}
+
+}

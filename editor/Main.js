@@ -263,18 +263,31 @@ function drawMapView() {
 	
 	//2D draw loops
 	// Draw trigger zones
-	for (var i = 0; i < currentMap.triggerZones.length; i++) {
-		if (currentMap.triggerZones[i] instanceof CircleTriggerZone) {
-			colorCircle(currentMap.triggerZones[i].pos.x, currentMap.triggerZones[i].pos.y, currentMap.triggerZones[i].radius+1, 'black');
-			colorCircle(currentMap.triggerZones[i].pos.x, currentMap.triggerZones[i].pos.y, currentMap.triggerZones[i].radius, 'darkorange');
+	if (editMode == AREA_MODE) {
+		for (var i = 0; i < currentMap.triggerZones.length; i++) {
+			if (currentMap.triggerZones[i] instanceof CircleTriggerZone) {
+				colorCircle(currentMap.triggerZones[i].pos.x, currentMap.triggerZones[i].pos.y, currentMap.triggerZones[i].radius+1, 'black');
+				colorCircle(currentMap.triggerZones[i].pos.x, currentMap.triggerZones[i].pos.y, currentMap.triggerZones[i].radius, 'darkorange');
+			}
+			if (currentMap.triggerZones[i] instanceof AABBTriggerZone) {
+				colorRect(currentMap.triggerZones[i].topleft.x - 1, currentMap.triggerZones[i].topleft.y - 1, 
+					currentMap.triggerZones[i].bottomright.x - currentMap.triggerZones[i].topleft.x + 2, 
+					currentMap.triggerZones[i].bottomright.y - currentMap.triggerZones[i].topleft.y + 2, 'black');
+				colorRect(currentMap.triggerZones[i].topleft.x, currentMap.triggerZones[i].topleft.y, 
+					currentMap.triggerZones[i].bottomright.x - currentMap.triggerZones[i].topleft.x, 
+					currentMap.triggerZones[i].bottomright.y - currentMap.triggerZones[i].topleft.y, 'purple');
+			}
 		}
-		if (currentMap.triggerZones[i] instanceof AABBTriggerZone) {
-			colorRect(currentMap.triggerZones[i].topleft.x - 1, currentMap.triggerZones[i].topleft.y - 1, 
-				currentMap.triggerZones[i].bottomright.x - currentMap.triggerZones[i].topleft.x + 2, 
-				currentMap.triggerZones[i].bottomright.y - currentMap.triggerZones[i].topleft.y + 2, 'black');
-			colorRect(currentMap.triggerZones[i].topleft.x, currentMap.triggerZones[i].topleft.y, 
-				currentMap.triggerZones[i].bottomright.x - currentMap.triggerZones[i].topleft.x, 
-				currentMap.triggerZones[i].bottomright.y - currentMap.triggerZones[i].topleft.y, 'purple');
+	} else {
+		for (var i = 0; i < currentMap.triggerZones.length; i++) {
+			if (currentMap.triggerZones[i] instanceof CircleTriggerZone) {
+				colorCircle(currentMap.triggerZones[i].pos.x, currentMap.triggerZones[i].pos.y, currentMap.triggerZones[i].radius, '#4C2500');
+			}
+			if (currentMap.triggerZones[i] instanceof AABBTriggerZone) {
+				colorRect(currentMap.triggerZones[i].topleft.x, currentMap.triggerZones[i].topleft.y, 
+					currentMap.triggerZones[i].bottomright.x - currentMap.triggerZones[i].topleft.x, 
+					currentMap.triggerZones[i].bottomright.y - currentMap.triggerZones[i].topleft.y, '#281D4B');
+			}
 		}
 	}
 
