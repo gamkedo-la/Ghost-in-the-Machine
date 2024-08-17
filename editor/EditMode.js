@@ -287,6 +287,7 @@ function runAreaMode() {
 	}
 
 	if (delKey && selectedElement != null) {
+		performAction(new deleteAreaAction(selectedElement));
 		delKey = false;
 	}
 
@@ -615,5 +616,30 @@ function addAreaAction(areaObject) {
 
 		selectedElement = area;
 	}
-
 }
+
+function deleteAreaAction() {
+	var area = null;
+
+	this.execute = function() {
+		area = selectedElement;
+
+		currentMap.triggerZones.splice(currentMap.triggerZones.indexOf(area), 1);
+		selectedElement = null;
+
+		return this;
+	}
+
+	this.undo = function() {
+		currentMap.triggerZones.push(area);
+
+		selectedElement = area;
+	}
+
+	this.redo = function() {
+		currentMap.triggerZones.splice(currentMap.triggerZones.indexOf(area), 1);
+
+		selectedElement = null;
+	}
+}
+
