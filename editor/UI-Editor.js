@@ -8,31 +8,43 @@ function setupUI(screenWidth, screenHeight) {
 	mainInterface.addPart(new WallPane("wallPane", 0, 30, 0, 0), true);
 	mainInterface.addPart(new AudioPane("audioPane", 0, 30, 150, 200), false);
 	mainInterface.addPart(new EntityPane("entityPane", 0, 30, 150, 200), false);
+	mainInterface.addPart(new AreaPane("areaPane", 0, 30, 150, 200), false);
 	mainInterface.addPart(new SelectionPane("selectionPane", 0, screenHeight, 200, 200), true);
 
 	mainInterface.parts[0].addPart(new UIButtonWToolTip("wallModeButton", 5, 5, 20, 20, "Wall Mode"));
-	mainInterface.parts[0].addPart(new UIButtonWToolTip("audioModeButton", 51, 5, 20, 20, "Audio Mode"));
+	mainInterface.parts[0].addPart(new UIButtonWToolTip("audioModeButton", 74, 5, 20, 20, "Audio Mode"));
 	mainInterface.parts[0].addPart(new UIButtonWToolTip("entityModeButton", 28, 5, 20, 20, "Entity Mode"));
-	mainInterface.parts[0].addPart(new UIToggleWToolTip("snapToggle", 97, 5, 20, 20, "Snap to nearest wall anchor", true));
+	mainInterface.parts[0].addPart(new UIToggleWToolTip("snapToggle", 120, 5, 20, 20, "Snap to nearest wall anchor", true));
 	mainInterface.parts[0].addPart(new UITextLabel("modetextlabel", screenWidth/2, 20, 0, 0, "", "center"));
+	mainInterface.parts[0].addPart(new UIButtonWToolTip("areaModeButton", 51, 5, 20, 20, "Trigger Area Mode"));
 
 	mainInterface.parts[0].parts[0].onClick = function() {
 		switchMode(WALL_MODE); 
 		mainInterface.parts[1].setActive(true);
 		mainInterface.parts[2].setActive(false);
 		mainInterface.parts[3].setActive(false);
+		mainInterface.parts[4].setActive(false);
 	};
 	mainInterface.parts[0].parts[1].onClick = function() {
 		switchMode(AUDIO_MODE); 
 		mainInterface.parts[1].setActive(false);
 		mainInterface.parts[2].setActive(true);
 		mainInterface.parts[3].setActive(false);
+		mainInterface.parts[4].setActive(false);
 	};
 	mainInterface.parts[0].parts[2].onClick = function() {
 		switchMode(ENTITY_MODE); 
 		mainInterface.parts[1].setActive(false);
 		mainInterface.parts[2].setActive(false);
 		mainInterface.parts[3].setActive(true);
+		mainInterface.parts[4].setActive(false);
+	};
+	mainInterface.parts[0].parts[5].onClick = function() {
+		switchMode(AREA_MODE); 
+		mainInterface.parts[1].setActive(false);
+		mainInterface.parts[2].setActive(false);
+		mainInterface.parts[3].setActive(false);
+		mainInterface.parts[4].setActive(true);
 	};
 	mainInterface.parts[0].parts[3].toggle = true;
 	mainInterface.parts[0].parts[3].onTrue = function() {snapToNearWallPoint = true;};
@@ -57,9 +69,9 @@ class WallPane extends UIElement {
 	constructor(name, x, y, w, h) {
 		super(name, x, y, 30, 76);
 
-		this.addPart(new UIButtonWToolTip("singleWallMode", 5, 5, 20, 20, "Add Walls"));
-		this.addPart(new UIButtonWToolTip("multiWallMode", 5, 28, 20, 20, "Add Connected Walls"));
-		this.addPart(new UIButtonWToolTip("selectWallMode", 5, 51, 20, 20, "Select Wall"));
+		this.addPart(new UIButtonWToolTip("singleWallMode", 5, 28, 20, 20, "Add Single Walls"));
+		this.addPart(new UIButtonWToolTip("multiWallMode", 5, 51, 20, 20, "Add Connected Walls"));
+		this.addPart(new UIButtonWToolTip("selectWallMode", 5, 5, 20, 20, "Select Wall"));
 
 		this.parts[0].onClick = function() {wallMode = ADD_SINGLE_WALL;};
 		this.parts[1].onClick = function() {wallMode = ADD_MULTI_WALLS;};
@@ -70,17 +82,17 @@ class WallPane extends UIElement {
 
 class AudioPane extends UIElement {
 	constructor(name, x, y, w, h) {
-		super(name, x, y, 30, 76);
+		super(name, x, y, 30, 30);
 
-		this.addPart(new UIButtonWToolTip("addAudioNodeMode",    5, 5,  20, 20, "Add Audio Nodes"));
-		this.addPart(new UIButtonWToolTip("selectAudioNodeMode", 5, 28, 20, 20, "Select Audio Nodes"));
-		//this.addPart(new UIButtonWToolTip("recalculateAudioGeo", 5, 51, 20, 20, "Recalculate Audio Geo"));
+		this.addPart(new UIButtonWToolTip("recalculateAudioGeo", 5, 5, 20, 20, "Recalculate AudioGeo"));
 
-		this.parts[0].onClick = function() {audioMode = ADD_AUDIO;};
-		this.parts[1].onClick = function() {audioMode = SELECT_AUDIO;};
-		//this.parts[2].onClick = function() {generateAudGeo();};
+		this.parts[0].onClick = function() {
+			populateAudioNodesFromWallEdges(currentMap.walls);
+			cullAudioNodesThatDontConnectToPoint(currentMap.startList[currentMap.startIndex], currentMap.walls);
+		};
 
-		generateAudGeo();
+		populateAudioNodesFromWallEdges(currentMap.walls);
+		cullAudioNodesThatDontConnectToPoint(currentMap.startList[currentMap.startIndex], currentMap.walls);
 	}
 
 	setActive(active) {
@@ -88,7 +100,7 @@ class AudioPane extends UIElement {
 
 		if (active) {
 			populateAudioNodesFromWallEdges(currentMap.walls);
-			cullAudioNodesThatDontConnectToPoint(currentMap.playerStart, currentMap.walls);
+			cullAudioNodesThatDontConnectToPoint(currentMap.startList[currentMap.startIndex], currentMap.walls);
 		}
 	}
 	
@@ -98,8 +110,8 @@ class EntityPane extends UIElement {
 	constructor(name, x, y, w, h) {
 		super(name, x, y, 30, 76);
 
-		this.addPart(new UIButtonWToolTip("addEntityMode", 5, 5, 20, 20, "Add Entities"));
-		this.addPart(new UIButtonWToolTip("selectEntityMode", 5, 28, 20, 20, "Select Entities"));
+		this.addPart(new UIButtonWToolTip("addEntityMode", 5, 28, 20, 20, "Add Entities"));
+		this.addPart(new UIButtonWToolTip("selectEntityMode", 5, 5, 20, 20, "Select Entities"));
 		this.addPart(new UIButtonWToolTip("setEntityRoboType", 5, 51, 20, 20, "Set Entity RoboType: undefined"));
 		this.addPart(new UIDropdown("defaultRobpTypeList", 5, 51, 100, 20), false);
 
@@ -121,6 +133,21 @@ class EntityPane extends UIElement {
 		}
 	}
 	
+}
+
+class AreaPane extends UIElement {
+	constructor(name, x, y, w, h) {
+		super(name, x, y, 30, 76);
+
+		this.addPart(new UIButtonWToolTip("selectAreaMode", 5, 5, 20, 20, "Select Trigger Zone"));
+		this.addPart(new UIButtonWToolTip("addCircleMode", 5, 28, 20, 20, "Add Circle Zone"));
+		this.addPart(new UIButtonWToolTip("addAABBMode", 5, 51, 20, 20, "Add Square Zone"));
+
+		this.parts[0].onClick = function() {areaMode = SELECT_AREA;};
+		this.parts[1].onClick = function() {areaMode = ADD_CIRCLE_AREA;};
+		this.parts[2].onClick = function() {areaMode = ADD_AABB_AREA;};
+	}
+
 }
 
 class SelectionPane extends UIElement{

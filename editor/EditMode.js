@@ -1,29 +1,38 @@
 const WALL_MODE = 0;
 const AUDIO_MODE = 1;
 const ENTITY_MODE = 2;
+const AREA_MODE = 3;
 
-const ADD_SINGLE_WALL = 0;
-const ADD_MULTI_WALLS = 1;
-const SELECT_WALL = 2;
-
-const ADD_ENTITY = 0;
-const SELECT_ENTITY = 1;
+const SELECT_WALL = 0;
+const ADD_SINGLE_WALL = 1;
+const ADD_MULTI_WALLS = 2;
 
 var wallMode = SELECT_WALL;
 var wallColor = "purple";
 var wallTexture = new Image();
 wallTexture.src = './images/text2Texture100x100.png';
 
+const SELECT_ENTITY = 0;
+const ADD_ENTITY = 1;
+
 var entityMode = SELECT_ENTITY;
 var currentEntityRoboType = "undefined";
 var defaultEntityRoboType = "undefined";
 var entityRoboTypesList = ["BitBunny", "Turret", "undefined"];
 
+const SELECT_AREA = 0;
+const ADD_CIRCLE_AREA = 1;
+const SET_CIRCLE_AREA = 2;
+const ADD_AABB_AREA = 3;
+const SET_AABB_AREA = 4;
+
+var areaMode = SELECT_AREA;
+
 var editMode = WALL_MODE;
 var lastPoint = null;
 var snapToNearWallPoint = true;
 var snapDistance = 5;
-var selectDistance = 5;
+var selectDistance = 7;
 var selectedElement = null;
 
 var actionListUndoStack = [];
@@ -41,8 +50,9 @@ function driveEditor() {
 	}
 
 	if (editMode == WALL_MODE) runWallMode();
-	if (editMode == AUDIO_MODE) runAudioMode()
-	if (editMode == ENTITY_MODE) runEntityMode()
+	if (editMode == AUDIO_MODE) runAudioMode();
+	if (editMode == ENTITY_MODE) runEntityMode();
+	if (editMode == AREA_MODE) runAreaMode();
 }
 
 function switchMode(newMode) {
@@ -82,6 +92,10 @@ function getDisplayText() {
 					break;
 			}
 			break;
+		case AREA_MODE:
+			returnText = "Trigger Zones";
+		default:
+			break;
 	}
 
 	return returnText;
@@ -91,6 +105,18 @@ function runWallMode() {
 	if (mouseJustPressed) {
 		var mousePos = getMousePositionInWorldSpace();
 		if (lastPoint != null && lastPoint.x == mousePos.x && lastPoint.y == mousePos.y) return; //Return early if mouse pos hasnt changed
+
+		if (wallMode == SELECT_WALL) {
+			selectedElement = null;
+			var lastDistance = selectDistance*2;
+			for (var i = 0; i < currentMap.walls.length; i++) {
+				var newDistance = distanceBetweenTwoPoints(mousePos, getNearestPointOnLine(currentMap.walls[i].p1, currentMap.walls[i].p2, mousePos));
+				if (newDistance < selectDistance && newDistance < lastDistance) {
+					selectedElement = currentMap.walls[i];
+					lastDistance = newDistance;
+				}
+			}
+		}
 
 		if (wallMode == ADD_SINGLE_WALL) {
 			if (lastPoint == null) {
@@ -111,18 +137,6 @@ function runWallMode() {
 				//Code to connect textures between walls
 			}
 		}
-
-		if (wallMode == SELECT_WALL) {
-			selectedElement = null;
-			var lastDistance = selectDistance*2;
-			for (var i = 0; i < currentMap.walls.length; i++) {
-				var newDistance = distanceBetweenTwoPoints(mousePos, getNearestPointOnLine(currentMap.walls[i].p1, currentMap.walls[i].p2, mousePos));
-				if (newDistance < selectDistance && newDistance < lastDistance) {
-					selectedElement = currentMap.walls[i];
-					lastDistance = newDistance;
-				}
-			}
-		}
 	}
 
 	if (delKey && selectedElement != null) {
@@ -137,9 +151,10 @@ function runWallMode() {
 		colorLine(p1.x, p1.y, p2.x, p2.y, 3, selectedElement.color);
 		colorEmptyCircle(p1.x, p1.y, 3, "grey");
 		colorEmptyCircle(p2.x, p2.y, 3, "grey");
+	} else {
+		colorEmptyCircle(mouseX, mouseY, selectDistance, "white");
 	}
 
-	colorEmptyCircle(mouseX, mouseY, 5, "white");
 	if (lastPoint != null) {
 		var pos = getWorldPositionInScreenSpace(lastPoint);
 		colorEmptyCircle(pos.x, pos.y, 3, "grey");
@@ -149,46 +164,44 @@ function runWallMode() {
 }
 
 function runAudioMode() {
-	// if (mouseJustPressed) {
-	// 	var mousePos = getMousePositionInWorldSpace();
+	if (mouseJustPressed) {
+		var mousePos = getMousePositionInWorldSpace();
+
+
+		if (audioMode == SELECT_AUDIO) {
+			selectedElement = null;
+			var lastDistance = selectDistance*2;
+			for (var i = 0; i < audGeoPoints.length; i++) {
+				var newDistance = distanceBetweenTwoPoints(mousePos, audGeoPoints[i]);
+				if (newDistance < selectDistance && newDistance < lastDistance) {
+					selectedElement = audGeoPoints[i];
+					lastDistance = newDistance;
+				}
+			}
+		}
 
 	// 	if (audioMode == ADD_AUDIO) {
 	// 		performAction(new addAudioNodeAction({x: mousePos.x, y: mousePos.y}));
 	// 	}
-
-	// 	if (audioMode == SELECT_AUDIO) {
-	// 		selectedElement = null;
-	// 		var lastDistance = selectDistance*2;
-	// 		for (var i = 0; i < audGeoPoints.length; i++) {
-	// 			var newDistance = distanceBetweenTwoPoints(mousePos, audGeoPoints[i]);
-	// 			if (newDistance < selectDistance && newDistance < lastDistance) {
-	// 				selectedElement = audGeoPoints[i];
-	// 				lastDistance = newDistance;
-	// 			}
-	// 		}
-	// 	}
-	// }
+	}
 
 	// if (delKey && selectedElement != null) {
 	// 	performAction(new deleteAudioNodeAction());
 	// 	delKey = false;
 	// }
 
-	// if (selectedElement != null) {
-	// 	var pos = getWorldPositionInScreenSpace(selectedElement);
-	// 	colorEmptyCircle(pos.x, pos.y, 3, "blue");
-	// }
+	if (selectedElement != null) {
+		var pos = getWorldPositionInScreenSpace(selectedElement);
+		colorEmptyCircle(pos.x, pos.y, 3, "blue");
+	} else {
+		colorEmptyCircle(mouseX, mouseY, selectDistance, "lightblue");
+	}
 
-	// colorEmptyCircle(mouseX, mouseY, 5, "lightblue");
 }
 
 function runEntityMode() {
 	if (mouseJustPressed) {
 		var mousePos = getMousePositionInWorldSpace();
-
-		if (entityMode == ADD_ENTITY) {
-			performAction(new addEntityAction({x: mousePos.x, y: mousePos.y}));
-		}
 
 		if (entityMode == SELECT_ENTITY) {
 			selectedElement = null;
@@ -210,6 +223,10 @@ function runEntityMode() {
 				currentEntityRoboType = defaultEntityRoboType;
 			}
 		}
+
+		if (entityMode == ADD_ENTITY) {
+			performAction(new addEntityAction({x: mousePos.x, y: mousePos.y}));
+		}
 	}
 
 	if (delKey && selectedElement != null) {
@@ -220,17 +237,104 @@ function runEntityMode() {
 	if (selectedElement != null) {
 		var pos = getWorldPositionInScreenSpace(selectedElement.pos);
 		colorEmptyCircle(pos.x, pos.y, 7, "lightblue");
+	} else {
+		colorEmptyCircle(mouseX, mouseY, selectDistance, "lightblue");
+	}
+}
+
+function runAreaMode() {
+	if (mouseJustPressed) {
+		var mousePos = getMousePositionInWorldSpace();
+
+		if (areaMode == SELECT_AREA) {
+			selectedElement = null;
+			var mousePosInLitteral = {pos: mousePos};
+			for (var i = 0; i < currentMap.triggerZones.length; i++) {
+				if (currentMap.triggerZones[i].isOverlapping(mousePosInLitteral)) {
+					selectedElement = currentMap.triggerZones[i];
+				}
+			}
+		}
+
+		if (areaMode == ADD_CIRCLE_AREA) {
+			selectedElement = new CircleTriggerZone(currentMap, mousePos, 0);
+			selectedElement.type = 'circle';
+			areaMode = SET_CIRCLE_AREA;
+		} else if (areaMode == SET_CIRCLE_AREA) {
+			selectedElement.radius = distanceBetweenTwoPoints(mousePos, selectedElement.pos);
+			currentMap.triggerZones.push(selectedElement);
+			selectedElement = null;
+			areaMode = ADD_CIRCLE_AREA;
+		}
+
+		if (areaMode == ADD_AABB_AREA) {
+			selectedElement = new AABBTriggerZone(currentMap, mousePos, mousePos);
+			selectedElement.type = 'AABB';
+			areaMode = SET_AABB_AREA;
+		} else if (areaMode == SET_AABB_AREA) {
+			var topleftpos = selectedElement.topleft;
+			var bottomrightpos = mousePos;
+			
+			selectedElement.topleft = {x:topleftpos.x < bottomrightpos.x ? topleftpos.x : bottomrightpos.x, 
+			y:topleftpos.y < bottomrightpos.y ? topleftpos.y : bottomrightpos.y};
+
+			selectedElement.bottomright = {x:topleftpos.x > bottomrightpos.x ? topleftpos.x : bottomrightpos.x, 
+			y:topleftpos.y > bottomrightpos.y ? topleftpos.y : bottomrightpos.y};
+
+			currentMap.triggerZones.push(selectedElement);
+			selectedElement = null;
+			areaMode = ADD_AABB_AREA;
+		}
+
 	}
 
-	colorEmptyCircle(mouseX, mouseY, 5, "lightblue");
+	if (delKey && selectedElement != null) {
+		delKey = false;
+	}
+
+	if (selectedElement != null) {
+		if(areaMode == SET_CIRCLE_AREA) {
+			var pos = getWorldPositionInScreenSpace(selectedElement.pos);
+			var radius = distanceBetweenTwoPoints(getMousePositionInWorldSpace(), selectedElement.pos);
+			colorEmptyCircle(pos.x, pos.y, radius, "lightgreen");			
+		}
+		if(areaMode == SET_AABB_AREA) {
+			var topleftpos = getWorldPositionInScreenSpace(selectedElement.topleft);
+			var bottomrightpos = getMousePositionInScreenSpace();
+
+			var topleft = {x:topleftpos.x < bottomrightpos.x ? topleftpos.x : bottomrightpos.x, 
+			y:topleftpos.y < bottomrightpos.y ? topleftpos.y : bottomrightpos.y};
+
+			var bottomright = {x:topleftpos.x > bottomrightpos.x ? topleftpos.x : bottomrightpos.x, 
+			y:topleftpos.y > bottomrightpos.y ? topleftpos.y : bottomrightpos.y};
+
+			colorLine(topleft.x, topleft.y, bottomright.x, topleft.y, 2, "lightgreen");
+			colorLine(bottomright.x, topleft.y, bottomright.x, bottomright.y, 2, "lightgreen");
+			colorLine(bottomright.x, bottomright.y, topleft.x, bottomright.y, 2, "lightgreen");
+			colorLine(topleft.x, bottomright.y, topleft.x, topleft.y, 2, "lightgreen");	
+		}
+		if (selectedElement instanceof CircleTriggerZone) {
+			var pos = getWorldPositionInScreenSpace(selectedElement.pos);
+			colorEmptyCircle(pos.x, pos.y, selectedElement.radius, "lightgreen");
+		}
+		if (selectedElement instanceof AABBTriggerZone) {
+			var topleft = getWorldPositionInScreenSpace(selectedElement.topleft);
+			var bottomright = getWorldPositionInScreenSpace(selectedElement.bottomright);
+			colorLine(topleft.x-1, topleft.y, bottomright.x+1, topleft.y, 1.5, "lightgreen");
+			colorLine(bottomright.x, topleft.y-1, bottomright.x, bottomright.y+1, 1.5, "lightgreen");
+			colorLine(bottomright.x+1, bottomright.y, topleft.x-1, bottomright.y, 1.5, "lightgreen");
+			colorLine(topleft.x, bottomright.y-1, topleft.x, topleft.y+1, 1.5, "lightgreen");
+		}
+	} else {
+		colorEmptyCircle(mouseX, mouseY, selectDistance, "lightgreen");
+	}
+
 }
 
 function outputLevelJSONtoConsole() {
 	var newLevel = {};
 
 	newLevel.playerStart = currentMap.playerStart;
-	newLevel.topColor = currentMap.topColor;
-	newLevel.bottomColor = currentMap.bottomColor;
 	if (currentMap.walls.length > 0) {
 		newLevel.walls = currentMap.walls;
 	}
@@ -240,6 +344,14 @@ function outputLevelJSONtoConsole() {
 			delete newLevel.entities[i].distance;
 		}
 	}
+	if (currentMap.triggerZones.length > 0) {
+		newLevel.triggerZones = currentMap.triggerZones;
+		for(var i = 0; i < newLevel.triggerZones.length; i++) {
+			delete newLevel.triggerZones[i]._inZone;
+			delete newLevel.triggerZones[i].level;
+		}
+	}
+
 	console.log(JSON.stringify(newLevel));
 }
 
@@ -253,6 +365,10 @@ function createLevelFromJSON(levelJSON) {
 function loadLevel(level) {
 	level.onLoad = function(){};
 	currentMap = level.load();
+}
+
+function getWorldPositionInScreenSpace(pos) {
+	return {x: pos.x - player.x + eCanvas.width/2, y: pos.y - player.y + eCanvas.height/2}
 }
 
 function getMousePositionInWorldSpace() {
@@ -280,8 +396,8 @@ function getMousePositionInWorldSpace() {
 	return newPos;
 }
 
-function getWorldPositionInScreenSpace(pos) {
-	return {x: pos.x - player.x + eCanvas.width/2, y: pos.y - player.y + eCanvas.height/2}
+function getMousePositionInScreenSpace() {
+	return getWorldPositionInScreenSpace(getMousePositionInWorldSpace());
 }
 
 function performAction(action) {

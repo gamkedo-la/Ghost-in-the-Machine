@@ -46,12 +46,17 @@ class AABBTriggerZone extends TriggerZone {
 	constructor(level, topleftpos, bottomrightpos) {
 		super(level);
 
-		this.topleft = {x:topleftpos.x, y:topleftpos.y};
-		this.bottomright = {x:bottomrightpos.x, y:bottomrightpos.y};
+		this.topleft = {x:topleftpos.x < bottomrightpos.x ? topleftpos.x : bottomrightpos.x, 
+		y:topleftpos.y < bottomrightpos.y ? topleftpos.y : bottomrightpos.y};
+		
+		this.bottomright = {x:topleftpos.x > bottomrightpos.x ? topleftpos.x : bottomrightpos.x, 
+		y:topleftpos.y > bottomrightpos.y ? topleftpos.y : bottomrightpos.y};
 	}
 
 	isOverlapping(entity) {
-		return entity.pos.x >= this.topleft.x && entity.pos.x <= this.bottomright.x &&
-			   entity.pos.y <= this.topleft.y && entity.pos.y >= this.bottomright.y;
+		return entity.pos.x >= this.topleft.x && 
+			   entity.pos.x <= this.bottomright.x &&
+			   entity.pos.y >= this.topleft.y && 
+			   entity.pos.y <= this.bottomright.y;
 	}
 }

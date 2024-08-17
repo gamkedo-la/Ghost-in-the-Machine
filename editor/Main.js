@@ -260,20 +260,42 @@ function drawMapView() {
 	colorRect(0, 0, canvas.width, canvas.height, 'black');
 	canvasContext.translate(canvas.width/2, canvas.height/2);
 	canvasContext.translate(-player.x, -player.y);
-
+	
 	//2D draw loops
+	// Draw trigger zones
+	for (var i = 0; i < currentMap.triggerZones.length; i++) {
+		if (currentMap.triggerZones[i] instanceof CircleTriggerZone) {
+			colorCircle(currentMap.triggerZones[i].pos.x, currentMap.triggerZones[i].pos.y, currentMap.triggerZones[i].radius+1, 'black');
+			colorCircle(currentMap.triggerZones[i].pos.x, currentMap.triggerZones[i].pos.y, currentMap.triggerZones[i].radius, 'darkorange');
+		}
+		if (currentMap.triggerZones[i] instanceof AABBTriggerZone) {
+			colorRect(currentMap.triggerZones[i].topleft.x - 1, currentMap.triggerZones[i].topleft.y - 1, 
+				currentMap.triggerZones[i].bottomright.x - currentMap.triggerZones[i].topleft.x + 2, 
+				currentMap.triggerZones[i].bottomright.y - currentMap.triggerZones[i].topleft.y + 2, 'black');
+			colorRect(currentMap.triggerZones[i].topleft.x, currentMap.triggerZones[i].topleft.y, 
+				currentMap.triggerZones[i].bottomright.x - currentMap.triggerZones[i].topleft.x, 
+				currentMap.triggerZones[i].bottomright.y - currentMap.triggerZones[i].topleft.y, 'purple');
+		}
+	}
+
+	// Draw walls
 	for (var i = 0; i < currentMap.walls.length; i++) {
 		currentMap.walls[i].draw2D();
 	}
+	// Draw entities
 	for (var i = 0; i < currentMap.entities.length; i++) {
 		var entity = currentMap.entities[i];
 		var forward = {x: Math.cos(entity.rot) * 5, y: Math.sin(entity.rot) * 5};
 		colorLine(entity.pos.x, entity.pos.y, entity.pos.x + forward.x, entity.pos.y + forward.y, 2, "white");
 		colorEmptyCircle(entity.pos.x, entity.pos.y, 5, "grey");
 	}
+
+	// Draw start positions
 	colorLine(currentMap.playerStart.x + 5, currentMap.playerStart.y, currentMap.playerStart.x - 5, currentMap.playerStart.y, 1, "darkgrey");
 	colorLine(currentMap.playerStart.x, currentMap.playerStart.y + 5, currentMap.playerStart.x, currentMap.playerStart.y - 5, 1, "darkgrey");
 	colorEmptyCircle(currentMap.playerStart.x, currentMap.playerStart.y, 5, "darkgrey");
+
+	// Draw audio geometry
 	if (editMode == AUDIO_MODE) {
 		for (var i = 0; i < currentAudGeo.length; i++) {
 			for (var j = 0; j < currentAudGeo[i].connections.length; j++) {
@@ -283,12 +305,16 @@ function drawMapView() {
 			if (lineOfSight(currentAudGeo[i].point, player, currentMap.walls)) {
 				colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, player.x, player.y, 1, "darkblue");
 			}
+			if (lineOfSight(currentAudGeo[i].point, currentMap.playerStart, currentMap.walls)) {
+				colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, currentMap.playerStart.x, currentMap.playerStart.y, 0.5, "darkblue");
+			}
 		}
 		for (var i = 0; i < audGeoPoints.length; i++) {
 			colorEmptyCircle(audGeoPoints[i].x, audGeoPoints[i].y, 1, "lightblue");
 		}
 	}
 
+	// Draw player
 	colorLine(player.x, player.y, player.x + player.forwardX * 10, player.y + player.forwardY * 10, 2, "darkgrey");
 	colorEmptyCircle(player.x, player.y, 5, "darkgrey");
 

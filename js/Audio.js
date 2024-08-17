@@ -558,7 +558,7 @@ function cullAudioNodesThatDontConnectToPoint(point, walls) {
 		audGeoPoints.push(currentAudGeo[visited[i]].point);
 	}
 
-	generateAudGeo();
+	generateAudGeo(walls);
 }
 
 function generateAudGeo(walls) {

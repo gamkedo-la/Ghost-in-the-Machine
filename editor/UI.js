@@ -713,11 +713,11 @@ class UIButtonWToolTip extends UIButton {
 	}
 
 	lateDraw() {
-		colorText(this.toolTip, mouseX+1, mouseY+1, "white", "14px Arial", this.textAlignment);
-		colorText(this.toolTip, mouseX-1, mouseY+1, "white", "14px Arial", this.textAlignment);
-		colorText(this.toolTip, mouseX+1, mouseY-1, "white", "14px Arial", this.textAlignment);
-		colorText(this.toolTip, mouseX-1, mouseY-1, "white", "14px Arial", this.textAlignment);
-		colorText(this.toolTip, mouseX,   mouseY,   "black", "14px Arial", this.textAlignment);
+		colorText(this.toolTip, mouseX+1, mouseY+2, "white", "16px Arial", this.textAlignment);
+		colorText(this.toolTip, mouseX-1, mouseY+2, "white", "16px Arial", this.textAlignment);
+		colorText(this.toolTip, mouseX+1, mouseY-1, "white", "16px Arial", this.textAlignment);
+		colorText(this.toolTip, mouseX-1, mouseY-1, "white", "16px Arial", this.textAlignment);
+		colorText(this.toolTip, mouseX,   mouseY,   "black", "16px Arial", this.textAlignment);
 	}
 }
 
