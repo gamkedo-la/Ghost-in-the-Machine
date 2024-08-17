@@ -77,6 +77,7 @@ function LevelClass() {
 						break;
 					default:
 						newTriggerZone = new TriggerZone(this);
+						break;
 					}
 
 					this.triggerZones.push(newTriggerZone);
@@ -93,13 +94,14 @@ function LevelClass() {
 			}
 		}
 
-		this.onLoad();
+		if (this.startIndex < 0) this.startIndex = 0;
+		this.playerStart = this.startList[this.startIndex % this.startList.length];
 		
 		populateAudioNodesFromWallEdges(this.walls);
 		cullAudioNodesThatDontConnectToPoint(this.playerStart, this.walls);
 
+		this.onLoad();
 
-		this.playerStart = this.startList[this.startIndex % this.startList.length];
 		player.pos.x = this.playerStart.x;
 		player.pos.y = this.playerStart.y;
 		player.rot = this.playerStart.rot;

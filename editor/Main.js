@@ -172,8 +172,6 @@ window.onload = function() {
 	newWall.color = "green";
 	currentMap.walls.push(newWall);
 
-	var testEntity = {name:"Rob", pos: {x: 0, y:0}, rot: d0, distance: Infinity};
-	currentMap.entities.push(testEntity);
 	var testEntity1 = {name:"Cat", pos: {x: 50, y:50}, rot: d180, distance: Infinity};
 	currentMap.entities.push(testEntity1);
 	var testEntity2 = {name:"Benny", pos: {x: -50, y:50}, rot: d270, distance: Infinity};
@@ -304,8 +302,19 @@ function drawMapView() {
 	}
 
 	// Draw start positions
-	colorLine(currentMap.playerStart.x + 5, currentMap.playerStart.y, currentMap.playerStart.x - 5, currentMap.playerStart.y, 1, "darkgrey");
-	colorLine(currentMap.playerStart.x, currentMap.playerStart.y + 5, currentMap.playerStart.x, currentMap.playerStart.y - 5, 1, "darkgrey");
+	if (editMode == SPAWN_MODE) {
+		for (var i = 0; i < currentMap.startList.length; i++) {
+			var spawn = currentMap.startList[i];
+			colorLine(spawn.x + 5, spawn.y, spawn.x - 5, spawn.y, 1, "darkgrey");
+			colorLine(spawn.x, spawn.y + 5, spawn.x, spawn.y - 5, 1, "darkgrey");
+			
+			var forward = {x: Math.cos(spawn.rot) * 5, y: Math.sin(spawn.rot) * 5};
+			colorLine(spawn.x, spawn.y, spawn.x + forward.x, spawn.y + forward.y, 2, "grey");
+		}
+	} else {
+		colorLine(currentMap.playerStart.x + 5, currentMap.playerStart.y, currentMap.playerStart.x - 5, currentMap.playerStart.y, 1, "darkgrey");
+		colorLine(currentMap.playerStart.x, currentMap.playerStart.y + 5, currentMap.playerStart.x, currentMap.playerStart.y - 5, 1, "darkgrey");
+	}
 	colorEmptyCircle(currentMap.playerStart.x, currentMap.playerStart.y, 5, "darkgrey");
 
 	// Draw audio geometry

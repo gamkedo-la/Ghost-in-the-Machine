@@ -9,14 +9,16 @@ function setupUI(screenWidth, screenHeight) {
 	mainInterface.addPart(new AudioPane("audioPane", 0, 30, 150, 200), false);
 	mainInterface.addPart(new EntityPane("entityPane", 0, 30, 150, 200), false);
 	mainInterface.addPart(new AreaPane("areaPane", 0, 30, 150, 200), false);
+	mainInterface.addPart(new SpawnPane("spawnPane", 0, 30, 150, 200), false);
 	mainInterface.addPart(new SelectionPane("selectionPane", 0, screenHeight, 200, 200), true);
 
 	mainInterface.parts[0].addPart(new UIButtonWToolTip("wallModeButton", 5, 5, 20, 20, "Wall Mode"));
-	mainInterface.parts[0].addPart(new UIButtonWToolTip("audioModeButton", 74, 5, 20, 20, "Audio Mode"));
+	mainInterface.parts[0].addPart(new UIButtonWToolTip("audioModeButton", 97, 5, 20, 20, "Audio Mode"));
 	mainInterface.parts[0].addPart(new UIButtonWToolTip("entityModeButton", 28, 5, 20, 20, "Entity Mode"));
-	mainInterface.parts[0].addPart(new UIToggleWToolTip("snapToggle", 120, 5, 20, 20, "Snap to nearest wall anchor", true));
+	mainInterface.parts[0].addPart(new UIToggleWToolTip("snapToggle", 143, 5, 20, 20, "Snap to nearest wall anchor", true));
 	mainInterface.parts[0].addPart(new UITextLabel("modetextlabel", screenWidth/2, 20, 0, 0, "", "center"));
 	mainInterface.parts[0].addPart(new UIButtonWToolTip("areaModeButton", 51, 5, 20, 20, "Trigger Area Mode"));
+	mainInterface.parts[0].addPart(new UIButtonWToolTip("spawnModeButton", 74, 5, 20, 20, "Player Start Mode"));
 
 	mainInterface.parts[0].parts[0].onClick = function() {
 		switchMode(WALL_MODE); 
@@ -24,6 +26,7 @@ function setupUI(screenWidth, screenHeight) {
 		mainInterface.parts[2].setActive(false);
 		mainInterface.parts[3].setActive(false);
 		mainInterface.parts[4].setActive(false);
+		mainInterface.parts[5].setActive(false);
 	};
 	mainInterface.parts[0].parts[1].onClick = function() {
 		switchMode(AUDIO_MODE); 
@@ -31,6 +34,7 @@ function setupUI(screenWidth, screenHeight) {
 		mainInterface.parts[2].setActive(true);
 		mainInterface.parts[3].setActive(false);
 		mainInterface.parts[4].setActive(false);
+		mainInterface.parts[5].setActive(false);
 	};
 	mainInterface.parts[0].parts[2].onClick = function() {
 		switchMode(ENTITY_MODE); 
@@ -38,6 +42,7 @@ function setupUI(screenWidth, screenHeight) {
 		mainInterface.parts[2].setActive(false);
 		mainInterface.parts[3].setActive(true);
 		mainInterface.parts[4].setActive(false);
+		mainInterface.parts[5].setActive(false);
 	};
 	mainInterface.parts[0].parts[5].onClick = function() {
 		switchMode(AREA_MODE); 
@@ -45,6 +50,15 @@ function setupUI(screenWidth, screenHeight) {
 		mainInterface.parts[2].setActive(false);
 		mainInterface.parts[3].setActive(false);
 		mainInterface.parts[4].setActive(true);
+		mainInterface.parts[5].setActive(false);
+	};
+	mainInterface.parts[0].parts[6].onClick = function() {
+		switchMode(SPAWN_MODE); 
+		mainInterface.parts[1].setActive(false);
+		mainInterface.parts[2].setActive(false);
+		mainInterface.parts[3].setActive(false);
+		mainInterface.parts[4].setActive(false);
+		mainInterface.parts[5].setActive(true);
 	};
 	mainInterface.parts[0].parts[3].toggle = true;
 	mainInterface.parts[0].parts[3].onTrue = function() {snapToNearWallPoint = true;};
@@ -147,7 +161,25 @@ class AreaPane extends UIElement {
 		this.parts[1].onClick = function() {areaMode = ADD_CIRCLE_AREA;};
 		this.parts[2].onClick = function() {areaMode = ADD_AABB_AREA;};
 	}
+}
 
+class SpawnPane extends UIElement {
+	constructor(name, x, y, w, h) {
+		super(name, x, y, 30, 76);
+
+		this.addPart(new UIButtonWToolTip("selectSpawnMode", 5, 5, 20, 20, "Select Starting Point"));
+		this.addPart(new UIButtonWToolTip("addSpawnMode", 5, 28, 20, 20, "Add Starting Point"));
+		this.addPart(new UIButtonWToolTip("setDefaultSpawn", 5, 51, 20, 20, "Set Default Starting Point"));
+
+		this.parts[0].onClick = function() {spawnMode = SELECT_SPAWN;};
+		this.parts[1].onClick = function() {spawnMode = ADD_SPAWN;};
+		this.parts[2].onClick = function() {
+			if (selectedElement != null) {
+				currentMap.startIndex = currentMap.startList.indexOf(selectedElement);
+				currentMap.playerStart = currentMap.startList[currentMap.startIndex];
+			}
+		};
+	}
 }
 
 class SelectionPane extends UIElement{
@@ -165,33 +197,53 @@ class SelectionPane extends UIElement{
 			this.addPart(new UIButton("nudgeCounterClockwise", 176, 135, 10, 10), false),
 		];
 		this.nudgeButtons[0].onClick = function() {
-			if (selectedElement!= null) {
+			if (selectedElement == null) return;
+
+			if (selectedElement.pos != undefined) {
 				selectedElement.pos.x += -1;
+			} else if(selectedElement.x != undefined) {
+				selectedElement.x += -1;
 			}
 		};
 		this.nudgeButtons[1].onClick = function() {
-			if (selectedElement!= null) {
+			if (selectedElement == null) return;
+			
+			if (selectedElement.pos != undefined) {
 				selectedElement.pos.y += -1;
+			} else if(selectedElement.y != undefined) {
+				selectedElement.y += -1;
 			}
 		};
 		this.nudgeButtons[2].onClick = function() {
-			if (selectedElement!= null) {
+			if (selectedElement == null) return;
+			
+			if (selectedElement.pos != undefined) {
 				selectedElement.pos.x += 1;
+			} else if(selectedElement.x != undefined) {
+				selectedElement.x += 1;
 			}
 		};
 		this.nudgeButtons[3].onClick = function() {
-			if (selectedElement!= null) {
+			if (selectedElement == null) return;
+			
+			if (selectedElement.pos != undefined) {
 				selectedElement.pos.y += 1;
+			} else if(selectedElement.y != undefined) {
+				selectedElement.y += 1;
 			}
 		};
 		this.nudgeButtons[4].onClick = function() {
-			if (selectedElement!= null) {
+			if (selectedElement == null) return;
+			
+			if (selectedElement.rot != undefined) {
 				selectedElement.rot += degToRad(-10);
 				selectedElement.rot = wrap(selectedElement.rot, d0, d360);
 			}
 		};
 		this.nudgeButtons[5].onClick = function() {
-			if (selectedElement!= null) {
+			if (selectedElement == null) return;
+			
+			if (selectedElement.rot != undefined) {
 				selectedElement.rot += degToRad(10);
 				selectedElement.rot = wrap(selectedElement.rot, d0, d360);
 			}
@@ -223,6 +275,10 @@ class SelectionPane extends UIElement{
 				this.w = 200;
 			}
 			if (editMode == ENTITY_MODE) {
+				this.h = 100;
+				this.w = 200;
+			}
+			if (editMode == SPAWN_MODE) {
 				this.h = 100;
 				this.w = 200;
 			}
@@ -278,6 +334,15 @@ class SelectionPane extends UIElement{
 					this.nudgeButtons[i].setActive(false);
 				}
 				this.robotDropdown.setActive(false);
+			}
+
+			if (editMode == SPAWN_MODE) {
+				var textPos = "Pos {x: " + selectedElement.x + ", y: " + selectedElement.y + "} Rot: " + Math.round(radToDeg(selectedElement.rot));
+				colorText(textPos, this.x + borderSize + 20, this.y + 15 + borderSize, "darkblue");
+
+				for (var i = 0; i < this.nudgeButtons.length; i++) {
+					this.nudgeButtons[i].setActive(true);
+				}
 			}
 
 		} else {

@@ -2,11 +2,11 @@ const WALL_MODE = 0;
 const AUDIO_MODE = 1;
 const ENTITY_MODE = 2;
 const AREA_MODE = 3;
+const SPAWN_MODE = 4;
 
 const SELECT_WALL = 0;
 const ADD_SINGLE_WALL = 1;
 const ADD_MULTI_WALLS = 2;
-
 var wallMode = SELECT_WALL;
 var wallColor = "purple";
 var wallTexture = new Image();
@@ -14,7 +14,6 @@ wallTexture.src = './images/text2Texture100x100.png';
 
 const SELECT_ENTITY = 0;
 const ADD_ENTITY = 1;
-
 var entityMode = SELECT_ENTITY;
 var currentEntityRoboType = "undefined";
 var defaultEntityRoboType = "undefined";
@@ -25,8 +24,11 @@ const ADD_CIRCLE_AREA = 1;
 const SET_CIRCLE_AREA = 2;
 const ADD_AABB_AREA = 3;
 const SET_AABB_AREA = 4;
-
 var areaMode = SELECT_AREA;
+
+const SELECT_SPAWN = 0;
+const ADD_SPAWN = 1;
+var spawnMode = SELECT_SPAWN;
 
 var editMode = WALL_MODE;
 var lastPoint = null;
@@ -53,6 +55,7 @@ function driveEditor() {
 	if (editMode == AUDIO_MODE) runAudioMode();
 	if (editMode == ENTITY_MODE) runEntityMode();
 	if (editMode == AREA_MODE) runAreaMode();
+	if (editMode == SPAWN_MODE) runSpawnMode();
 }
 
 function switchMode(newMode) {
@@ -94,6 +97,10 @@ function getDisplayText() {
 			break;
 		case AREA_MODE:
 			returnText = "Trigger Zones";
+			break;
+		case SPAWN_MODE:
+			returnText = "Starting Points";
+			break;
 		default:
 			break;
 	}
@@ -196,7 +203,6 @@ function runAudioMode() {
 	} else {
 		colorEmptyCircle(mouseX, mouseY, selectDistance, "lightblue");
 	}
-
 }
 
 function runEntityMode() {
@@ -327,22 +333,62 @@ function runAreaMode() {
 	} else {
 		colorEmptyCircle(mouseX, mouseY, selectDistance, "lightgreen");
 	}
+}
 
+function runSpawnMode() {
+	if (mouseJustPressed) {
+		var mousePos = getMousePositionInWorldSpace();
+
+		if (spawnMode == SELECT_SPAWN) {
+			selectedElement = null;
+			var lastDistance = selectDistance*2;
+			for (var i = 0; i < currentMap.startList.length; i++) {
+				var newDistance = distanceBetweenTwoPoints(mousePos, currentMap.startList[i]);
+				if (newDistance < selectDistance && newDistance < lastDistance) {
+					selectedElement = currentMap.startList[i];
+					lastDistance = newDistance;
+				}
+			}
+		}
+
+		if (spawnMode == ADD_SPAWN) {
+			performAction(new addSpawnAction({x: mousePos.x, y: mousePos.y, rot:d270}));
+		}
+	}
+
+	if (delKey && selectedElement != null) {
+		performAction(new deleteSpawnAction());
+		delKey = false;
+	}
+
+	if (selectedElement != null) {
+		var pos = getWorldPositionInScreenSpace(selectedElement);
+		colorEmptyCircle(pos.x, pos.y, 7, "yellow");
+	} else {
+		colorEmptyCircle(mouseX, mouseY, selectDistance, "yellow");
+	}
 }
 
 function outputLevelJSONtoConsole() {
 	var newLevel = {};
 
 	newLevel.playerStart = currentMap.playerStart;
+	newLevel.startIndex = currentMap.startIndex;
+	if (currentMap.startList.length > 0) {
+		newLevel.startList = currentMap.startList;
+	}
+
 	if (currentMap.walls.length > 0) {
 		newLevel.walls = currentMap.walls;
 	}
+
 	if (currentMap.entities.length > 0) {
 		newLevel.entities = currentMap.entities;
 		for(var i = 0; i < newLevel.entities.length; i++) {
 			delete newLevel.entities[i].distance;
 		}
 	}
+
 	if (currentMap.triggerZones.length > 0) {
 		newLevel.triggerZones = currentMap.triggerZones;
 		for(var i = 0; i < newLevel.triggerZones.length; i++) {
@@ -640,6 +686,94 @@ function deleteAreaAction() {
 		currentMap.triggerZones.splice(currentMap.triggerZones.indexOf(area), 1);
 
 		selectedElement = null;
+	}
+}
+
+function addSpawnAction(spawnPoint) {
+	var spawn = null;
+	var lastSelected = null;
+
+	this.execute = function() {
+		spawn = spawnPoint;
+		currentMap.startList.push(spawn);
+
+		lastSelected = selectedElement;
+		selectedElement = spawn;
+
+		return this;
+	}
+
+	this.undo = function() {
+		var index = currentMap.startList.indexOf(spawn);
+		currentMap.startList.splice(index, 1);
+
+		selectedElement = lastSelected;
+
+		if (currentMap.startIndex == index) {
+			currentMap.startIndex = 0;
+			currentMap.playerStart = currentMap.startList[currentMap.startIndex];
+		}
+	}
+
+	this.redo = function() {
+		currentMap.startList.push(spawn);
+
+		lastSelected = selectedElement;
+		selectedElement = spawn;
+	}
+}
+
+function deleteSpawnAction() {
+	var spawn = null;
+	var index = 0;
+	var lastIndex = 0;
+
+	this.execute = function() {
+		spawn = selectedElement;
+		index = currentMap.startList.indexOf(spawn);
+
+		currentMap.startList.splice(index, 1);
+		selectedElement = null;
+
+		lastIndex = currentMap.startIndex;
+		if (lastIndex == index) {
+			currentMap.startIndex = 0;
+			currentMap.playerStart = currentMap.startList[currentMap.startIndex];
+		}
+		if (lastIndex > index) {
+			currentMap.startIndex--;
+			currentMap.playerStart = currentMap.startList[currentMap.startIndex];
+		}
+
+		if (currentMap.startList.length == 0) {
+			performAction(new addSpawnAction({x:0, y:0, rot:d270}));
+			currentMap.startIndex = 0;
+			currentMap.playerStart = currentMap.startList[currentMap.startIndex];
+		}
+
+		return this;
+	}
+
+	this.undo = function() {
+		currentMap.startList.push(spawn);
+
+		selectedElement = spawn;
+
+		if (lastIndex == index) {
+			currentMap.startIndex = index;
+			currentMap.playerStart = currentMap.startList[currentMap.startIndex];
+		}
+	}
+
+	this.redo = function() {
+		currentMap.startList.splice(currentMap.startList.indexOf(spawn), 1);
+
+		selectedElement = null;
+
+		if (lastIndex == index) {
+			currentMap.startIndex = currentMap.startList.length - 1;
+			currentMap.playerStart = currentMap.startList[currentMap.startIndex];
+		}
 	}
 }
 
