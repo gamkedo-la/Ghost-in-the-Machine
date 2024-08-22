@@ -1,4 +1,4 @@
-class EntityClass {	
+class EntityClass {
 	constructor(entityToOverride = {}) {
 		this.name = entityToOverride.name || "";
 		this.pos = entityToOverride.pos ? {x:entityToOverride.pos.x, y:entityToOverride.pos.y} : {x:0, y:0};
@@ -77,13 +77,21 @@ class EntityClass {
 		//collision checking
 		if (this.moveDelta.y != 0 || this.moveDelta.x != 0) {
 			for (var i in this.level.entities) {
-				if (this.level.entities[i] == this) continue;
+				const ent = this.level.entities[i];
+				if (ent == this) continue;
 				// TODO: This is janky, easy to get stuck in eachother
-				if (distanceBetweenTwoPoints(this.pos, this.level.entities[i].pos) < this.radius + this.level.entities[i].radius) {
-					deltaX *= -1;
-					deltaY *= -1;
-					this.onCollisionEntity(this.level.entities[i]);
-					break;
+				const distApart =
+					distanceBetweenTwoPoints(
+						this.pos, ent.pos);
+				ent.brain.setDirectionVector(this.pos);
+
+				if (distApart < this.radius + ent.radius) {
+					// deltaX += ent.directionVector * distApart;
+
+					// deltaX *= Math.floor(Math.random() * 3) - 1;
+					// deltaY *= Math.floor(Math.random() * 3) - 1;
+					// this.onCollisionEntity(ent);
+					// break;
 				}
 			}
 
@@ -149,7 +157,7 @@ class EntityClass {
 			colorLine(0, this.pos.y, this.pos.x, this.pos.y, 1, colorLR);
 			colorLine(this.pos.x, 0, this.pos.x, this.pos.y, 1, colorUD);
 		}
-		
+
 		if (this.brain.draw2D != undefined) {
 			this.brain.draw2D();
 		}
@@ -166,8 +174,8 @@ class SceneEntity extends EntityClass {
 		this._shadowImage.src = './images/shadow.png';
 
 		this.sprite = new SpriteClass(
-			'./images/testEntitySS.png', 
-			8, 6, 
+			'./images/testEntitySS.png',
+			8, 6,
 			100, 100
 		);
 	}
@@ -181,11 +189,11 @@ class SceneEntity extends EntityClass {
 
 		// Draw shadow
 		canvasContext.drawImage(
-			this._shadowImage, 
-			drawX - size/2, drawY + size * 0.3, 
+			this._shadowImage,
+			drawX - size/2, drawY + size * 0.3,
 			size, size * 0.5
 		);
-		
+
 		var viewRot = wrap((angleBetweenTwoPoints(player.pos, this.pos) - this.rot) / d360 * this.sprite.getColumns(), -this.sprite.getColumns(), 0) + this.sprite.getColumns() * 1.5 + 0.5;
 		this.sprite.setColumn(viewRot);
 		this.sprite.drawAt(drawX, drawY, size);
@@ -197,7 +205,7 @@ class Brain {
 	#directionVector = { x: 0, y: -1 };
 	#dPrFwDv = 0;
 	#dPrRiDv = 0;
-	
+
 	constructor(body) {
 		this.body = body;
 		this.setDirectionVector();
@@ -230,11 +238,17 @@ class Brain {
 	get dPrFwDv() { return this.#dPrFwDv; }
 	get dPrRiDv() { return this.#dPrRiDv; }
 	setDirectionVector = (targetPos = { x: 0, y: 0 }) => {
-		this.#directionVector = 
+		this.#directionVector =
 			normalizeVector(subtractVectors(targetPos, this.pos));
 		this.#dPrFwDv =
 			dotProductOfVectors(this.forward, this.#directionVector);
-		this.#dPrRiDv = 
+		this.#dPrRiDv =
 			dotProductOfVectors(this.right, this.#directionVector);
 	}
+
+	isInBounds(x, y) {
+		// TODO: measure x, y boundaries from finding eventually ray casting
+		// or communicating with other similar entities
+		return currentMap.isInBounds(x, y);
+	};
 }

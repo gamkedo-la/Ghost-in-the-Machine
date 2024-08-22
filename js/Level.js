@@ -130,4 +130,10 @@ function LevelClass() {
 	this.markForDestruction = function(entity) {
 		this._markedForDestruction.push(entity);
 	}
+
+	this.isInBounds = function(x, y) {
+		// TODO: measure x, y boundaries from finding in individual maps 
+		// and eventually ray casting 
+		return x > -100 && x < 300 && y > -100 && y < 300;
+	};
 }
