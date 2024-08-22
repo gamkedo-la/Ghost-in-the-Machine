@@ -1,9 +1,9 @@
 const ASTAR_LEVEL_COLS = 1000;
 const ASTAR_LEVEL_ROWS = 1000;
 const ASTAR_LEVEL_GRID = ASTAR_LEVEL_COLS * ASTAR_LEVEL_ROWS;
-const ASTAR_MAX_SEARCH_LOOPS = 10000;
+const ASTAR_MAX_SEARCH_LOOPS = 1000000;
 const ASTAR_PATH_INIT = -1;
-const ASTAR_COST_MAX = 100000;
+const ASTAR_COST_MAX = 10000000;
 const ASTAR_COST_INIT = ASTAR_COST_MAX;
 const ASTAR_COST_EASY = 1;
 
@@ -91,13 +91,17 @@ class PathFindingComponent {
 			const currX = currPos.x;
 			const currY = currPos.y;
 
-			if (currX == goal.x && currY == goal.y) { break; }
+			if (Math.abs(currX - goal.x) < this.#entity.radius && 
+				Math.abs(currY == goal.y) < this.#entity.radius
+			) { 
+				break; 
+			}
 
 			for (const dir of directionOptions) {
 				if (dir.isEqualTo(directionNoMove)) { continue; }
 
-				const dx = dir.col * 1;
-				const dy = dir.row * 1;
+				const dx = Math.ceil(dir.col * this.#entity.radius);
+				const dy = Math.ceil(dir.row * this.#entity.radius);
 				const nextPos = { x: currX + dx, y: currY + dy };
 				const nextX = nextPos.x;
 				const nextY = nextPos.y;
@@ -122,10 +126,10 @@ class PathFindingComponent {
 				// set next tile cost to 1 for walkable and higher for less so
 				let nextTileCost = ASTAR_COST_EASY;
 
-			    const nextAndRadX = nextX + radius;
-				const nextNetRadX = nextX - radius;
-				const nextAndRadY = nextY + radius;
-				const nextNetRadY = nextY - radius;
+			    const nextAndRadX = nextX + radius + 1;
+				const nextNetRadX = nextX - radius - 1;
+				const nextAndRadY = nextY + radius + 1;
+				const nextNetRadY = nextY - radius - 1;;
 
 				const nextXnextY = { x: nextX, y: nextY }
 				const nextXAndRadY = { x: nextX, y: nextAndRadY }
@@ -205,7 +209,7 @@ class PathFindingComponent {
 					// }
 				}
 			}
-		}	
+		}
 
 		// if (debug) { console.log("lastIndex: ", lastIndex); }
 
@@ -214,19 +218,19 @@ class PathFindingComponent {
 			let costToLast = [];
 			let nextIndex = lastIndex;
 			let currentIndex = nextIndex > -1 ? pathToGoal[nextIndex] : -1;
-			let loop = 0;
+			let pathToLastLoop = 0;
 			const keepLooping = () => 
-				loop < maxLoops &&
+				pathToLastLoop < maxLoops &&
 				currentIndex > -1 && 
 				nextIndex > -1 &&
 				currentIndex != baseIndex;
 
 			while (keepLooping()) {
-				pathToLast[loop] = arrayIndexToPosXY(nextIndex);
-				costToLast[loop] = costToGoal[nextIndex];
+				pathToLast[pathToLastLoop] = arrayIndexToPosXY(nextIndex);
+				costToLast[pathToLastLoop] = costToGoal[nextIndex];
 				nextIndex = currentIndex;
 				currentIndex = pathToGoal[nextIndex];
-				loop++;
+				pathToLastLoop++;
 			}
 
 			// if (debug) { console.log("loop: ", loop); }
@@ -236,10 +240,9 @@ class PathFindingComponent {
 			// if (debug && currentIndex === baseIndex) { console.log("currentIndex != baseIndex"); }
 
 			if (currentIndex === baseIndex) {
-				pathToLast[loop] = arrayIndexToPosXY(nextIndex);
-				costToLast[loop] = costToGoal[nextIndex];
+				pathToLast[pathToLastLoop] = arrayIndexToPosXY(nextIndex);
+				costToLast[pathToLastLoop] = costToGoal[nextIndex];
 			}
-			// leave pathToLast and costToLast with index 0 ≈ goal and last = base
 			return { path: pathToLast, cost: costToLast };
 		}
 

@@ -1,7 +1,7 @@
-const LONG_FORAGE_DISTANCE = 50;
+const LONG_FORAGE_DISTANCE = 200;
 const SHORT_FORAGE_DISTANCE = 5;
 const FORAGE_TIME_MAX = LONG_FORAGE_DISTANCE;
-const FORAGE_TIME_MULTIPLE = 8;
+const FORAGE_TIME_MULTIPLE = 4;
 const BITBUNNY_ROTATE_SPEED = 1.2;
 const BITBUNNY_FORAGE_ROTATE_SPEED = 4;
 
@@ -182,38 +182,50 @@ class BitBunnyBrain extends Brain {
 		if (this.#aStarPath.length === 0) {
 			const forageDirChoices = directionOptions;
 			const dirCount = forageDirChoices.length;
-			// grab a random direction, skip first element
-			const index = Math.floor(Math.random() * (dirCount - 1)) + 1;
-			const dir = forageDirChoices[index];
-			const col = dir.col * 1;
-			const row = dir.row * 1;
 			let loop = 0;
-			let loopMax = 10;
+			const loopMax = 10;
 			const keepLooping = () => 
 				this.#aStarPath.length === 0 && loop++ < loopMax;
 
 			do {
-				const distNext = 
-				Math.floor(
-					Math.random() > 0.9 ? 
-						SHORT_FORAGE_DISTANCE : 
-						LONG_FORAGE_DISTANCE);
+				let loop2 = 0;
+				const keepLooping2 = () => {
+					let x = this.#nextForagePos.x;
+					let y = this.#nextForagePos.y;
+					let oob = this.isInBounds(x, y) === false;
+					return oob && loop2++ < loopMax;
+				}
 
-				this.#nextForagePos = {
-					x: this.pos.x + distNext * col, 
-					y: this.pos.y + distNext * row 
-				};
+				do {
+					// grab a random direction, skip first element
+					const index = Math.floor(Math.random() * (dirCount - 1)) + 1;
+					const dir = forageDirChoices[index];
+					const col = dir.col * 1;
+					const row = dir.row * 1;
+
+					let rndDistOption = Math.random() > 0.9; 
+					const distNext =
+					    Math.random() *
+						Math.floor(
+							rndDistOption ? 
+								SHORT_FORAGE_DISTANCE : 
+								LONG_FORAGE_DISTANCE);
+
+					this.#nextForagePos = {
+						x: this.pos.x + distNext * col, 
+						y: this.pos.y + distNext * row 
+					};
+				} while (keepLooping2());
 
 				this.#aStarPath = 
 					this.pathFinder.aStarSearch(this.pos, this.#nextForagePos).path;
-
 			} while (keepLooping());
 
 			// if (debug) { console.log(this.#aStarPath.length); }
 			// if (debug) { console.log(this.name, this.#nextForagePos); }
 			// if (debug) { console.log(this.#aStarPath); }
 
-			this.#foragingTime = this.#aStarPath?.length * 2 ?? 0;				
+			this.#foragingTime = this.#aStarPath?.length * FORAGE_TIME_MULTIPLE ?? 0;				
 		}
 
 		// if (debug) { // } && this.name === 'testBunny1') { 
@@ -226,12 +238,12 @@ class BitBunnyBrain extends Brain {
 			const nextForageChoice = Math.random();
 			if (nextForageChoice < 0.8) {
 				// keep trying current path to the position
-				this.#foragingTime = this.#aStarPath?.length * 2 ?? 0;
+				this.#foragingTime = this.#aStarPath?.length * FORAGE_TIME_MULTIPLE ?? 0;
 				// this.#foragingTime++;
 			} else if (nextForageChoice < 0.97) {
 				// find another path to the same pos
 				this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextForagePos).path;
-				this.#foragingTime = this.#aStarPath?.length * 2 ?? 0;
+				this.#foragingTime = this.#aStarPath?.length * FORAGE_TIME_MULTIPLE ?? 0;
 				// if (debug) { console.log(this.#foragingTime); }
 				// if (debug) { console.log(this.name, this.#nextForagePos); }
 				// if (debug) { console.log(this.#aStarPath); }
