@@ -79,28 +79,35 @@ class EntityClass {
 			for (var i in this.level.entities) {
 				const ent = this.level.entities[i];
 				if (ent == this) continue;
-				// TODO: This is janky, easy to get stuck in eachother
+				ent.brain.setDirectionVector(this.pos);
+
 				const distApart =
 					distanceBetweenTwoPoints(
 						this.pos, ent.pos);
-				ent.brain.setDirectionVector(this.pos);
 
 				if (distApart < this.radius + ent.radius) {
-					// deltaX += ent.directionVector * distApart;
+					deltaX += ent.brain.directionVector.x * distApart;
+					deltaY += ent.brain.directionVector.y * distApart;	
 
 					// deltaX *= Math.floor(Math.random() * 3) - 1;
 					// deltaY *= Math.floor(Math.random() * 3) - 1;
-					// this.onCollisionEntity(ent);
-					// break;
+					this.onCollisionEntity(ent);
+					break;
 				}
 			}
 
 			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
 			for (var i in this.level.walls) {
-				if (distanceBetweenTwoPoints(getNearestPointOnLine(this.level.walls[i].p1, this.level.walls[i].p2, newPos), newPos) <= this.radius) {
-					// TODO: Collide and Slide
-					deltaX = 0;
-					deltaY = 0;
+				const nearestPoint = 
+					getNearestPointOnLine(
+						this.level.walls[i].p1, 
+						this.level.walls[i].p2, 
+						newPos);
+				if (distanceBetweenTwoPoints(nearestPoint, newPos) <= this.radius) {
+					// Collide and Slide
+					const toLineVec = subtractVectors(nearestPoint, newPos);
+					if (toLineVec.x !== 0) { deltaX = 0; }
+					if (toLineVec.y !== 0) { deltaY = 0; }
 					this.onCollisionWall();
 					break;
 				}
