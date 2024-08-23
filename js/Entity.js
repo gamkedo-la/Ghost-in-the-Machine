@@ -212,6 +212,7 @@ class Brain {
 	#directionVector = { x: 0, y: -1 };
 	#dPrFwDv = 0;
 	#dPrRiDv = 0;
+	#lastTargetPos;
 
 	constructor(body) {
 		this.body = body;
@@ -252,6 +253,9 @@ class Brain {
 		this.#dPrRiDv =
 			dotProductOfVectors(this.right, this.#directionVector);
 	}
+	
+	get lastTargetPos() { return this.#lastTargetPos; }
+	set lastTargetPos(pos) { this.#lastTargetPos = pos; }
 
 	isInBounds(x, y) {
 		// TODO: measure x, y boundaries from finding eventually ray casting

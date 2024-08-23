@@ -8,15 +8,15 @@ const BITBUNNY_FORAGE_ROTATE_SPEED = 4;
 class BitBunnyRobot extends SceneEntity {
 	constructor(entityToOverride = {}) {
 		super(entityToOverride);
-		
+
 		this.moveSpeed = 40;
 		this.rotateSpeed = BITBUNNY_ROTATE_SPEED;
 
 		this.attackDamage = 10;
 
 		this.sprite = new SpriteClass(
-			'./images/cubeRobotSS.png', 
-            12, 1, 
+			'./images/cubeRobotSS.png',
+            12, 1,
             400, 400
 		);
 
@@ -71,10 +71,10 @@ class BitBunnyBrain extends Brain {
 	}
 
 	think(deltaTime) {
-		// if (debug && this.name === 'testBunny1') { 
+		// if (debug && this.name === 'testBunny1') {
 		// 	console.log("entities.length: ", this.level.entities.length);
 		// 	console.log("aStarPath length: ", this.#aStarPath.length);
-		// 	console.log("first element: ", this.#aStarPath[0]); 
+		// 	console.log("first element: ", this.#aStarPath[0]);
 		// 	console.log("base element: ", this.#aStarPath[this.#aStarPath.length - 1]);
 		// 	console.log("name: ", this.name);
 		// 	console.log("pos: ", this.pos);
@@ -94,25 +94,29 @@ class BitBunnyBrain extends Brain {
 		case "forage":
 			this.stateForage(deltaTime);
 			break;
+		case "pursueLastSeen":
+			this.statePursue(deltaTime);
+			break;
+		default:
+			this.stateIdle(deltaTime);
+			break;
 		}
-		// if (debug) { console.log("think state out deltaTime", this.name, this.state, deltaTime); }
 	}
 
 	draw2D() {
 		var nextI = this.#aStarPath.length - 1;
-		if (nextI < 0) { return; } 
+		if (nextI < 0) { return; }
 
 		var lastX = this.pos.x;
 		var lastY = this.pos.y;
 		colorEmptyCircle(lastX, lastY, 3, "green");
 		var nextE = this.#aStarPath[nextI];
-		var goalE = this.#nextForagePos;
+		var goalE = this.lastTargetPos ? this.lastTargetPos : this.#nextForagePos;
 		colorEmptyCircle(goalE.x, goalE.y, 3, "magenta");
 		colorLine(lastX, lastY, goalE.x, goalE.y, 1, "magenta");
 		colorLine(nextE.x, nextE.y, goalE.x, goalE.y, 1, "yellow");
 		for (let i = nextI; i > 0; i--) {
 			colorLine(lastX, lastY, this.#aStarPath[i].x, this.#aStarPath[i].y, 1, "green");
-			// colorEmptyCircle(this.#aStarPath[i].x, this.#aStarPath[i].y, 3, "green");
 			lastX = this.#aStarPath[i].x;
 			lastY = this.#aStarPath[i].y;
 		}
@@ -126,38 +130,46 @@ class BitBunnyBrain extends Brain {
 			} else {
 				this.state = "forage";
 			}
+		} else if (this.lastTargetPos) {
+			this.state = 'pursueLastSeen'
 		} else {
 			this.state = "forage";
 		}
 	}
 
 	stateAttack(deltaTime) {
-		this.#aStarPath = []; 
+		this.#aStarPath = [];
 		this.body.rotateSpeed = BITBUNNY_ROTATE_SPEED;
 		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
 		if (couldSeePlayer) {
+			this.lastTargetPos = { x: player.pos.x, y: player.pos.y };
+			
 			if (this.dPrFwDv > 0.3) {
 				this.rotateDelta -= this.dPrRiDv;
 
 				if (this.distance > this.maxDistance) {
 					this.moveDelta.x += 1;
 					this.rotateDelta += this.turnPreferance * 0.5;
-				} else if (this.distance < this.minDistance * 2 && this.distance > this.minDistance) {
+				} else if (this.distance < this.minDistance * 2 &&
+					this.distance > this.minDistance
+				) {
 					this.moveDelta.x -= 1;
 					this.rotateDelta += this.turnPreferance;
-				}else if (this.distance <= this.minDistance) {
-					this.state = "flee"
+				} else if (this.distance <= this.minDistance) {
+					this.state = "flee";
 				}
 
 				this.triggerAction();
 			}
+		} else if (this.lastTargetPos) {
+			this.state = 'pursueLastSeen'
 		} else {
-			this.state = "idle";
+			this.state = 'idle';
 		}
 	}
 
 	stateFlee(deltaTime) {
-		this.#aStarPath = []; 
+		this.#aStarPath = [];
 		this.body.rotateSpeed = BITBUNNY_ROTATE_SPEED;
 		if (this.distance < this.maxDistance) {
 			this.rotateDelta += this.dPrRiDv;
@@ -173,18 +185,12 @@ class BitBunnyBrain extends Brain {
 	}
 
 	stateForage(deltaTime) {
-		// if (debug && this.name !== 'testBunny1') { 
-		// 	this.state = 'idle';
-		// 	return;
-		// }
-		// debugger;
-
 		if (this.#aStarPath.length === 0) {
 			const forageDirChoices = directionOptions;
 			const dirCount = forageDirChoices.length;
 			let loop = 0;
 			const loopMax = 10;
-			const keepLooping = () => 
+			const keepLooping = () =>
 				this.#aStarPath.length === 0 && loop++ < loopMax;
 
 			do {
@@ -203,36 +209,26 @@ class BitBunnyBrain extends Brain {
 					const col = dir.col * 1;
 					const row = dir.row * 1;
 
-					let rndDistOption = Math.random() > 0.9; 
+					let rndDistOption = Math.random() > 0.9;
 					const distNext =
 					    Math.random() *
 						Math.floor(
-							rndDistOption ? 
-								SHORT_FORAGE_DISTANCE : 
+							rndDistOption ?
+								SHORT_FORAGE_DISTANCE :
 								LONG_FORAGE_DISTANCE);
 
 					this.#nextForagePos = {
-						x: this.pos.x + distNext * col, 
-						y: this.pos.y + distNext * row 
+						x: this.pos.x + distNext * col,
+						y: this.pos.y + distNext * row
 					};
 				} while (keepLooping2());
 
-				this.#aStarPath = 
+				this.#aStarPath =
 					this.pathFinder.aStarSearch(this.pos, this.#nextForagePos).path;
 			} while (keepLooping());
 
-			// if (debug) { console.log(this.#aStarPath.length); }
-			// if (debug) { console.log(this.name, this.#nextForagePos); }
-			// if (debug) { console.log(this.#aStarPath); }
-
-			this.#foragingTime = this.#aStarPath?.length * FORAGE_TIME_MULTIPLE ?? 0;				
+			this.#foragingTime = this.#aStarPath?.length * FORAGE_TIME_MULTIPLE ?? 0;
 		}
-
-		// if (debug) { // } && this.name === 'testBunny1') { 
-		// 	console.log(this.name, this.#foragingTime); 
-		// 	console.log(this.name, this.#nextForagePos); 
-		// 	console.log(this.name, this.#aStarPath.length);
-		// }
 
 		if (this.#foragingTime === 0) {
 			const nextForageChoice = Math.random();
@@ -244,9 +240,6 @@ class BitBunnyBrain extends Brain {
 				// find another path to the same pos
 				this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextForagePos).path;
 				this.#foragingTime = this.#aStarPath?.length * FORAGE_TIME_MULTIPLE ?? 0;
-				// if (debug) { console.log(this.#foragingTime); }
-				// if (debug) { console.log(this.name, this.#nextForagePos); }
-				// if (debug) { console.log(this.#aStarPath); }
 			} else {
 				// start over with a new forage pos and path
 				this.#aStarPath = [];
@@ -259,38 +252,16 @@ class BitBunnyBrain extends Brain {
 		const nextI = this.#aStarPath.length - 1;
 		const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
 		if (nextE) {
-			const canSeeNextPos = 
+			const canSeeNextPos =
 				lineOfSight(this.pos, nextE, this.level.walls);
 
-			// if (debug && this.name === 'testBunny1') { 
-			// 	console.log("nextI", nextI);
-			// 	console.log("nextE", nextE);
-			// 	console.log("canSeeNextPos", canSeeNextPos);
-			// }
-		
-			if (this.#aStarPath && 
-				this.#aStarPath.length > 0 && 
+			if (this.#aStarPath &&
+				this.#aStarPath.length > 0 &&
 				canSeeNextPos
-			) {		
+			) {
 				this.body.rotateSpeed = BITBUNNY_FORAGE_ROTATE_SPEED;
 				this.setDirectionVector(nextE);
-	
-				// if (debug) { 
-				// 	console.log("name, nextForagePos", this.name, this.#nextForagePos);
-				// 	console.log("aStarPath length: ", this.#aStarPath.length);
-				// 	console.log("base element: ", this.#aStarPath[this.#aStarPath.length - 1]);
-				// 	console.log("goal element: ", this.#aStarPath[0]); 
-				// 	console.log("this.forward", this.forward);
-				// 	console.log("this.right", this.right);
-				// 	console.log("this.pos", this.pos);
-				// 	console.log("directionVector: ", this.directionVector);
-				// 	console.log("dPrFwDv", this.dPrFwDv);
-				// 	console.log("dPrRiDv", this.dPrRiDv);
-				// 	console.log("this.body.rot", this.body.rot);
-				// 	console.log("this.rotateDelta: ", this.rotateDelta);
-				// 	console.log("this.moveDelta.x: ", this.moveDelta.x); 
-				// }
-	
+
 				if (this.dPrFwDv > 0.999) {
 					if (Math.random() < 0.2) {
 						// this.moveDelta.x -= this.dPrFwDv;
@@ -298,11 +269,8 @@ class BitBunnyBrain extends Brain {
 					} else {
 						this.moveDelta.x += this.dPrFwDv;
 						this.#foragingTime += 1;
-					}					
-					// this.moveDelta.x += this.dPrFwDv;
-					// this.rotateDelta += this.turnPreferance;
-					// // if (debug && this.name === 'testBunny1') { console.log("move", this.dPrFwDv); }
-				} else 
+					}
+				} else
 				if (this.dPrFwDv > 0.99) {
 					if (Math.random() < 0.1) {
 						this.moveDelta.x -= this.dPrFwDv;
@@ -319,14 +287,10 @@ class BitBunnyBrain extends Brain {
 						this.moveDelta.x += this.dPrFwDv;
 						this.rotateDelta += this.dPrRiDv;
 					}
-
-					// this.moveDelta.x += this.dPrFwDv;
-					// this.rotateDelta += this.turnPreferance;
-					// // if (debug && this.name === 'testBunny1') { console.log("move", this.dPrFwDv); }	
 				} else {
 					// this.moveDelta.x -= 1;
 					if (this.dPrFwDv > 0.9) {
-						this.rotateDelta += this.dPrRiDv;					
+						this.rotateDelta += this.dPrRiDv;
 						// this.rotateDelta += this.turnPreferance * 0.5;
 					} else if (this.dPrFwDv > 0) {
 						this.rotateDelta += this.turnPreferance;
@@ -334,10 +298,9 @@ class BitBunnyBrain extends Brain {
 						// this.rotateDelta -= this.turnPreferance;
 					}
 				}
-				this.rotateDelta = -this.dPrRiDv;					
+				this.rotateDelta = -this.dPrRiDv;
 
-				// if (debug && this.name === 'testBunny1') { console.log("rotate", -this.dPrRiDv); }	
-				const closeEnough = 
+				const closeEnough =
 					distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
 				if (closeEnough) {
 					// once entity finds it's first path step, drop it, choose next
@@ -346,13 +309,7 @@ class BitBunnyBrain extends Brain {
 					this.#aStarPath.pop();
 				}
 			}
-	
-			// if (debug) { 
-			// 	console.log("this.body.rot", this.body.rot);
-			// 	console.log("this.rotateDelta: ", this.rotateDelta);
-			// 	console.log("this.moveDelta.x: ", this.moveDelta.x); 
-			// }
-	
+
 			this.#foragingTime--;
 			this.state = "idle";
 		}
@@ -365,5 +322,79 @@ class BitBunnyBrain extends Brain {
 			this.#foragingTime = 0;
 			this.state = "idle";
 		}
+	}
+
+	statePursue(deltaTime) {
+		if (this.#aStarPath.length === 0) {
+			this.#aStarPath =
+				this.pathFinder.aStarSearch(this.pos, this.lastTargetPos).path;
+		}
+
+		const nextI = this.#aStarPath.length - 1;
+		const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
+		if (nextE) {
+			const canSeeNextPos =
+				lineOfSight(this.pos, nextE, this.level.walls);
+
+			if (this.#aStarPath &&
+				this.#aStarPath.length > 0 &&
+				canSeeNextPos
+			) {
+				this.setDirectionVector(nextE);
+
+				if (this.dPrFwDv > 0.999) {
+					if (Math.random() < 0.2) {
+						// this.moveDelta.x -= this.dPrFwDv;
+						this.#foragingTime += 2;
+					} else {
+						this.moveDelta.x += this.dPrFwDv;
+						this.#foragingTime += 1;
+					}
+				} else
+				if (this.dPrFwDv > 0.99) {
+					if (Math.random() < 0.1) {
+						this.moveDelta.x -= this.dPrFwDv;
+						this.rotateDelta -= this.dPrRiDv;
+						this.#foragingTime += 2;
+
+						if (Math.random() < 0.5) {
+							this.moveDelta.y -= 2;
+						} else {
+							this.moveDelta.y += 2;
+						}
+						this.#foragingTime += 1;
+					} else {
+						this.moveDelta.x += this.dPrFwDv;
+						this.rotateDelta += this.dPrRiDv;
+					}
+				} else {
+					// this.moveDelta.x -= 1;
+					if (this.dPrFwDv > 0.9) {
+						this.rotateDelta += this.dPrRiDv;
+						// this.rotateDelta += this.turnPreferance * 0.5;
+					} else if (this.dPrFwDv > 0) {
+						this.rotateDelta += this.turnPreferance;
+					} else {
+						// this.rotateDelta -= this.turnPreferance;
+					}
+				}
+				this.rotateDelta = -this.dPrRiDv;
+
+				const closeEnough =
+					distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
+				if (closeEnough) {
+					this.#aStarPath.pop();
+				}
+			}
+		}
+
+		// the current position is the next forage position, so start new path
+		const dist = distanceBetweenTwoPoints(this.pos, this.lastTargetPos);
+		if (dist <= this.body.radius * 2) {
+			// start over with a new forage pos and path
+			this.#aStarPath = [];
+			this.lastTargetPos = null;
+		}
+		this.state = "idle";
 	}
 }
