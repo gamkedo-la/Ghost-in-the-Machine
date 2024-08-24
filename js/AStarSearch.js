@@ -1,7 +1,7 @@
 const ASTAR_LEVEL_COLS = 1000;
 const ASTAR_LEVEL_ROWS = 1000;
 const ASTAR_LEVEL_GRID = ASTAR_LEVEL_COLS * ASTAR_LEVEL_ROWS;
-const ASTAR_MAX_SEARCH_LOOPS = 1000000;
+const ASTAR_MAX_SEARCH_LOOPS = 10000;
 const ASTAR_PATH_INIT = -1;
 const ASTAR_COST_MAX = 10000000;
 const ASTAR_COST_INIT = ASTAR_COST_MAX;
@@ -92,7 +92,7 @@ class PathFindingComponent {
 			const currY = currPos.y;
 
 			if (Math.abs(currX - goal.x) < this.#entity.radius && 
-				Math.abs(currY == goal.y) < this.#entity.radius
+				Math.abs(currY - goal.y) < this.#entity.radius
 			) { 
 				break; 
 			}
@@ -105,14 +105,6 @@ class PathFindingComponent {
 				const nextPos = { x: currX + dx, y: currY + dy };
 				const nextX = nextPos.x;
 				const nextY = nextPos.y;
-
-				if (debug) {
-					// colorCircle(goal.x, goal.y, 5, "teal");
-					// colorLine(goal.x, goal.y, 0, 0, 1, "teal");
-
-					// colorCircle(nextX, nextY, 5, "red");
-					// colorLine(nextX, nextY, 0, 0, 1, "red");
-				}
 
 				const nextGridCoord = posXYToAstarLevelGrid(nextX, nextY);
 				if (nextGridCoord.x < 0 || 
@@ -129,7 +121,7 @@ class PathFindingComponent {
 			    const nextAndRadX = nextX + radius + 1;
 				const nextNetRadX = nextX - radius - 1;
 				const nextAndRadY = nextY + radius + 1;
-				const nextNetRadY = nextY - radius - 1;;
+				const nextNetRadY = nextY - radius - 1	;
 
 				const nextXnextY = { x: nextX, y: nextY }
 				const nextXAndRadY = { x: nextX, y: nextAndRadY }
@@ -203,15 +195,15 @@ class PathFindingComponent {
 					frontier.enqueue(nextPos, priority);
 					pathToGoal[nextIndex] = currentIndex;
 					lastIndex = nextIndex;
-				} else {
-					// if (debug) { 
-					// 	console.log("newCost, costToGoal[nextIndex]", newCost, costToGoal[nextIndex]); 
-					// }
+
+					if (Math.abs(nextPos.x - goal.x) < this.#entity.radius && 
+						Math.abs(nextPos.y - goal.y) < this.#entity.radius
+					) { 
+						break; 
+					}
 				}
 			}
 		}
-
-		// if (debug) { console.log("lastIndex: ", lastIndex); }
 
 		const pathAndCostToLast = () => {	
 			let pathToLast = [];
@@ -233,12 +225,6 @@ class PathFindingComponent {
 				pathToLastLoop++;
 			}
 
-			// if (debug) { console.log("loop: ", loop); }
-			// if (debug && loop >= maxLoops) { console.log("loop < maxLoops"); }
-			// if (debug && currentIndex <= -1) { console.log("currentIndex > -1"); }
-			// if (debug && nextIndex <= -1) { console.log("nextIndex > -1"); }
-			// if (debug && currentIndex === baseIndex) { console.log("currentIndex != baseIndex"); }
-
 			if (currentIndex === baseIndex) {
 				pathToLast[pathToLastLoop] = arrayIndexToPosXY(nextIndex);
 				costToLast[pathToLastLoop] = costToGoal[nextIndex];
@@ -259,6 +245,38 @@ function aStarSearchTest() {
 	const loopMax = 10000;
 	const loop2Max = Math.PI * 2 / angleInc;
     let loop1 = 0;
+
+	// // line tests
+	// for (let p1x = 300; p1x > 0; p1x -= 20) {
+	// 	// for (let p2x = 0; p2x < 300; p2x += 20) {
+	// 		let base = { x: p1x, y: 0 };
+	// 		let goal = { x: 300 - p1x, y: 120 };
+	// 		// let goal = { x: p1x, y: 120 };
+	// 		const aStarResults = ent.pathFinder.aStarSearch(base, goal);
+
+	// 		const pathRev = aStarResults.path.reverse();
+	// 		let prevPos;
+	// 		for (let p in pathRev) {
+	// 			prevPos = prevPos ?? pathRev[0];
+	// 			const currPos = aStarResults.path[p];
+	// 			const currX = currPos.x;
+	// 			const currY = currPos.y;
+	// 			const currCost = aStarResults.cost[p]; 
+
+	// 			colorEmptyCircle(base.x, base.y, 3, "gray");
+	// 			colorEmptyCircle(goal.x, goal.y, 3, "white");
+	// 			if (Math.abs(currX - goal.x) < 5 && Math.abs(currY - goal.y) < 5) {
+	// 				colorEmptyCircle(base.x, base.y, 3, "cyan");
+	// 				colorEmptyCircle(goal.x, goal.y, 3, "magenta");
+	// 			}
+
+	// 			colorLine(prevPos.x, prevPos.y, currX, currY, 1, "gray");
+	// 			prevPos = currPos;
+	// 		}
+	// 	// }
+	// }
+
+	// circle test
 	for(let circleRadius = 20;
 		circleRadius < 200 && loop1++ < loopMax; 
 		circleRadius += 20
@@ -278,12 +296,6 @@ function aStarSearchTest() {
 			};
 			const aStarResults = ent.pathFinder.aStarSearch(base, goal);
 
-			// if (debug) { 
-			// 	console.log(
-			// 		"base.x, base.y, goal.x, goal.y: ", 
-			// 		base.x, base.y, goal.x, goal.y); 
-			// }
-
 			const pathRev = aStarResults.path.reverse();
 			let prevPos;
 			for (let p in pathRev) {
@@ -293,11 +305,9 @@ function aStarSearchTest() {
 				const currY = currPos.y;
 				const currCost = aStarResults.cost[p]; 
 
-				// if (debug) { console.log("loop, x, y, cost: ", p, currX, currY, currCost); }
-
 				colorEmptyCircle(base.x, base.y, 3, "gray");
 				colorEmptyCircle(goal.x, goal.y, 3, "white");
-				if (Math.abs(currX - goal.x) < 5 && Math.abs(currY - goal.y) < 5) {
+				if (Math.abs(currX - goal.x) < 5 && Math.abs(currY - goal.y) < 5	) {
 					colorEmptyCircle(base.x, base.y, 3, "cyan");
 					colorEmptyCircle(goal.x, goal.y, 3, "magenta");
 				}
