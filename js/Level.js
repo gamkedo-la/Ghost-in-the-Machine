@@ -36,6 +36,10 @@ function LevelClass() {
 			if (parsedLevel.walls) {
 				for (let i = 0; i < parsedLevel.walls.length; i++) {
 					let newWall = new WallClass(parsedLevel.walls[i]);
+					if (parsedLevel.walls[i].texture != null) {
+						newWall.texture = new Image();
+						newWall.texture.src = parsedLevel.walls[i].texture
+					}
 					this.walls.push(newWall);
 				}
 			}
