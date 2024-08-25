@@ -189,7 +189,7 @@ function gameloop(time) {
 			colorRect(x, y, w, h, rays[i].wall.color);
 			if (rays[i].wall.texture != null) {
 				canvasContext.drawImage(rays[i].wall.texture,
-					(distanceAlongWall * wallHeight) % 100, 0, //Magic number to unstretch texture
+					(rays[i].wall.textureOffset + distanceAlongWall * 10) % 100, 0, // 10 is a magic number to unstretch texture
 					1, 100,
 					x, y,
 					w, h);
