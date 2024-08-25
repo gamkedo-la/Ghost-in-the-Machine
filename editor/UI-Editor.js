@@ -81,15 +81,46 @@ function setupUI(screenWidth, screenHeight) {
 
 class WallPane extends UIElement {
 	constructor(name, x, y, w, h) {
-		super(name, x, y, 30, 76);
+		super(name, x, y, 30, 122);
 
 		this.addPart(new UIButtonWToolTip("singleWallMode", 5, 28, 20, 20, "Add Single Walls"));
 		this.addPart(new UIButtonWToolTip("multiWallMode", 5, 51, 20, 20, "Add Connected Walls"));
 		this.addPart(new UIButtonWToolTip("selectWallMode", 5, 5, 20, 20, "Select Wall"));
+		this.addPart(new UIButtonWToolTip("setEntityRoboType", 5, 74, 20, 20, "Set Wall Color: purple"));
+		this.addPart(new UIDropdown("defaultWallColorList", 5, 74, 100, 20), false);
+		this.addPart(new UIButtonWToolTip("setEntityRoboType", 5, 97, 20, 20, "Set Wall Texture: text2Texture"));
+		this.addPart(new UIDropdown("defaultWallTextureList", 5, 97, 100, 20), false);
 
 		this.parts[0].onClick = function() {wallMode = ADD_SINGLE_WALL;};
 		this.parts[1].onClick = function() {wallMode = ADD_MULTI_WALLS;};
 		this.parts[2].onClick = function() {wallMode = SELECT_WALL;};
+
+		this.parts[3].dropdown = this.parts[4];
+		this.parts[3].onClick = function() {
+			this.dropdown.setActive();
+			this.dropdown.onLeftMouseClick();
+		}
+		this.parts[4].list = wallColorList;
+		this.parts[4].dropdown.toolTipButton = this.parts[3];
+		this.parts[4].dropdown.onSelect = function () {
+			defaultWallColor = this.parent.list[this.parent.value];
+			this.toolTipButton.toolTip = "Set Wall Color: " + defaultWallColor;
+			this.parent.setActive(false);
+		}
+
+		this.parts[5].dropdown = this.parts[6];
+		this.parts[5].onClick = function() {
+			this.dropdown.setActive();
+			this.dropdown.onLeftMouseClick();
+		}
+		this.parts[6].list = wallTextureList;
+		this.parts[6].value = wallTextureList.length-1;
+		this.parts[6].dropdown.toolTipButton = this.parts[5];
+		this.parts[6].dropdown.onSelect = function () {
+			defaultWallTexture = this.parent.list[this.parent.value];
+			this.toolTipButton.toolTip = "Set Wall Color: " + defaultWallTexture;
+			this.parent.setActive(false);
+		}
 	}
 
 }
@@ -298,7 +329,7 @@ class SelectionPane extends UIElement{
 		this.wallTextureDropdown.updateListElement();
 		this.wallTextureDropdown.dropdown.onSelect = function() {
 			if (selectedElement != null) {
-				// performAction(new setWallTextureAction(this.parent.list[this.parent.value]))
+				performAction(new setWallTextureAction(this.parent.list[this.parent.value]))
 			}
 		}
 
@@ -413,6 +444,10 @@ class SelectionPane extends UIElement{
 			}
 
 		} else {
+			for (var i = 0; i < this.wallButtons.length; i++) {
+				this.wallButtons[i].setActive(false);
+			}
+
 			for (var i = 0; i < this.nudgeButtons.length; i++) {
 				this.nudgeButtons[i].setActive(false);
 			}
