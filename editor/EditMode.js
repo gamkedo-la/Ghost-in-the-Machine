@@ -8,9 +8,13 @@ const SELECT_WALL = 0;
 const ADD_SINGLE_WALL = 1;
 const ADD_MULTI_WALLS = 2;
 var wallMode = SELECT_WALL;
-var wallColor = "purple";
-var wallTexture = new Image();
-wallTexture.src = './images/text2Texture100x100.png';
+var WallColor = "purple";
+var currentWallColor = "purple";
+var defaultWallColor = "purple";
+var wallColorList = ["purple", "red", "orange", "yellow", "green", "blue", "darkgrey", "none"];
+var currentWallTexture = 'text2Texture';
+var defaultWallTexture = 'text2Texture';
+var wallTextureList = ['textTexture', 'text2Texture', "none"];
 
 const SELECT_ENTITY = 0;
 const ADD_ENTITY = 1;
@@ -122,6 +126,19 @@ function runWallMode() {
 					selectedElement = currentMap.walls[i];
 					lastDistance = newDistance;
 				}
+			}
+
+			if (selectedElement != null) {
+				currentWallColor = selectedElement.color;
+
+				if (selectedElement.wallTextureReferance != undefined) {
+					currentWallTexture = selectedElement.wallTextureReferance;
+				} else {
+					currentWallTexture = "none";
+				}
+			} else {
+				currentWallColor = defaultWallColor;
+				currentWallTexture = defaultWallTexture;
 			}
 		}
 
@@ -379,7 +396,15 @@ function outputLevelJSONtoConsole() {
 	}
 
 	if (currentMap.walls.length > 0) {
-		newLevel.walls = currentMap.walls;
+		newLevel.walls = [];
+		for(var i = 0; i < currentMap.walls.length; i++) {
+			newLevel.walls[i] = new WallClass(currentMap.walls[i]);
+
+			delete newLevel.walls[i].texture;
+			if (newLevel.walls[i].wallTextureReferance != null) {
+				newLevel.walls[i].texture = newLevel.walls[i].wallTextureReferance;
+			}
+		}
 	}
 
 	if (currentMap.entities.length > 0) {
@@ -479,8 +504,16 @@ function addWallAction(point1, point2) {
 		wall = new WallClass();
 		wall.p1 = point1;
 		wall.p2 = point2;
-		wall.color = wallColor;
-		wall.texture = wallTexture;
+
+		if (defaultWallColor != "none") {
+			wall.color = defaultWallColor;
+		}
+		if (defaultWallTexture != "none") {
+			wall.texture = new Image();
+			wall.texture.src = './images/' + defaultWallTexture + '.png';
+		}
+		wall.wallTextureReferance = defaultWallTexture;
+
 		currentMap.walls.push(wall);
 
 		lastSelected = selectedElement;
@@ -530,6 +563,29 @@ function deleteWallAction() {
 		currentMap.walls.splice(currentMap.walls.indexOf(wall), 1);
 
 		selectedElement = null;
+	}
+}
+
+function setWallColorAction(color) {
+	var wall = null;
+	var oldColor = "none";
+
+	this.execute = function() {
+		wall = selectedElement;
+		oldColor = wall.color || "none";
+
+		wall.color = color;
+		currentWallColor = color;
+	}
+
+	this.undo = function() {
+		wall.color = oldColor;
+		currentWallColor = oldColor;
+	}
+
+	this.redo = function() {
+		wall.color = color;
+		currentWallColor = color;
 	}
 }
 

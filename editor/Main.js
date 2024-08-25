@@ -377,9 +377,7 @@ function drawPreview() {
 
 	var objectIndex = 0;
 	for (var i = 0; i < rays.length; i ++) {
-		//colorLine(player.x, player.y, rays[i].x, rays[i].y, 1, rays[i].wall.color); //2d
-
-		//Draw game objects that have a greater depth than the current ray
+		// Draw game objects that have a greater depth than the current ray
 		for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
 			if (currentMap.entities[objectIndex].distance > rays[i].distance) DrawEntity(currentMap.entities[objectIndex]);
 			else break;
@@ -387,8 +385,8 @@ function drawPreview() {
 
 		// Correct for fisheye, TODO - Fix texture lookup as well
 		var cameraAng = player.ang - angle;
-		//if (cameraAng > 2*pi) cameraAng -= 2*pi;
-		//if (cameraAng < 0) cameraAng += 2*pi;
+		// if (cameraAng > 2*pi) cameraAng -= 2*pi;
+		// if (cameraAng < 0) cameraAng += 2*pi;
 		cameraAng = wrap(cameraAng, 0, 2*pi);
 		var distance = rays[i].distance// * Math.cos(cameraAng); //comment out solution while looking for texture fix
 
@@ -398,7 +396,9 @@ function drawPreview() {
 		var h = wallHeight * canvas.height / distance;
 		var distanceAlongWall = distanceBetweenTwoPoints(rays[i].wall.p1, rays[i]);
 
-		colorRect(x, y, w, h, rays[i].wall.color);
+		if (rays[i].wall.color != null) {
+			colorRect(x, y, w, h, rays[i].wall.color);
+		}
 		if (rays[i].wall.texture != null) {
 			pCanvasContext.drawImage(rays[i].wall.texture,
 				(rays[i].wall.textureOffset + distanceAlongWall * 10) % 100, 0, // 10 is a magic number to unstretch texture
@@ -406,7 +406,7 @@ function drawPreview() {
 				x, y,
 				w, h);
 		}
-		//colorRect(x, y, w, h, fullColorHex(20, 10, 30, distance/drawDistance * 384));
+		// colorRect(x, y, w, h, fullColorHex(20, 10, 30, distance/drawDistance * 384));
 	}
 	for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
 		DrawEntity(currentMap.entities[objectIndex]);

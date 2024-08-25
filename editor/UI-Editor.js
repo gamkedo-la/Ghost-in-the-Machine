@@ -249,7 +249,60 @@ class SelectionPane extends UIElement{
 			}
 		};
 
-		this.robotDropdown = new UIDropdown("RobotDropdown", 10, 150, 100, 20);
+		this.wallButtons = [
+			this.addPart(new UIButton("macroLeft", 140, 110, 10, 10), false),
+			this.addPart(new UIButton("microLeft", 150, 110, 10, 10), false),
+			this.addPart(new UIButton("microRight", 160, 110, 10, 10), false),
+			this.addPart(new UIButton("macroRight", 170, 110, 10, 10), false),
+			this.addPart(new UIDropdown("colorDropdown", 10, 130, 180, 20), false),
+			this.addPart(new UIDropdown("textureDropdown", 10, 150, 180, 20), false),
+		];
+		this.wallButtons[0].onClick = function() {
+			if (selectedElement == null) return;
+
+			if (selectedElement.textureOffset != undefined) {
+				selectedElement.textureOffset += 10;
+			}
+		};
+		this.wallButtons[1].onClick = function() {
+			if (selectedElement == null) return;
+
+			if (selectedElement.textureOffset != undefined) {
+				selectedElement.textureOffset += 1;
+			}
+		};
+		this.wallButtons[2].onClick = function() {
+			if (selectedElement == null) return;
+
+			if (selectedElement.textureOffset != undefined) {
+				selectedElement.textureOffset -= 1;
+			}
+		};
+		this.wallButtons[3].onClick = function() {
+			if (selectedElement == null) return;
+
+			if (selectedElement.textureOffset != undefined) {
+				selectedElement.textureOffset -= 10;
+			}
+		};
+		this.wallColorDropdown = this.wallButtons[4];
+		this.wallColorDropdown.list = wallColorList;
+		this.wallColorDropdown.updateListElement();
+		this.wallColorDropdown.dropdown.onSelect = function() {
+			if (selectedElement != null) {
+				performAction(new setWallColorAction(this.parent.list[this.parent.value]))
+			}
+		}
+		this.wallTextureDropdown = this.wallButtons[5];
+		this.wallTextureDropdown.list = wallTextureList;
+		this.wallTextureDropdown.updateListElement();
+		this.wallTextureDropdown.dropdown.onSelect = function() {
+			if (selectedElement != null) {
+				// performAction(new setWallTextureAction(this.parent.list[this.parent.value]))
+			}
+		}
+
+		this.robotDropdown = new UIDropdown("RobotDropdown", 10, 150, 130, 20);
 		this.addPart(this.robotDropdown, false);
 		this.robotDropdown.list = entityRoboTypesList;
 		this.robotDropdown.value = entityRoboTypesList.length-1;
@@ -267,7 +320,7 @@ class SelectionPane extends UIElement{
 			this.w = 200;
 		} else {
 			if (editMode == WALL_MODE) {
-				this.h = 90;
+				this.h = 120;
 				this.w = 200;
 			}
 			if (editMode == AUDIO_MODE) {
@@ -287,6 +340,10 @@ class SelectionPane extends UIElement{
 
 		super.draw();
 
+		var pos = getMousePositionInWorldSpace();
+		var text = "{x: " + pos.x + ", y: " + pos.y + "}";
+		colorText(text, this.x + 15, this.bottom - 13 + borderSize, "darkblue", "15px Arial", "center");
+
 		if (selectedElement != null) {
 			if (editMode == WALL_MODE) {
 				var textP1 = "p1 {x: " + selectedElement.p1.x + ", y: " + selectedElement.p1.y + "}";
@@ -296,6 +353,16 @@ class SelectionPane extends UIElement{
 				colorText(textP2, this.x + borderSize + 20, this.y + 30 + borderSize, "darkblue");
 				colorText(textColor, this.x + borderSize + 20, this.y + 45 + borderSize, "darkblue");
 
+				for (var i = 0; i < this.wallButtons.length; i++) {
+					this.wallButtons[i].setActive(true);
+				}
+
+				this.wallColorDropdown.value = this.wallColorDropdown.list.indexOf(currentWallColor);
+				this.wallTextureDropdown.value = this.wallTextureDropdown.list.indexOf(currentWallTexture);
+			} else {
+				for (var i = 0; i < this.wallButtons.length; i++) {
+					this.wallButtons[i].setActive(false);
+				}
 			}
 
 			if (editMode == AUDIO_MODE) {
@@ -351,10 +418,6 @@ class SelectionPane extends UIElement{
 			}
 			this.robotDropdown.setActive(false);
 		}
-
-		var pos = getMousePositionInWorldSpace();
-		var text = "{x: " + pos.x + ", y: " + pos.y + "}";
-		colorText(text, this.x + 15, this.bottom - 13 + borderSize, "darkblue", "15px Arial", "center");
 	}
 
 }

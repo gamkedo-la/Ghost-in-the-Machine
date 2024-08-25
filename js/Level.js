@@ -38,7 +38,7 @@ function LevelClass() {
 					let newWall = new WallClass(parsedLevel.walls[i]);
 					if (parsedLevel.walls[i].texture != null) {
 						newWall.texture = new Image();
-						newWall.texture.src = parsedLevel.walls[i].texture
+						newWall.texture.src = './images/' + parsedLevel.walls[i].texture + '.png';
 					}
 					this.walls.push(newWall);
 				}
