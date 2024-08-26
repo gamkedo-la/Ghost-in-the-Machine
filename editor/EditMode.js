@@ -181,10 +181,15 @@ function runWallMode() {
 			if (lastPoint == null) {
 				lastPoint = mousePos;
 			} else if (lastPoint != null) {
+				var newOffset = 0;
+				if (selectedElement != null && selectedElement.p1 != undefined) {
+					newOffset = ((selectedElement.textureOffset/10 + distanceBetweenTwoPoints(selectedElement.p1, selectedElement.p2)) * 10) % 100; // Ugly but baiscally magic
+				}
+
 				performAction(new addWallAction(lastPoint, mousePos));
 				lastPoint = mousePos;
 
-				//Code to connect textures between walls
+				selectedElement.textureOffset = newOffset;
 			}
 		}
 	}
