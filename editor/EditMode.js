@@ -14,7 +14,8 @@ var defaultWallColor = "purple";
 var wallColorList = ["purple", "red", "orange", "yellow", "green", "blue", "darkgrey", "none"];
 var currentWallTexture = 'text2Texture';
 var defaultWallTexture = 'text2Texture';
-var wallTextureList = ['textTexture', 'text2Texture', "none"];
+var wallTextureList = ['textTexture', 'text2Texture', "textTransperant", "none"];
+var wallTextureTransparencyList = ["textTransperant"];
 
 const SELECT_ENTITY = 0;
 const ADD_ENTITY = 1;
@@ -130,12 +131,7 @@ function runWallMode() {
 
 			if (selectedElement != null) {
 				currentWallColor = selectedElement.color;
-
-				if (selectedElement.wallTextureReferance != undefined) {
-					currentWallTexture = selectedElement.wallTextureReferance;
-				} else {
-					currentWallTexture = "none";
-				}
+				currentWallTexture = selectedElement.wallTextureReferance;
 			} else {
 				currentWallColor = defaultWallColor;
 				currentWallTexture = defaultWallTexture;
@@ -401,7 +397,7 @@ function outputLevelJSONtoConsole() {
 			newLevel.walls[i] = new WallClass(currentMap.walls[i]);
 
 			delete newLevel.walls[i].texture;
-			if (currentMap.walls[i].wallTextureReferance != undefined) {
+			if (currentMap.walls[i].wallTextureReferance != undefined && currentMap.walls[i].wallTextureReferance != "none") {
 				newLevel.walls[i].texture = currentMap.walls[i].wallTextureReferance;
 			}
 		}
@@ -511,8 +507,11 @@ function addWallAction(point1, point2) {
 		if (defaultWallTexture != "none") {
 			wall.texture = new Image();
 			wall.texture.src = './images/' + defaultWallTexture + '.png';
-			wall.wallTextureReferance = defaultWallTexture;
+			if (wallTextureTransparencyList.includes(defaultWallTexture)) {
+				wall.transparency = true;
+			}
 		}
+		wall.wallTextureReferance = defaultWallTexture;
 
 		currentMap.walls.push(wall);
 
@@ -601,33 +600,45 @@ function setWallTextureAction(texture) {
 
 		delete wall.wallTextureReferance;
 		wall.texture = null;
+		wall.transparency = false;
 		if (texture != "none") {
 			wall.texture = new Image();
 			wall.texture.src = './images/' + texture + '.png';
-			wall.wallTextureReferance = texture;
+			if (wallTextureTransparencyList.includes(texture)) {
+				wall.transparency = true;
+			}
 		}
+		wall.wallTextureReferance = texture;
 		currentWallTexture = texture;
 	}
 
 	this.undo = function() {
 		delete wall.wallTextureReferance;
 		wall.texture = null;
+		wall.transparency = false;
 		if (oldTexture != "none") {
 			wall.texture = new Image();
 			wall.texture.src = './images/' + oldTexture + '.png';
-			wall.wallTextureReferance = oldTexture;
+			if (wallTextureTransparencyList.includes(oldTexture)) {
+				wall.transparency = true;
+			}
 		}
+		wall.wallTextureReferance = oldTexture;
 		currentWallTexture = oldTexture;
 	}
 
 	this.redo = function() {
 		delete wall.wallTextureReferance;
 		wall.texture = null;
+		wall.transparency = false;
 		if (texture != "none") {
 			wall.texture = new Image();
 			wall.texture.src = './images/' + texture + '.png';
-			wall.wallTextureReferance = texture;
+			if (wallTextureTransparencyList.includes(texture)) {
+				wall.transparency = true;
+			}
 		}
+		wall.wallTextureReferance = texture;
 		currentWallTexture = texture;
 	}
 }

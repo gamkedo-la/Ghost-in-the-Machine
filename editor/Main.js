@@ -360,11 +360,16 @@ function drawPreview() {
 		// From half of FOV left, to half of FOV right
 		var angle = degToRad(-(FOV/2) + ((FOV / numRays) * i)) + player.ang;
 		var rayEnd = {x:Math.cos(angle) * drawDistance + player.x, y:Math.sin(angle) * drawDistance + player.y};
-		var hit = getClosestIntersection(player, rayEnd, currentMap.walls);
-
-		if (hit != null) {
+		var hits = getAllIntersections(player, rayEnd, currentMap.walls);
+		for (var j = 0; j < hits.length; j++) {
+			var hit = hits[j];
 			hit.i = i;
+
 			rays.push(hit);
+
+			if (!hit.wall.transparency) {
+				break;
+			}
 		}
 	}
 
@@ -396,16 +401,15 @@ function drawPreview() {
 		var h = wallHeight * canvas.height / distance;
 		var distanceAlongWall = distanceBetweenTwoPoints(rays[i].wall.p1, rays[i]);
 
-		if (rays[i].wall.color != null) {
-			colorRect(x, y, w, h, rays[i].wall.color);
-		}
 		if (rays[i].wall.texture != null) {
 			pCanvasContext.drawImage(rays[i].wall.texture,
-				(rays[i].wall.textureOffset + distanceAlongWall * 10) % 100, 0, // 10 is a magic number to unstretch texture
+				(rays[i].wall.textureOffset + distanceAlongWall * 15) % 100, 0, // 10 is a magic number to unstretch texture
 				1, 100,
 				x, y,
 				w, h);
-		}
+		} else if (rays[i].wall.color != null) {
+				colorRect(x, y, w, h, rays[i].wall.color);
+			}
 		// colorRect(x, y, w, h, fullColorHex(20, 10, 30, distance/drawDistance * 384));
 	}
 	for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {

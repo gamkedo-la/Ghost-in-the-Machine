@@ -186,13 +186,14 @@ function gameloop(time) {
 			var h = wallHeight * canvas.height / distance;
 			var distanceAlongWall = distanceBetweenTwoPoints(rays[i].wall.p1, rays[i]);
 
-			colorRect(x, y, w, h, rays[i].wall.color);
 			if (rays[i].wall.texture != null) {
 				canvasContext.drawImage(rays[i].wall.texture,
 					(rays[i].wall.textureOffset + distanceAlongWall * 10) % 100, 0, // 10 is a magic number to unstretch texture
 					1, 100,
 					x, y,
 					w, h);
+			} else if (rays[i].wall.color != null) {
+				colorRect(x, y, w, h, rays[i].wall.color);
 			}
 			colorRect(x, y, w, h, fullColorHex(20, 10, 20, distance/drawDistance/2 * 512));
 		}

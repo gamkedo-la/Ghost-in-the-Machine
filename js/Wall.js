@@ -1,7 +1,7 @@
 function WallClass(wallClone = {}) {
 	this.p1 = wallClone.p1 || {x:0, y:0};
 	this.p2 = wallClone.p2 || {x:0, y:0};
-	this.color = wallClone.color || "darkgrey";
+	this.color = wallClone.color || null;
 	this.texture = wallClone.texture || null;
 	this.textureOffset = wallClone.textureOffset || 0;
 	this.transparency = wallClone.transparency || false;
