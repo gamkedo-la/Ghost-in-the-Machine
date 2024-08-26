@@ -97,22 +97,30 @@ class EntityClass {
 			}
 
 			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
+			let wallCollisions = 0;
 			for (var i in this.level.walls) {
 				const nearestPoint = 
 					getNearestPointOnLine(
 						this.level.walls[i].p1, 
 						this.level.walls[i].p2, 
 						newPos);
-				if (distanceBetweenTwoPoints(nearestPoint, newPos) <= this.radius) {
+				if (distanceBetweenTwoPoints(nearestPoint, newPos) < this.radius) {
 					// Collide and Slide
+					wallCollisions++;
+					if (wallCollisions > 1) {
+						deltaX = 0;
+						deltaY = 0;
+						this.onCollisionWall();
+						break;
+					}
+
 					const toLineVec = subtractVectors(nearestPoint, newPos);
 					if (toLineVec.x !== 0) { deltaX = 0; }
 					if (toLineVec.y !== 0) { deltaY = 0; }
-					this.onCollisionWall();
-					break;
 				}
 			}
 		}
+
 		this.pos.x += deltaX;
 		this.pos.y += deltaY;
 
@@ -121,7 +129,6 @@ class EntityClass {
 		this.rotateDelta = 0;
 		this.moveDelta.x = 0;
 		this.moveDelta.y = 0;
-
 
 		this.onUpdatePost(deltaTime);
 	}

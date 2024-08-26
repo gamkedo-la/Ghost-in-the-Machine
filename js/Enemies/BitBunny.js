@@ -209,7 +209,7 @@ class BitBunnyBrain extends Brain {
 					const col = dir.col * 1;
 					const row = dir.row * 1;
 
-					let rndDistOption = Math.random() > 0.9;
+					let rndDistOption = Math.random() > 0.3;
 					const distNext =
 					    Math.random() *
 						Math.floor(
