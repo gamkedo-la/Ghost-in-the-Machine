@@ -403,7 +403,7 @@ function drawPreview() {
 
 		if (rays[i].wall.texture != null) {
 			pCanvasContext.drawImage(rays[i].wall.texture,
-				(rays[i].wall.textureOffset + distanceAlongWall * 15) % 100, 0, // 10 is a magic number to unstretch texture
+				(rays[i].wall.textureOffset + distanceAlongWall * 10) % 100, 0, // 10 is a magic number to unstretch texture
 				1, 100,
 				x, y,
 				w, h);

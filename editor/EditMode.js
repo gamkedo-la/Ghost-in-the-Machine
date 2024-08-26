@@ -5,13 +5,14 @@ const AREA_MODE = 3;
 const SPAWN_MODE = 4;
 
 const SELECT_WALL = 0;
-const ADD_SINGLE_WALL = 1;
-const ADD_MULTI_WALLS = 2;
+const SELECT_WALL_POINT = 1;
+const ADD_SINGLE_WALL = 2;
+const ADD_MULTI_WALLS = 3;
 var wallMode = SELECT_WALL;
 var WallColor = "purple";
 var currentWallColor = "purple";
 var defaultWallColor = "purple";
-var wallColorList = ["purple", "red", "orange", "yellow", "green", "blue", "darkgrey", "none"];
+var wallColorList = ["purple", "red", "orange", "yellow", "green", "blue", "darkgrey"];
 var currentWallTexture = 'text2Texture';
 var defaultWallTexture = 'text2Texture';
 var wallTextureList = ['textTexture', 'text2Texture', "textTransperant", "none"];
@@ -67,6 +68,21 @@ function switchMode(newMode) {
 	lastPoint = null;
 	selectedElement = null;
 	editMode = newMode;
+
+	switch(editMode) {
+	case WALL_MODE:
+		wallMode = SELECT_WALL;
+		break;
+	case ENTITY_MODE:
+		entityMode = SELECT_ENTITY;
+		break;
+	case AREA_MODE:
+		areaMode = SELECT_AREA;
+		break;
+	case SPAWN_MODE:
+		spawnMode = SELECT_SPAWN;
+		break;
+	}
 }
 
 function getDisplayText() {
@@ -118,7 +134,7 @@ function runWallMode() {
 		var mousePos = getMousePositionInWorldSpace();
 		if (lastPoint != null && lastPoint.x == mousePos.x && lastPoint.y == mousePos.y) return; //Return early if mouse pos hasnt changed
 
-		if (wallMode == SELECT_WALL) {
+		if (wallMode == SELECT_WALL || wallMode == SELECT_WALL_POINT) {
 			selectedElement = null;
 			var lastDistance = selectDistance*2;
 			for (var i = 0; i < currentMap.walls.length; i++) {
@@ -128,10 +144,24 @@ function runWallMode() {
 					lastDistance = newDistance;
 				}
 			}
+			lastPoint = null;
+			wallMode = SELECT_WALL;
 
 			if (selectedElement != null) {
 				currentWallColor = selectedElement.color;
 				currentWallTexture = selectedElement.wallTextureReferance;
+
+				if (distanceBetweenTwoPoints(mousePos, selectedElement.p1) <= selectDistance) {
+					console.log("Point 1")
+					lastPoint = selectedElement.p1;
+					selectedElement = selectedElement.p1;
+					wallMode = SELECT_WALL_POINT;
+				} else if (distanceBetweenTwoPoints(mousePos, selectedElement.p2) <= selectDistance) {
+					console.log("Point 2")
+					lastPoint = selectedElement.p2;
+					selectedElement = selectedElement.p2;
+					wallMode = SELECT_WALL_POINT;
+				}
 			} else {
 				currentWallColor = defaultWallColor;
 				currentWallTexture = defaultWallTexture;
@@ -164,14 +194,16 @@ function runWallMode() {
 		delKey = false;
 	}
 
-	if (selectedElement != null) {
+	if (selectedElement != null && selectedElement.p1 != undefined) {
 		var p1 = getWorldPositionInScreenSpace(selectedElement.p1);
 		var p2 = getWorldPositionInScreenSpace(selectedElement.p2);
 		colorLine(p1.x, p1.y, p2.x, p2.y, 5, "white");
 		colorLine(p1.x, p1.y, p2.x, p2.y, 3, selectedElement.color);
 		colorEmptyCircle(p1.x, p1.y, 3, "grey");
 		colorEmptyCircle(p2.x, p2.y, 3, "grey");
-	} else {
+	}
+
+	if (selectedElement == null) {
 		colorEmptyCircle(mouseX, mouseY, selectDistance, "white");
 	}
 
@@ -187,28 +219,16 @@ function runAudioMode() {
 	if (mouseJustPressed) {
 		var mousePos = getMousePositionInWorldSpace();
 
-
-		if (audioMode == SELECT_AUDIO) {
-			selectedElement = null;
-			var lastDistance = selectDistance*2;
-			for (var i = 0; i < audGeoPoints.length; i++) {
-				var newDistance = distanceBetweenTwoPoints(mousePos, audGeoPoints[i]);
-				if (newDistance < selectDistance && newDistance < lastDistance) {
-					selectedElement = audGeoPoints[i];
-					lastDistance = newDistance;
-				}
+		selectedElement = null;
+		var lastDistance = selectDistance*2;
+		for (var i = 0; i < audGeoPoints.length; i++) {
+			var newDistance = distanceBetweenTwoPoints(mousePos, audGeoPoints[i]);
+			if (newDistance < selectDistance && newDistance < lastDistance) {
+				selectedElement = audGeoPoints[i];
+				lastDistance = newDistance;
 			}
 		}
-
-	// 	if (audioMode == ADD_AUDIO) {
-	// 		performAction(new addAudioNodeAction({x: mousePos.x, y: mousePos.y}));
-	// 	}
 	}
-
-	// if (delKey && selectedElement != null) {
-	// 	performAction(new deleteAudioNodeAction());
-	// 	delKey = false;
-	// }
 
 	if (selectedElement != null) {
 		var pos = getWorldPositionInScreenSpace(selectedElement);
@@ -501,9 +521,8 @@ function addWallAction(point1, point2) {
 		wall.p1 = point1;
 		wall.p2 = point2;
 
-		if (defaultWallColor != "none") {
-			wall.color = defaultWallColor;
-		}
+		wall.color = defaultWallColor;
+
 		if (defaultWallTexture != "none") {
 			wall.texture = new Image();
 			wall.texture.src = './images/' + defaultWallTexture + '.png';
@@ -567,11 +586,11 @@ function deleteWallAction() {
 
 function setWallColorAction(color) {
 	var wall = null;
-	var oldColor = "none";
+	var oldColor = "darkgrey";
 
 	this.execute = function() {
 		wall = selectedElement;
-		oldColor = wall.color || "none";
+		oldColor = wall.color || "darkgrey";
 
 		wall.color = color;
 		currentWallColor = color;

@@ -73,10 +73,7 @@ function setupUI(screenWidth, screenHeight) {
 		drawMapView();
 		driveEditor();
 	}
-
 }
-
-
 
 
 class WallPane extends UIElement {
@@ -122,7 +119,6 @@ class WallPane extends UIElement {
 			this.parent.setActive(false);
 		}
 	}
-
 }
 
 class AudioPane extends UIElement {
@@ -148,7 +144,6 @@ class AudioPane extends UIElement {
 			cullAudioNodesThatDontConnectToPoint(currentMap.startList[currentMap.startIndex], currentMap.walls);
 		}
 	}
-	
 }
 
 class EntityPane extends UIElement {
@@ -177,7 +172,6 @@ class EntityPane extends UIElement {
 			this.parent.setActive(false);
 		}
 	}
-	
 }
 
 class AreaPane extends UIElement {
@@ -377,6 +371,24 @@ class SelectionPane extends UIElement{
 
 		if (selectedElement != null) {
 			if (editMode == WALL_MODE) {
+				if (selectedElement.p1 == undefined) {
+					var text = "{x: " + selectedElement.x + ", y: " + selectedElement.y + "}";
+					colorText(text, this.x + borderSize + 20, this.y + 15 + borderSize, "darkblue");
+
+					for (var i = 0; i < this.nudgeButtons.length; i++) {
+						this.nudgeButtons[i].setActive(true);
+					}
+					for (var i = 0; i < this.wallButtons.length; i++) {
+						this.wallButtons[i].setActive(false);
+					}
+
+					return;
+				} else {
+					for (var i = 0; i < this.nudgeButtons.length; i++) {
+						this.nudgeButtons[i].setActive(false);
+					}
+				}
+
 				var textP1 = "p1 {x: " + selectedElement.p1.x + ", y: " + selectedElement.p1.y + "}";
 				var textP2 = "p2 {x: " + selectedElement.p2.x + ", y: " + selectedElement.p2.y + "}";
 				var textColor = "Color: " + selectedElement.color;
@@ -428,9 +440,6 @@ class SelectionPane extends UIElement{
 				this.robotDropdown.value = this.robotDropdown.list.indexOf(currentEntityRoboType);
 
 			} else {
-				for (var i = 0; i < this.nudgeButtons.length; i++) {
-					this.nudgeButtons[i].setActive(false);
-				}
 				this.robotDropdown.setActive(false);
 			}
 
@@ -451,6 +460,7 @@ class SelectionPane extends UIElement{
 			for (var i = 0; i < this.nudgeButtons.length; i++) {
 				this.nudgeButtons[i].setActive(false);
 			}
+
 			this.robotDropdown.setActive(false);
 		}
 	}
