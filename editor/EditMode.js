@@ -306,7 +306,7 @@ function runAreaMode() {
 			selectedElement.type = 'circle';
 			areaMode = SET_CIRCLE_AREA;
 		} else if (areaMode == SET_CIRCLE_AREA) {
-			selectedElement.radius = distanceBetweenTwoPoints(mousePos, selectedElement.pos);
+			selectedElement.radius = Math.round(distanceBetweenTwoPoints(mousePos, selectedElement.pos));
 			performAction(new addAreaAction(selectedElement));
 			areaMode = ADD_CIRCLE_AREA;
 		}
@@ -433,6 +433,7 @@ function outputLevelJSONtoConsole() {
 		newLevel.entities = currentMap.entities;
 		for(var i = 0; i < newLevel.entities.length; i++) {
 			delete newLevel.entities[i].distance;
+			newLevel.entities[i].rot = Number(newLevel.entities[i].rot.toFixed(3));
 		}
 	}
 
@@ -448,20 +449,61 @@ function outputLevelJSONtoConsole() {
 }
 
 function createLevelFromJSON(levelJSON) {
-	var newLevel = new LevelClass();
-	newLevel.levelJSON = levelJSON;
+	var newLevel = JSON.parse(levelJSON);
+
+	if (newLevel.walls == undefined) {
+		newLevel.walls = [];
+	}
+	if (newLevel.entities == undefined) {
+		newLevel.entities = [];
+	}
+	if (newLevel.triggerZones == undefined) {
+		newLevel.triggerZones = [];
+	}
+
+	for (var i = 0; i < newLevel.walls.length; i++) {
+		var newWall = new WallClass(newLevel.walls[i]);
+		if (newWall.texture != null) {
+			newWall.wallTextureReferance = newWall.texture;
+			newWall.texture = new Image();
+			newWall.texture.src = './images/' + newLevel.walls[i].texture + '.png';
+		}
+		newLevel.walls[i] = newWall;
+	}
 
 	return newLevel;
 }
 
 function loadLevel(level) {
-	level.onLoad = function(){};
-	currentMap = level.load();
+	lastPoint = null;
+	selectedElement = null;
+
+	currentMap = level;
 
 	for (var i = 0; i < level.triggerZones.length; i++) {
-		if (lastAreaID < level.triggerZones[i].editID) {
-			lastAreaID = level.triggerZones[i].editID;
+		var newTriggerZone;
+
+		switch(level.triggerZones[i].type) {
+		case "circle":
+			newTriggerZone = new CircleTriggerZone(this, level.triggerZones[i].pos, level.triggerZones[i].radius);
+			break;
+		case "AABB":
+			newTriggerZone = new AABBTriggerZone(this, level.triggerZones[i].topleft, level.triggerZones[i].bottomright);
+			break;
+		default:
+			newTriggerZone = new TriggerZone(this);
+			break;
 		}
+
+		newTriggerZone.type = level.triggerZones[i].type;
+
+		newTriggerZone.editID = level.triggerZones[i].editID;
+		if (lastAreaID < newTriggerZone.editID) {
+			lastAreaID = newTriggerZone.editID;
+		}
+
+		level.triggerZones[i] = newTriggerZone;
+
 	}
 }
 
