@@ -1,5 +1,5 @@
 var pMouseX, pMouseY;
-var player = {x:0, y: 0, ang: d270, forwardX: 0, forwardY: 0};
+var player = {x:0, y: 0, ang: d270, forwardX: 0, forwardY: 0, pos:{x:0,y:0}}; // Pos only defined for level loading
 var currentMap = new LevelClass();
 var objectImage = new Image();
 objectImage.src = './images/testEntity.png';
@@ -29,6 +29,10 @@ var pFocus = false;
 
 var FOV = 60;
 var heightScale = 8;
+
+// Empty classes for level loading
+class PathFindingComponent{};
+class SpriteClass{};
 
 function calculateKeyboardDown(evt) {
 	switch(evt.keyCode) {

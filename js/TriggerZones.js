@@ -2,6 +2,7 @@ class TriggerZone {
 	constructor(level) {
 		this.level = level;
 		this._inZone = [];
+		this.editID = -1;
 	}
 
 	checkOverlaps() {

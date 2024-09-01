@@ -31,6 +31,7 @@ const SET_CIRCLE_AREA = 2;
 const ADD_AABB_AREA = 3;
 const SET_AABB_AREA = 4;
 var areaMode = SELECT_AREA;
+var lastAreaID = -1;
 
 const SELECT_SPAWN = 0;
 const ADD_SPAWN = 1;
@@ -456,6 +457,12 @@ function createLevelFromJSON(levelJSON) {
 function loadLevel(level) {
 	level.onLoad = function(){};
 	currentMap = level.load();
+
+	for (var i = 0; i < level.triggerZones.length; i++) {
+		if (lastAreaID < level.triggerZones[i].editID) {
+			lastAreaID = level.triggerZones[i].editID;
+		}
+	}
 }
 
 function getWorldPositionInScreenSpace(pos) {
@@ -778,6 +785,7 @@ function addAreaAction(areaObject) {
 
 	this.execute = function() {
 		area = areaObject;
+		area.editID = ++lastAreaID;
 		currentMap.triggerZones.push(area);
 
 		selectedElement = area;

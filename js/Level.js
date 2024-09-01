@@ -25,6 +25,8 @@ function LevelClass() {
 			this.entities.splice(this.entities.indexOf(this._markedForDestruction[i]), 1);
 		}
 		this._markedForDestruction.length = 0;
+
+		this.onUpdate(deltaTime);
 	}
 
 	this.load = function() {
@@ -77,12 +79,14 @@ function LevelClass() {
 						newTriggerZone = new CircleTriggerZone(this, parsedLevel.triggerZones[i].pos, parsedLevel.triggerZones[i].radius);
 						break;
 					case "AABB":
-						newTriggerZone = new AABBTriggerZone(this, parsedLevel.triggerZones[i].topleftpos, parsedLevel.triggerZones[i].bottomrightpos);
+						newTriggerZone = new AABBTriggerZone(this, parsedLevel.triggerZones[i].topleft, parsedLevel.triggerZones[i].bottomright);
 						break;
 					default:
 						newTriggerZone = new TriggerZone(this);
 						break;
 					}
+
+					newTriggerZone.id = parsedLevel.triggerZones[i].id;
 
 					this.triggerZones.push(newTriggerZone);
 				}
@@ -128,6 +132,16 @@ function LevelClass() {
 		return null;
 	}
 
+	this.getTriggerZoneByEditID = function(id) {
+		for (let i = 0; i < this.triggerZones.length; i++) {
+			if (id == this.triggerZones[i].editID) {
+				return this.triggerZones[i];
+			}
+		}
+		return null;
+	}
+
+	this.onUpdate = function(deltaTime) {}
 	this.onLoad = function() {}
 	this.onUnload = function() {}
 

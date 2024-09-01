@@ -339,6 +339,14 @@ class SelectionPane extends UIElement{
 		}
 	}
 
+	onDraw() {
+		super.onDraw();
+
+		var pos = getMousePositionInWorldSpace();
+		var text = "{x: " + pos.x + ", y: " + pos.y + "}";
+		colorText(text, this.x + 15, this.bottom - 13 + borderSize, "darkblue", "13px Arial", "center");
+	}
+
 	draw() {
 		if (selectedElement == null) {
 			this.h = 30;
@@ -360,14 +368,14 @@ class SelectionPane extends UIElement{
 				this.h = 100;
 				this.w = 200;
 			}
+			if (editMode == AREA_MODE) {
+				this.h = 50;
+				this.w = 200;
+			}
 		}
 		this.y = this.bottom - this.h;
 
 		super.draw();
-
-		var pos = getMousePositionInWorldSpace();
-		var text = "{x: " + pos.x + ", y: " + pos.y + "}";
-		colorText(text, this.x + 15, this.bottom - 13 + borderSize, "darkblue", "15px Arial", "center");
 
 		if (selectedElement != null) {
 			if (editMode == WALL_MODE) {
@@ -441,6 +449,11 @@ class SelectionPane extends UIElement{
 
 			} else {
 				this.robotDropdown.setActive(false);
+			}
+
+			if (editMode == AREA_MODE) {
+				var textPos = "Edit ID: " + selectedElement.editID;
+				colorText(textPos, this.x + borderSize + 20, this.y + 15 + borderSize, "darkblue");
 			}
 
 			if (editMode == SPAWN_MODE) {
