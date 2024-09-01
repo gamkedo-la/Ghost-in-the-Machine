@@ -86,7 +86,7 @@ function LevelClass() {
 						break;
 					}
 
-					newTriggerZone.id = parsedLevel.triggerZones[i].id;
+					newTriggerZone.editID = parsedLevel.triggerZones[i].editID;
 
 					this.triggerZones.push(newTriggerZone);
 				}

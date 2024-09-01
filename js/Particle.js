@@ -9,12 +9,12 @@ var particles = {
             particles.active[i].update(deltaTime);
         }
 
-        // hmm these don't seem to get rendered, not sure why =(
-        if (Math.random()<0.5) {
-            let px = 0;
-            let py = -20;
-            sparksFX(px,py,1); // spam particle debug test
-        }
+        // // hmm these don't seem to get rendered, not sure why =(
+        // if (Math.random()<0.5) {
+        //     let px = 0;
+        //     let py = -20;
+        //     sparksFX(px,py,1); // spam particle debug test
+        // }
     }
 }
 
