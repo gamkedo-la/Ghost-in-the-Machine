@@ -297,6 +297,12 @@ function drawMapView() {
 	for (var i = 0; i < currentMap.walls.length; i++) {
 		currentMap.walls[i].draw2D();
 	}
+
+	// Draw portals
+	for (var i = 0; i < currentMap.portals.length; i++) {
+		currentMap.portals[i].draw2D();
+	}
+
 	// Draw entities
 	for (var i = 0; i < currentMap.entities.length; i++) {
 		var entity = currentMap.entities[i];

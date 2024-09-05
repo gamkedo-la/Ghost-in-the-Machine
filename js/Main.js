@@ -113,6 +113,10 @@ function gameloop(time) {
 			currentMap.walls[i].draw2D();
 		}
 
+		for (var i = 0; i < currentMap.portals.length; i++) {
+			currentMap.portals[i].draw2D();
+		}
+
 		for (var i = 0; i < currentMap.entities.length; i++) {
 			currentMap.entities[i].draw2D();
 		}
@@ -143,6 +147,7 @@ function gameloop(time) {
 			var rayEnd = {x:Math.cos(angle) * drawDistance + player.x, y:Math.sin(angle) * drawDistance + player.y};
 			
 			var hits = getAllIntersections(player.pos, rayEnd, currentMap.walls);
+			hits.push(...getAllIntersections(player.pos, rayEnd, currentMap.portals));
 			for (var j = 0; j < hits.length; j++) {
 				var hit = hits[j];
 				hit.i = i;
