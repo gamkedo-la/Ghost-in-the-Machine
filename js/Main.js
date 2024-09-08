@@ -79,7 +79,7 @@ function gamestart() {
 	// if (debug) { testPriorityQueue(); }
 	// if (debug) { testAStarSearch(); }
 	// if (debug) { testCircleIsOnLineSegment(); }
-	currentMap = testLevel2.load();
+	currentMap = testLevel1.load();
 	// if (debug) { testCircleIsOnWall(currentMap.walls); }
 }
 
