@@ -166,7 +166,6 @@ function gameloop(time) {
 		currentMap.entities.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 		particles.active.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 
-    var playerForwardVector = {x: Math.cos(player.rot), y: Math.sin(player.rot)};
 		var objectIndex = 0;
 		var particleIndex = 0;
 		for (var i = 0; i < rays.length; i ++) {

@@ -197,7 +197,9 @@ class SceneEntity extends EntityClass {
 	draw3D() {
 		var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player.pos, this.pos) - player.rot), -180, 180);
 
-		var size = heightScale * canvas.height / this.distance;
+    var vectorFromPlayer = subtractVectors(this.pos, player.pos);
+    var renderDistance = Math.max(player.radius, dotProductOfVectors(vectorFromPlayer, player.forward));
+		var size = heightScale * canvas.height / renderDistance;
 		var drawX = canvas.width*0.5 + drawAngle * canvas.width/FOV;
 		var drawY = canvas.height*0.5;
 
