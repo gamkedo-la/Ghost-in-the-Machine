@@ -184,7 +184,7 @@ function gameloop(time) {
 			}
 
       // Get vector from player to ray hit and project onto forward vector
-      var rayVector = {x: rays[i].x - player.pos.x, y: rays[i].y - player.pos.y}
+      var rayVector = subtractVectors(rays[i], player.pos);
       var distance = dotProductOfVectors(rayVector, playerForwardVector);
 
 			// Correct for fisheye
