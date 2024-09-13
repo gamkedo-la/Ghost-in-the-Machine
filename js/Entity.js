@@ -195,6 +195,8 @@ class SceneEntity extends EntityClass {
 	}
 
 	draw3D() {
+    if (this === player) return;
+    
 		var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player.pos, this.pos) - player.rot), -180, 180);
 
     var vectorFromPlayer = subtractVectors(this.pos, player.pos);
