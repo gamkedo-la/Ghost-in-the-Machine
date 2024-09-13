@@ -166,6 +166,7 @@ function gameloop(time) {
 		currentMap.entities.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 		particles.active.sort((a, b) => (a.distance < b.distance) ? 1 : -1);
 
+    var playerForwardVector = {x: Math.cos(player.rot), y: Math.sin(player.rot)};
 		var objectIndex = 0;
 		var particleIndex = 0;
 		for (var i = 0; i < rays.length; i ++) {
@@ -182,10 +183,14 @@ function gameloop(time) {
 				else break;
 			}
 
+      // Get vector from player to ray hit and project onto forward vector
+      var rayVector = {x: rays[i].x - player.pos.x, y: rays[i].y - player.pos.y}
+      var distance = dotProductOfVectors(rayVector, playerForwardVector);
+
 			// Correct for fisheye
 			var cameraAng = player.rot - angle;
 			cameraAng = wrap(cameraAng, 0, 2*pi);
-			var distance = rays[i].distance * Math.cos(cameraAng);
+			//var distance = rays[i].distance * Math.cos(cameraAng);
 
 			var x = rays[i].i * drawWidth;
 			var y = canvas.height/2 - wallHeight*canvas.height*0.5/distance;
