@@ -56,9 +56,10 @@ class Particle  {
 
 	draw3D() {
         var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player.pos, this.pos) - player.rot), -180, 180);
-		this.distance = distanceBetweenTwoPoints(this.pos, player.pos);
+    var vectorFromPlayer = subtractVectors(this.pos, player.pos);
+    var renderDistance = Math.max(player.radius, dotProductOfVectors(vectorFromPlayer, player.forward));
         let particleHeightScale = heightScale * this.size;
-        var size = particleHeightScale * canvas.height / this.distance;
+        var size = particleHeightScale * canvas.height / renderDistance;
 		var drawX = canvas.width*0.5 + drawAngle * canvas.width/FOV;
 		var drawY = canvas.height*0.5 - this.pos.z; // we subtract "z" for a "height" offset
         //this.sprite.setColumn(0); // todo animate or rotate?
