@@ -81,6 +81,7 @@ function gamestart() {
 	// if (debug) { testCircleIsOnLineSegment(); }
 	currentMap = testLevel1.load();
 	// if (debug) { testCircleIsOnWall(currentMap.walls); }
+	// if (debug) { testIsInBounds(); }	
 }
 
 function gameloop(time) {

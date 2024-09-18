@@ -198,7 +198,7 @@ class BitBunnyBrain extends Brain {
 				const keepLooping2 = () => {
 					let x = this.#nextForagePos.x;
 					let y = this.#nextForagePos.y;
-					let oob = this.isInBounds(x, y) === false;
+					let oob = this.isInBounds({ x, y }) === false;
 					return oob && loop2++ < loopMax;
 				}
 

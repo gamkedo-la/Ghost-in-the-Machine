@@ -268,9 +268,9 @@ class Brain {
 	get lastTargetPos() { return this.#lastTargetPos; }
 	set lastTargetPos(pos) { this.#lastTargetPos = pos; }
 
-	isInBounds(x, y) {
-		// TODO: measure x, y boundaries from finding eventually ray casting
+	isInBounds(point) {
+		// measure x, y boundaries from finding eventually ray casting
 		// or communicating with other similar entities
-		return currentMap.isInBounds(x, y);
+		return currentMap.isInBounds(point);
 	};
 }

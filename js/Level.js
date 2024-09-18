@@ -149,9 +149,75 @@ function LevelClass() {
 		this._markedForDestruction.push(entity);
 	}
 
-	this.isInBounds = function(x, y) {
-		// TODO: measure x, y boundaries from finding in individual maps 
-		// and eventually ray casting 
-		return x > -100 && x < 300 && y > -100 && y < 300;
-	};
+	this.isInBounds = function(point) {
+		// determine if the polygon winds around the point
+		let windingNumber = 0;
+
+		let points = [];
+		this.walls.forEach(wall => {
+			points.push(wall.p1);
+			points.push(wall.p2);
+		});
+
+		// remove duplicates
+		let uniquePoints = [];
+		let pointMap = new Map();
+		points.forEach(point => {
+			let key = `${point.x},${point.y}`;
+			if (!pointMap.has(key)) {
+				pointMap.set(key, point);
+				uniquePoints.push(point);
+			}
+		});
+
+		let n = uniquePoints.length;
+		for (let v = 0; v < n; v++) {
+			let vertex1 = uniquePoints[v];
+			let vertex2 = uniquePoints[(v + 1) % n];
+
+			if (vertex1.y <= point.y) {
+				if (vertex2.y > point.y) {
+					if (this.isLeft(vertex1, vertex2, point) > 0) {
+						windingNumber++;
+					}
+				}
+			} else {
+				if (vertex2.y <= point.y) {
+					if (this.isLeft(vertex1, vertex2, point) < 0) {
+						windingNumber--;
+					}
+				}
+			}
+		}
+
+		return windingNumber != 0;
+	}
+
+	this.isLeft = function(vertex1, vertex2, point) {
+		let returnValue = 
+			(vertex2.x - vertex1.x) * 
+			(point.y - vertex1.y) - 
+			(vertex2.y - vertex1.y) *
+			(point.x - vertex1.x);
+
+		return returnValue;
+	}
+}
+
+function testIsInBounds() { if(debug) { isInBoundsTest(); } }
+function isInBoundsTest() {
+    // isInBounds test
+    if (debug) { console.log("isInBounds() test"); }
+
+	const polygon = [
+		{ x: 0, y: 0 },
+		{ x: 5, y: 0 },
+		{ x: 5, y: 5 },
+		{ x: 0, y: 5 }
+	];
+
+	const point = { x: 3, y: 3};
+	let result = currentMap.isInBounds(point, polygon);
+	if (debug) { console.log(result); }
+    if (debug) { console.log("isInBounds() test done"); }	
 }
