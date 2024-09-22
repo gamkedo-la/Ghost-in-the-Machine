@@ -7,9 +7,6 @@ class PlayerClass extends BitBunnyRobot{
 		this.brain = new PlayerBrain(this);
 	}
 
-	// temporary override for god mode
-	takeDamage(amount) {}
-
 	draw2D() {
 		colorLine(this.pos.x, this.pos.y, this.pos.x + this.forward.x * (this.radius + 5), this.pos.y +this.forward.y * (this.radius + 5), 2, "darkgrey");
 		colorEmptyCircle(this.pos.x, this.pos.y, this.radius, "darkgrey");

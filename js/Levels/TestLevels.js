@@ -79,7 +79,12 @@ testLevel1.onLoad = function() {
 	this.getEntityByName("Hanna").sprite.setRow(4);
 
 	for (let i = 0; i < 5; i++) {
-		let newEnemy = new PyroDroneRobot({name: "testDrone" + i, pos:{x:50 + i*10,y:50}, rot: rndFloat(d0, d360), level: this});
+		let newEnemy = new BitBunnyRobot({name: "testBunny" + i, pos:{x:50 + i*10,y:50}, rot: rndFloat(d0, d360), level: this});
+		this.entities.push(newEnemy);
+	}
+
+	for (let i = 0; i < 5; i++) {
+		let newEnemy = new PyroDroneRobot({name: "testDrone" + i, pos:{x:50 + i*10,y:-50}, rot: rndFloat(d0, d360), level: this});
 		this.entities.push(newEnemy);
 	}
 

@@ -3,7 +3,7 @@ class PyroDroneRobot extends SceneEntity {
 		super(entityToOverride);
 
 		this.moveSpeed = 30;
-		this.rotateSpeed = 90;
+		this.rotateSpeed = 6;
 
 		this.attackDamage = 10;
 

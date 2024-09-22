@@ -14,11 +14,10 @@ var lastTime = window.performance.now() / 1000;
 var FOV = 60;
 var heightScale = 8; // note: editor uses a different scale
 
-var topColor = "lightgrey";
-var bottomColor = "gray";
-
 var mainMenuImage = document.createElement("img"); // create element for main menu background
 mainMenuImage.src = "./source_art/Main_Menu/MainMenu.png"; // attach source for main menu
+var HUDImage = new Image();
+HUDImage.src = './images/hud.png';
 
 var titleAnimElem;
 
@@ -96,7 +95,7 @@ function gameloop(time) {
 		//Update, only when the game is not paused
 		player.update(deltaTime);
 		currentMap.update(deltaTime);
-        particles.update(deltaTime);
+		particles.update(deltaTime);
 	}
 
 	if (debug) {
@@ -133,9 +132,9 @@ function gameloop(time) {
 		canvasContext.resetTransform();//reset the transform matrix as it is cumulative
 		canvasContext.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
 		
-        drawBackground();
+		drawBackground();
 
-        if (FLOOR_ENABLED) theFloor.draw(player.pos.x,player.pos.y,player.rot);
+		if (FLOOR_ENABLED) theFloor.draw(player.pos.x,player.pos.y,player.rot);
 
 		// var thisTime = window.performance.now();
 		//3D
@@ -183,9 +182,9 @@ function gameloop(time) {
 				else break;
 			}
 
-      // Get vector from player to ray hit and project onto forward vector
-      var rayVector = subtractVectors(rays[i], player.pos);
-      var distance = Math.max(0.0001, dotProductOfVectors(rayVector, player.forward));
+			// Get vector from player to ray hit and project onto forward vector
+			var rayVector = subtractVectors(rays[i], player.pos);
+			var distance = Math.max(0.0001, dotProductOfVectors(rayVector, player.forward));
 
 			// Correct for fisheye
 			var cameraAng = player.rot - angle;
@@ -216,8 +215,16 @@ function gameloop(time) {
 		for (objectIndex; objectIndex < currentMap.entities.length; objectIndex++) {
 			currentMap.entities[objectIndex].draw3D();
 		}
-		// console.log(window.performance.now() - thisTime);
 
+		canvasContext.drawImage(HUDImage, 0, 0, 800, 600);
+
+		player.sprite.drawAt(60, 60, 60);
+		var coolbarWidth = player._actionCooldown / player.actionCooldownTime * 113;
+		if (coolbarWidth < 0) coolbarWidth = 0;
+		colorRect(709 - coolbarWidth, 13, coolbarWidth, 18, 'yellow');
+		colorCircle(745, 65, player.health/player.maxHealth * 35, 'blue')
+
+		// console.log(window.performance.now() - thisTime);
 	}
 
 	if(isPaused){
