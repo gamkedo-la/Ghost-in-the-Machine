@@ -73,7 +73,6 @@ function rndFromList(items){
 	return items[rndInt(items.length-1)];
 }
 
-
 function addVectors(a, b) {
 	return {x:a.x + b.x, y:a.y + b.y};
 }
@@ -99,6 +98,9 @@ function dotProductOfVectors(a, b) {
 	return a.x * b.x + a.y * b.y;
 }
 
+function inverseVector(v) {
+	return {x:v.x * -1, y:v.y * -1};	
+}
 
 function distanceBetweenTwoPoints(a,b) {
 	var dx = a.x - b.x;

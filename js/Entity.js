@@ -1,3 +1,4 @@
+const ENTITY_ROTATE_SPEED = 2;
 class EntityClass {
 	constructor(entityToOverride = {}) {
 		this.name = entityToOverride.name || "";
