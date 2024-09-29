@@ -45,6 +45,8 @@ class PlayerBrain extends Brain {
 					this.body.name = name;
 
 					player = this.body;
+
+					FOV = -60;
 					
 					return;
 				}

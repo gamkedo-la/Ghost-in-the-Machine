@@ -12,6 +12,8 @@ var theFloor = new TheFloorClass();
 var lastTime = window.performance.now() / 1000;
 
 var FOV = 60;
+var FOV_TARGET = 60;
+var FOV_CHANGE_DRAG = 6;
 var heightScale = 8; // note: editor uses a different scale
 
 var mainMenuImage = document.createElement("img"); // create element for main menu background
@@ -89,6 +91,14 @@ function gameloop(time) {
 	// Max deltaTime to 5fps
 	if (deltaTime > 0.2) deltaTime = 0.2;
 	lastTime = time;
+
+	if (FOV > FOV_TARGET) {
+		FOV -= (FOV - FOV_TARGET) / FOV_CHANGE_DRAG;
+	}
+
+	if (FOV < FOV_TARGET) {
+		FOV += (FOV_TARGET - FOV) / FOV_CHANGE_DRAG;
+	}
 	
 	checkUIKeys();
 	if(!isPaused){
