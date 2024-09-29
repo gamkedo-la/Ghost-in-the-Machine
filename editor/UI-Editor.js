@@ -312,7 +312,6 @@ class SelectionPane extends UIElement{
 		};
 		this.wallColorDropdown = this.wallButtons[4];
 		this.wallColorDropdown.list = wallColorList;
-		this.wallColorDropdown.updateListElement();
 		this.wallColorDropdown.dropdown.onSelect = function() {
 			if (selectedElement != null) {
 				performAction(new setWallColorAction(this.parent.list[this.parent.value]))
@@ -320,7 +319,6 @@ class SelectionPane extends UIElement{
 		}
 		this.wallTextureDropdown = this.wallButtons[5];
 		this.wallTextureDropdown.list = wallTextureList;
-		this.wallTextureDropdown.updateListElement();
 		this.wallTextureDropdown.dropdown.onSelect = function() {
 			if (selectedElement != null) {
 				performAction(new setWallTextureAction(this.parent.list[this.parent.value]))
@@ -331,7 +329,6 @@ class SelectionPane extends UIElement{
 		this.addPart(this.robotDropdown, false);
 		this.robotDropdown.list = entityRoboTypesList;
 		this.robotDropdown.value = entityRoboTypesList.length-1;
-		this.robotDropdown.updateListElement();
 		this.robotDropdown.dropdown.onSelect = function() {
 			if (selectedElement != null) {
 				performAction(new setEntityRoboTypeAction(this.parent.list[this.parent.value]))

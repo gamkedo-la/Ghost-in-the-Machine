@@ -840,7 +840,6 @@ class UIDropdown extends UIElement {
 		this.open = false;
 
 		this.dropdown = this.addPart(new UIDropdownList(this.name + " dropdown list", 0, 0, 0, 0), false);
-		this.updateListElement();
 	}
 
 	onLeftMouseClick() {
@@ -861,14 +860,14 @@ class UIDropdown extends UIElement {
 	}
 
 	updateListElement() {
-		if (this.list == undefined) return;
+		if (this.list == undefined || this.list.length == 0) return;
 
 		this.active.length = 0;
 
 		var height = this.list.length * (this.size + 3);
 		var y = this.center ? -height * 0.5 : 0;
+		if (this.y + height + y > this.mi().h) y -= this.y + height + y - this.mi().h;
 		if (this.y + y < 0) y -= this.y + y;
-		if (this.y + height + y > this.mi.h) y -= this.y + height + y - this.mis.h;
 
 		this.dropdown.updatePosition(0, y, this.w, height);
 		this.dropdown.setActive(this.open);
@@ -881,6 +880,8 @@ class UIDropdown extends UIElement {
 	}
 
 	openList() {
+		this.updateListElement();
+
 		this.dropdown.setActive(true);
 		this.open = true;
 		this.dropdown.justOpened = true;
