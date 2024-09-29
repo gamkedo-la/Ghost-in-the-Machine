@@ -854,11 +854,6 @@ class UIDropdown extends UIElement {
 		colorText(this.list[this.value], this.x + this.w * 0.5, this.y + this.size, 'black', this.parent.size + "px Arial", this.textAlignment);
 	}
 
-	updatePosition(x = this.xoff, y = this.yoff, w = this.w, h = this.h) {
-		super.updatePosition(x, y, w, h);
-		this.updateListElement();
-	}
-
 	updateListElement() {
 		if (this.list == undefined || this.list.length == 0) return;
 

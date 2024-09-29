@@ -15,7 +15,7 @@ var defaultWallColor = "purple";
 var wallColorList = ["purple", "red", "orange", "yellow", "green", "blue", "darkgrey"];
 var currentWallTexture = 'text2Texture';
 var defaultWallTexture = 'text2Texture';
-var wallTextureList = ['textTexture', 'text2Texture', "textTransperant", "none"];
+var wallTextureList = ['dirtWall', 'metalWall1', 'blueWall', 'redWall', 'textTexture', 'text2Texture', "textTransperant", "none"];
 var wallTextureTransparencyList = ["textTransperant"];
 
 const SELECT_ENTITY = 0;
