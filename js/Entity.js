@@ -87,8 +87,17 @@ class EntityClass {
 						this.pos, ent.pos);
 
 				if (distApart < this.radius + ent.radius) {
-					deltaX += ent.brain.directionVector.x * distApart;
-					deltaY += ent.brain.directionVector.y * distApart;	
+					//deltaX += ent.brain.directionVector.x * distApart;
+					//deltaY += ent.brain.directionVector.y * distApart;
+          
+          // Get penetration vector
+          var pDirection = normalizeVector(subtractVectors(this.pos, ent.pos));
+          var pMagnitude = (this.radius + ent.radius) - distApart;
+          var pVector = scaleVector(pDirection, pMagnitude);
+          
+          // Move entity out of collision
+          deltaX += pVector.x;
+          deltaY += pVector.y;
 
 					// deltaX *= Math.floor(Math.random() * 3) - 1;
 					// deltaY *= Math.floor(Math.random() * 3) - 1;
