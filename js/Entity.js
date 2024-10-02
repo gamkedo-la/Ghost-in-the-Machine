@@ -1,4 +1,5 @@
 const ENTITY_ROTATE_SPEED = 2;
+const ENTITY_PATH_ATTEMPTS = 10;
 class EntityClass {
 	constructor(entityToOverride = {}) {
 		this.name = entityToOverride.name || "";
@@ -233,7 +234,7 @@ class Brain {
 	#directionVector = { x: 0, y: -1 };
 	#dPrFwDv = 0;
 	#dPrRiDv = 0;
-	#lastTargetPos;
+	#lastTargetPos = null;
 
 	constructor(body) {
 		this.body = body;
@@ -266,7 +267,7 @@ class Brain {
 	get directionVector() { return this.#directionVector; }
 	get dPrFwDv() { return this.#dPrFwDv; }
 	get dPrRiDv() { return this.#dPrRiDv; }
-	setDirectionVector = (targetPos = { x: 0, y: 0 }) => {
+	setDirectionVector = (targetPos = this.pos) => {
 		this.#directionVector =
 			normalizeVector(subtractVectors(targetPos, this.pos));
 		this.#dPrFwDv =

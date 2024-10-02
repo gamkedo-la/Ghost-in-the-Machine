@@ -189,7 +189,7 @@ class BitBunnyBrain extends Brain {
 			const forageDirChoices = directionOptions;
 			const dirCount = forageDirChoices.length;
 			let loop = 0;
-			const loopMax = 10;
+			const loopMax = ENTITY_PATH_ATTEMPTS;
 			const keepLooping = () =>
 				this.#aStarPath.length === 0 && loop++ < loopMax;
 
@@ -235,7 +235,6 @@ class BitBunnyBrain extends Brain {
 			if (nextForageChoice < 0.8) {
 				// keep trying current path to the position
 				this.#foragingTime = this.#aStarPath?.length * FORAGE_TIME_MULTIPLE ?? 0;
-				// this.#foragingTime++;
 			} else if (nextForageChoice < 0.97) {
 				// find another path to the same pos
 				this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextForagePos).path;

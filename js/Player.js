@@ -22,8 +22,8 @@ class PlayerBrain extends Brain {
 
 	think(deltaTime) {
 		// Check for swap
+		const rayEnd = addVectors(this.pos, scaleVector(this.forward, 200));
 		if (Key.isJustPressed(Key.SPACE)) {
-			let rayEnd = addVectors(this.pos, scaleVector(this.forward, 200));
 			let closestIntersection = getClosestIntersection(this.pos, rayEnd, this.level.walls);
 			let maxDistance = closestIntersection ? distanceBetweenTwoPoints(closestIntersection, this.pos) : 200;
 			//console.log("Max Distance: " + maxDistance);
@@ -82,5 +82,7 @@ class PlayerBrain extends Brain {
 		if (Key.isJustPressed(Key.MOUSE_LEFT)) {
 			this.triggerAction();		
 		}
+
+		this.setDirectionVector(rayEnd);
 	}
 }

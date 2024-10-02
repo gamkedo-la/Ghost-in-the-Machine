@@ -6,7 +6,7 @@ class PyroDroneRobot extends SceneEntity {
 		super(entityToOverride);
 
 		this.moveSpeed = 50;
-		this.rotateSpeed = ENTITY_ROTATE_SPEED;
+		this.rotateSpeed = PYRODRONE_ROTATE_SPEED;
 
 		this.attackDamage = 100;
 
@@ -58,7 +58,7 @@ class PyroDroneBrain extends Brain {
 	constructor(body) {
 		super(body);
 
-		this.minDistance = 15 + rndFloat(-10.10);
+		this.minDistance = 45 + rndFloat(-10.10);
 		this.maxDistance = 200 + rndFloat(-50.10);
 
 		this.turnPreferance = rndFloat(-1, 1);
@@ -90,6 +90,9 @@ class PyroDroneBrain extends Brain {
 		case "patrol":
 			this.statePatrol(deltaTime);
 			break;
+		case "pursueLastSeen":
+			this.statePursueLastSeen(deltaTime);
+			break;
 		default:
 			this.stateIdle(deltaTime);
 			break;
@@ -118,47 +121,63 @@ class PyroDroneBrain extends Brain {
 	stateIdle(deltaTime) {
 		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
 		if (couldSeePlayer) {
-			if (this.dPrFwDv > 0.3) {
-				this.state = "attack";
+			if (this.dPrFwDv > 0) {
+				if (player?.brain.dPrFwDv > 0.5) {
+					// flee if player is looking at us
+					this.state = "flee";
+				} else {
+					this.state = "attack";
+				}
 			} else {
 				this.state = "patrol";
 			}
 		} else {
-			this.state = "patrol";
+			const couldSeeLastSpot = lineOfSight(this.pos, this.lastTargetPos, this.level.walls);
+			if (couldSeeLastSpot) {
+				this.setDirectionVector(this.lastTargetPos);
+				this.state = "pursueLastSeen";
+			} else {
+				this.state = "patrol";
+			}
 		}
 	}
 
 	stateAttack(deltaTime) {
 		this.#aStarPath = [];
+		// go back to idle immediately after attack
+		this.state = 'idle';
+
 		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
 		if (couldSeePlayer) {
 			this.lastTargetPos = { x: player.pos.x, y: player.pos.y };
-			if (player?.dPrFwDv > 0.50) {
+
+			this.rotateDelta -= this.dPrRiDv;
+
+			if (this.distance > this.maxDistance) {
+				this.moveDelta.x += 1;
+				this.rotateDelta += this.turnPreferance * 0.5;
+			} else if (player?.brain.dPrFwDv > 0.5) {
 				// flee if player is looking at us
 				this.state = "flee";
-			} else if (this.dPrFwDv > 0.1) {
-				this.rotateDelta -= this.dPrRiDv;
-
-				if (this.distance > this.maxDistance) {
-					this.moveDelta.x += 1;
-					this.rotateDelta += this.turnPreferance;
-				} else if (this.distance < this.minDistance * 2 &&
-					this.distance > this.minDistance
-				) {
-					this.moveDelta.x += 1;
-					this.rotateDelta += this.turnPreferance;
-				} else if (this.distance <= this.minDistance) {
-					this.triggerAction();
-				}
+			} else if (this.distance < this.maxDistance &&
+				this.distance > this.minDistance
+			) {
+				this.moveDelta.x += 1;
+				this.rotateDelta += this.turnPreferance;
+			} else if (this.distance <= this.minDistance) {
+				this.triggerAction();
 			}
 		} else {
-			this.state = 'idle';
+			const couldSeeLastSpot = lineOfSight(this.pos, this.lastTargetPos, this.level.walls);
+			if (couldSeeLastSpot) {
+				this.setDirectionVector(this.lastTargetPos);
+				this.state = "pursueLastSeen";
+			}
 		}
 	}
 
 	stateFlee(deltaTime) {
 		this.#aStarPath = [];
-		this.body.rotateSpeed = PYRODRONE_ROTATE_SPEED;
 		if (this.distance < this.maxDistance) {
 			this.rotateDelta += this.dPrRiDv;
 			this.rotateDelta += this.turnPreferance * 0.5;
@@ -174,10 +193,8 @@ class PyroDroneBrain extends Brain {
 
 	statePatrol(deltaTime) {
 		if (this.#aStarPath.length === 0) {
-			const dirChoices = directionOptions;
-			const dirCount = dirChoices.length;
 			let loop = 0;
-			const loopMax = 10;
+			const loopMax = ENTITY_PATH_ATTEMPTS;
 			const keepLooping = () =>
 				this.#aStarPath.length === 0 && loop++ < loopMax;
 
@@ -192,18 +209,17 @@ class PyroDroneBrain extends Brain {
 
 				do {
 					// turn 180 and go in other direction
-					const dir180 = inverseVector(this.forward);
-					const rayEnd = addVectors(this.pos, scaleVector(dir180, 1000));
-					const closestIntersection = getClosestIntersection(this.pos, rayEnd, this.level.walls);
-					const maxDistance = closestIntersection ? distanceBetweenTwoPoints(closestIntersection, this.pos) : 1000;
+					let dir180 = inverseVector(this.forward);
+					let rayEnd = addVectors(this.pos, scaleVector(dir180, 1000));
+					let closestIntersection = getClosestIntersection(this.pos, rayEnd, this.level.walls);
+					let destNext = closestIntersection ? closestIntersection : rayEnd;
 			
-					// go max distance less radius
-					const distNext = maxDistance - (1 + this.body.radius); 
-
-					this.#nextPatrolPos = {
-						x: this.pos.x + distNext * dir180.x,
-						y: this.pos.y + distNext * dir180.y
-					};
+					// go to nearest opposite wall point less the radius
+					let fwdRadX = Math.sign(this.forward.x) * (1 + this.body.radius);
+					let fwdRadY = Math.sign(this.forward.y) * (1 + this.body.radius);
+					let moveX = destNext.x + fwdRadX;
+					let moveY = destNext.y + fwdRadY;
+					this.#nextPatrolPos = { x: moveX, y: moveY };
 				} while (keepLooping2());
 
 				this.#aStarPath =
@@ -218,7 +234,6 @@ class PyroDroneBrain extends Brain {
 			if (nextPatrolChoice < 0.8) {
 				// keep trying current path to the position
 				this.#patrolingTime = this.#aStarPath?.length * PATROL_TIME_MULTIPLE ?? 0;
-				// this.#patrolingTime++;
 			} else if (nextPatrolChoice < 0.97) {
 				// find another path to the same pos
 				this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextPatrolPos).path;
@@ -305,5 +320,79 @@ class PyroDroneBrain extends Brain {
 			this.#patrolingTime = 0;
 			this.state = "idle";
 		}
+	}
+
+	statePursueLastSeen(deltaTime) {
+		if (this.#aStarPath.length === 0) {
+			this.#aStarPath =
+				this.pathFinder.aStarSearch(this.pos, this.lastTargetPos).path;
+		}
+
+		const nextI = this.#aStarPath.length - 1;
+		const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
+		if (nextE) {
+			const canSeeNextPos =
+				lineOfSight(this.pos, nextE, this.level.walls);
+
+			if (this.#aStarPath &&
+				this.#aStarPath.length > 0 &&
+				canSeeNextPos
+			) {
+				this.setDirectionVector(nextE);
+
+				if (this.dPrFwDv > 0.999) {
+					if (Math.random() < 0.2) {
+						// this.moveDelta.x -= this.dPrFwDv;
+						this.#patrolingTime += 2;
+					} else {
+						this.moveDelta.x += this.dPrFwDv;
+						this.#patrolingTime += 1;
+					}
+				} else
+				if (this.dPrFwDv > 0.99) {
+					if (Math.random() < 0.1) {
+						this.moveDelta.x -= this.dPrFwDv;
+						this.rotateDelta -= this.dPrRiDv;
+						this.#patrolingTime += 2;
+
+						if (Math.random() < 0.5) {
+							this.moveDelta.y -= 2;
+						} else {
+							this.moveDelta.y += 2;
+						}
+						this.#patrolingTime += 1;
+					} else {
+						this.moveDelta.x += this.dPrFwDv;
+						this.rotateDelta += this.dPrRiDv;
+					}
+				} else {
+					// this.moveDelta.x -= 1;
+					if (this.dPrFwDv > 0.9) {
+						this.rotateDelta += this.dPrRiDv;
+						// this.rotateDelta += this.turnPreferance * 0.5;
+					} else if (this.dPrFwDv > 0) {
+						this.rotateDelta += this.turnPreferance;
+					} else {
+						// this.rotateDelta -= this.turnPreferance;
+					}
+				}
+				this.rotateDelta = -this.dPrRiDv;
+
+				const closeEnough =
+					distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
+				if (closeEnough) {
+					this.#aStarPath.pop();
+				}
+			}
+		}
+
+		// the current position is the next forage position, so start new path
+		const dist = distanceBetweenTwoPoints(this.pos, this.lastTargetPos);
+		if (dist <= this.body.radius * 2) {
+			// start over with a new forage pos and path
+			this.#aStarPath = [];
+			this.lastTargetPos = null;
+		}
+		this.state = "idle";
 	}
 }
