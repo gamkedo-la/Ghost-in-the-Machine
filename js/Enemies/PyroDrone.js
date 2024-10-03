@@ -15,7 +15,7 @@ class PyroDroneRobot extends SceneEntity {
             8, 1,
             579, 452
 		);
-
+		this.lastTargetPos = player?.pos;
 		this.brain = new PyroDroneBrain(this);
 	}
 
@@ -131,7 +131,7 @@ class PyroDroneBrain extends Brain {
 			} else {
 				this.state = "patrol";
 			}
-		} else {
+		} else if (this.lastTargetPos) {
 			const couldSeeLastSpot = lineOfSight(this.pos, this.lastTargetPos, this.level.walls);
 			if (couldSeeLastSpot) {
 				this.setDirectionVector(this.lastTargetPos);
@@ -139,6 +139,8 @@ class PyroDroneBrain extends Brain {
 			} else {
 				this.state = "patrol";
 			}
+		} else {
+			this.state = "patrol";
 		}
 	}
 
@@ -167,7 +169,7 @@ class PyroDroneBrain extends Brain {
 			} else if (this.distance <= this.minDistance) {
 				this.triggerAction();
 			}
-		} else {
+		} else if (this.lastTargetPos) {
 			const couldSeeLastSpot = lineOfSight(this.pos, this.lastTargetPos, this.level.walls);
 			if (couldSeeLastSpot) {
 				this.setDirectionVector(this.lastTargetPos);
@@ -323,76 +325,78 @@ class PyroDroneBrain extends Brain {
 	}
 
 	statePursueLastSeen(deltaTime) {
-		if (this.#aStarPath.length === 0) {
-			this.#aStarPath =
-				this.pathFinder.aStarSearch(this.pos, this.lastTargetPos).path;
-		}
-
-		const nextI = this.#aStarPath.length - 1;
-		const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
-		if (nextE) {
-			const canSeeNextPos =
-				lineOfSight(this.pos, nextE, this.level.walls);
-
-			if (this.#aStarPath &&
-				this.#aStarPath.length > 0 &&
-				canSeeNextPos
-			) {
-				this.setDirectionVector(nextE);
-
-				if (this.dPrFwDv > 0.999) {
-					if (Math.random() < 0.2) {
-						// this.moveDelta.x -= this.dPrFwDv;
-						this.#patrolingTime += 2;
-					} else {
-						this.moveDelta.x += this.dPrFwDv;
-						this.#patrolingTime += 1;
-					}
-				} else
-				if (this.dPrFwDv > 0.99) {
-					if (Math.random() < 0.1) {
-						this.moveDelta.x -= this.dPrFwDv;
-						this.rotateDelta -= this.dPrRiDv;
-						this.#patrolingTime += 2;
-
-						if (Math.random() < 0.5) {
-							this.moveDelta.y -= 2;
+		if (this.lastTargetPos) {
+			if (this.#aStarPath.length === 0) {
+				this.#aStarPath =
+					this.pathFinder.aStarSearch(this.pos, this.lastTargetPos).path;
+			}
+	
+			const nextI = this.#aStarPath.length - 1;
+			const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
+			if (nextE) {
+				const canSeeNextPos =
+					lineOfSight(this.pos, nextE, this.level.walls);
+	
+				if (this.#aStarPath &&
+					this.#aStarPath.length > 0 &&
+					canSeeNextPos
+				) {
+					this.setDirectionVector(nextE);
+	
+					if (this.dPrFwDv > 0.999) {
+						if (Math.random() < 0.2) {
+							// this.moveDelta.x -= this.dPrFwDv;
+							this.#patrolingTime += 2;
 						} else {
-							this.moveDelta.y += 2;
+							this.moveDelta.x += this.dPrFwDv;
+							this.#patrolingTime += 1;
 						}
-						this.#patrolingTime += 1;
+					} else
+					if (this.dPrFwDv > 0.99) {
+						if (Math.random() < 0.1) {
+							this.moveDelta.x -= this.dPrFwDv;
+							this.rotateDelta -= this.dPrRiDv;
+							this.#patrolingTime += 2;
+	
+							if (Math.random() < 0.5) {
+								this.moveDelta.y -= 2;
+							} else {
+								this.moveDelta.y += 2;
+							}
+							this.#patrolingTime += 1;
+						} else {
+							this.moveDelta.x += this.dPrFwDv;
+							this.rotateDelta += this.dPrRiDv;
+						}
 					} else {
-						this.moveDelta.x += this.dPrFwDv;
-						this.rotateDelta += this.dPrRiDv;
+						// this.moveDelta.x -= 1;
+						if (this.dPrFwDv > 0.9) {
+							this.rotateDelta += this.dPrRiDv;
+							// this.rotateDelta += this.turnPreferance * 0.5;
+						} else if (this.dPrFwDv > 0) {
+							this.rotateDelta += this.turnPreferance;
+						} else {
+							// this.rotateDelta -= this.turnPreferance;
+						}
 					}
-				} else {
-					// this.moveDelta.x -= 1;
-					if (this.dPrFwDv > 0.9) {
-						this.rotateDelta += this.dPrRiDv;
-						// this.rotateDelta += this.turnPreferance * 0.5;
-					} else if (this.dPrFwDv > 0) {
-						this.rotateDelta += this.turnPreferance;
-					} else {
-						// this.rotateDelta -= this.turnPreferance;
+					this.rotateDelta = -this.dPrRiDv;
+	
+					const closeEnough =
+						distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
+					if (closeEnough) {
+						this.#aStarPath.pop();
 					}
-				}
-				this.rotateDelta = -this.dPrRiDv;
-
-				const closeEnough =
-					distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
-				if (closeEnough) {
-					this.#aStarPath.pop();
 				}
 			}
+	
+			// the current position is the next pursue position, so start new path
+			const dist = distanceBetweenTwoPoints(this.pos, this.lastTargetPos);
+			if (dist <= this.body.radius * 2) {
+				// start over with a new pursue pos and path
+				this.#aStarPath = [];
+				this.lastTargetPos = null;
+			}
+			this.state = "idle";				
 		}
-
-		// the current position is the next forage position, so start new path
-		const dist = distanceBetweenTwoPoints(this.pos, this.lastTargetPos);
-		if (dist <= this.body.radius * 2) {
-			// start over with a new forage pos and path
-			this.#aStarPath = [];
-			this.lastTargetPos = null;
-		}
-		this.state = "idle";
 	}
 }
