@@ -158,7 +158,9 @@ class EntityClass {
 		this.health -= amount;
 		this.onTakeDamage(amount);
 
-		if (this.health <= 0) this.level.markForDestruction(this);
+		if (this.health <= 0) {
+			this.destroy();
+		};
 	}
 
 	onDestroy() {}

@@ -3,7 +3,14 @@ var canvas;
 
 var debug = false;
 
-var isPaused = false;
+const GAMESTATES = {
+	TitleScreen: 0,
+	GameLoop: 1,
+	Paused: 2,
+	Death: 3,
+	Win: 4
+}
+var gameState = GAMESTATES.TitleScreen;
 
 var player = new PlayerClass();
 var currentMap = new LevelClass();
@@ -29,36 +36,55 @@ window.onload = function() {
 	
 	titleAnimElem = document.getElementById("titleAnimation");
 	var titleAnimationLengthMS = 7000;
-	setTimeout(switchTitleAnimForGameCanvas, titleAnimationLengthMS);
+	setTimeout(SwitchTitleAnimForGameCanvas, titleAnimationLengthMS);
 
-	waitingforgesture();
+	MainLoop();
 }
 
-function switchTitleAnimForGameCanvas() {
+function SwitchTitleAnimForGameCanvas() {
 	titleAnimElem.style.display = "none";
 	canvas.style.display = "block";
 }
 
-function waitingforgesture() {
+function MainLoop(time) {
+	time /= 1000;
+	var deltaTime = time - lastTime;
+	// Max deltaTime to 5fps
+	if (deltaTime > 0.2) deltaTime = 0.2;
+	lastTime = time;
 
-	canvasContext.drawImage(mainMenuImage, 0, 0); // load image for main menu
-	colorText("Press Space to Play", canvas.width/2 - 120, canvas.height/2, "white", "30px Arial");
+	CheckUIKeys();
 
-
-	if (Key.isDown(Key.SPACE)) {
-		switchTitleAnimForGameCanvas();
-		window.requestAnimationFrame(gamestart);
-	} else {
-		window.requestAnimationFrame(waitingforgesture);
+	switch(gameState) {
+	case GAMESTATES.TitleScreen:
+		WaitingForGesture();
+		break;
+	case GAMESTATES.GameLoop:
+		GameLoop(deltaTime);
+		break;
+	case GAMESTATES.Paused:
+		PauseScreen();
+		break;
+	case GAMESTATES.Death:
+		DeathScreen();
+		break;
+	case GAMESTATES.Win:
+		WinScreen();
+		break;
 	}
 
 	Key.update();
+	window.requestAnimationFrame(MainLoop);
 }
 
 // This function is for non-player key handling (pause, esc, mute, etc.)
-function checkUIKeys() {
+function CheckUIKeys() {
 	if(Key.isJustPressed(Key.P)){
-		isPaused = !isPaused; // toggle Pause here
+		if (gameState = GAMESTATES.GameLoop) {
+			gameState = GAMESTATES.Paused;
+		} else if (gameState = GAMESTATES.Paused) {
+			gameState = GAMESTATES.GameLoop;
+		}
 	}
 	
 	if(Key.isJustPressed(Key.M)){
@@ -66,15 +92,36 @@ function checkUIKeys() {
 	}
 }
 
-function drawPauseScreen(){
-	colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
-	colorText("PAUSED", canvas.width/2 - 120, canvas.height/2, "white", "30px Arial");
-	colorText("Press P to Return to Game", canvas.width/2 - 120, canvas.height/2 + 50, "white", "30px Arial");
+function WaitingForGesture() {
+	var pauseText = "Press Space to Play";
+	if (rndOneIn(90)) {
+		pauseText = pauseText.replaceAll(" ", "");
+	}
+	if (rndOneIn(30)) {
+		pauseText = pauseText.replaceAll("P", "7");
+	}
+	if (rndOneIn(30)) {
+		pauseText = pauseText.replaceAll("S", "5");
+	}
+	if (rndOneIn(30)) {
+		pauseText = pauseText.replaceAll("t", "4");
+	}
+	if (rndOneIn(30)) {
+		pauseText = pauseText.replaceAll("s", "z");
+	}
+
+	canvasContext.drawImage(mainMenuImage, 0, 0); // load image for main menu
+	colorText(pauseText, canvas.width/2, canvas.height/2 + 50, "white", "30px Arial", "center");
+
+	if (Key.isJustPressed(Key.SPACE)) {
+		SwitchTitleAnimForGameCanvas();
+		GameStart();
+	}
 }
 
-function gamestart() {
+function GameStart() {
+	player = new PlayerClass();
 	AudioMan.setListener(player);
-	window.requestAnimationFrame(gameloop);
 
 	// if (debug) { testAllHeaps(); }
 	// if (debug) { testPriorityQueue(); }
@@ -83,14 +130,11 @@ function gamestart() {
 	currentMap = testLevel1.load();
 	// if (debug) { testCircleIsOnWall(currentMap.walls); }
 	// if (debug) { testIsInBounds(); }	
+
+	gameState = GAMESTATES.GameLoop;
 }
 
-function gameloop(time) {
-	time /= 1000;
-	var deltaTime = time - lastTime;
-	// Max deltaTime to 5fps
-	if (deltaTime > 0.2) deltaTime = 0.2;
-	lastTime = time;
+function GameLoop(deltaTime) {
 
 	if (FOV > FOV_TARGET) {
 		FOV -= (FOV - FOV_TARGET) / FOV_CHANGE_DRAG;
@@ -100,13 +144,9 @@ function gameloop(time) {
 		FOV += (FOV_TARGET - FOV) / FOV_CHANGE_DRAG;
 	}
 	
-	checkUIKeys();
-	if(!isPaused){
-		//Update, only when the game is not paused
-		player.update(deltaTime);
-		currentMap.update(deltaTime);
-		particles.update(deltaTime);
-	}
+	player.update(deltaTime);
+	currentMap.update(deltaTime);
+	particles.update(deltaTime);
 
 	if (debug) {
 
@@ -132,7 +172,7 @@ function gameloop(time) {
 		for (var i = 0; i < currentMap.entities.length; i++) {
 			currentMap.entities[i].draw2D();
 		}
-    player.draw2D();
+	player.draw2D();
 
 		for (var i in printlist) {
 			colorText(i + ": " +printlist[i], player.x - 350, player.y - 250 + i * 10, "white")
@@ -233,21 +273,39 @@ function gameloop(time) {
 		var coolbarWidth = player._actionCooldown / player.actionCooldownTime * 113;
 		if (coolbarWidth < 0) coolbarWidth = 0;
 		colorRect(709 - coolbarWidth, 13, coolbarWidth, 18, 'yellow');
-		colorCircle(745, 65, player.health/player.maxHealth * 35, 'blue')
+		colorCircle(745, 65, Math.abs(player.health/player.maxHealth) * 35, 'blue')
 
 		// console.log(window.performance.now() - thisTime);
-	}
-
-	if(isPaused){
-		drawPauseScreen();
 	}
 	// end of draw block
 
 	// if (debug) { testAStarSearch(); }
 
-	Key.update();
 	AudioMan.update();
-
-	window.requestAnimationFrame(gameloop);
-	
 };
+
+function PauseScreen(){
+	colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
+	colorText("PAUSED", canvas.width/2, canvas.height/2, "white", "30px Arial", "center");
+	colorText("Press P to Return to Game", canvas.width/2, canvas.height/2 + 50, "white", "30px Arial", "center");
+}
+
+function DeathScreen(){
+	colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
+	colorText("You died", canvas.width/2, canvas.height/2, "white", "30px Arial", "center");
+	colorText("Press Space to return to the title screen", canvas.width/2, canvas.height/2 + 50, "white", "30px Arial", "center");
+
+	if (Key.isJustPressed(Key.SPACE)) {
+		gameState = GAMESTATES.TitleScreen;
+	}
+}
+
+function WinScreen(){
+	colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
+	colorText("You win", canvas.width/2, canvas.height/2, "white", "30px Arial", "center");
+	colorText("Press Space to return to the title screen", canvas.width/2, canvas.height/2 + 50, "white", "30px Arial", "center");
+
+	if (Key.isJustPressed(Key.SPACE)) {
+		gameState = GAMESTATES.TitleScreen;
+	}
+}

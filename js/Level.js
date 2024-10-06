@@ -21,6 +21,10 @@ function LevelClass() {
 
 		// Entity destruction loop
 		for (let i = 0; i < this._markedForDestruction.length; i++) {
+			if (this._markedForDestruction[i] == player) {
+				gameState = GAMESTATES.Death;
+			}
+
 			this._markedForDestruction[i].onDestroy();
 			this.entities.splice(this.entities.indexOf(this._markedForDestruction[i]), 1);
 		}
