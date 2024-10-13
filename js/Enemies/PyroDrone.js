@@ -1,4 +1,5 @@
-const PATROL_TIME_MULTIPLE = 4;
+const PYRODRONE_PATROL_TIME_MULTIPLE = 4;
+const PYRODRONE_PURSUE_TIME_MULTIPLE = 5;
 const PYRODRONE_ROTATE_SPEED = 10;
 
 class PyroDroneRobot extends SceneEntity {
@@ -15,7 +16,6 @@ class PyroDroneRobot extends SceneEntity {
             8, 1,
             579, 452
 		);
-		this.lastTargetPos = player?.pos;
 		this.brain = new PyroDroneBrain(this);
 	}
 
@@ -53,13 +53,19 @@ class PyroDroneRobot extends SceneEntity {
 class PyroDroneBrain extends Brain {
 	#aStarPath = [];
 	#patrolingTime = 0;
+	#pursuingTime = 0;
 	#nextPatrolPos = this.pos;
 
 	constructor(body) {
 		super(body);
 
-		this.minDistance = 45 + rndFloat(-10.10);
-		this.maxDistance = 200 + rndFloat(-50.10);
+		// 180 degrees in front (90 deg per side) = 0 fovThreshold
+		this.fovThreshold = 0.9;
+
+		this.minDistanceHunt = this.body.radius * 2;
+		this.maxDistanceHunt = 50 + rndFloat(-5, 25) ;
+		this.minDistanceSafe = 75 + rndFloat(-10, 10);
+		this.maxDistanceSafe = 175 + rndFloat(-50, 10);
 
 		this.turnPreferance = rndFloat(-1, 1);
 
@@ -67,16 +73,9 @@ class PyroDroneBrain extends Brain {
 	}
 
 	think(deltaTime) {
-		// if (debug && this.name === 'testBunny1') {
-		// 	console.log("entities.length: ", this.level.entities.length);
-		// 	console.log("aStarPath length: ", this.#aStarPath.length);
-		// 	console.log("first element: ", this.#aStarPath[0]);
-		// 	console.log("base element: ", this.#aStarPath[this.#aStarPath.length - 1]);
-		// 	console.log("name: ", this.name);
-		// 	console.log("pos: ", this.pos);
-		// 	console.log("think state in deltaTime", this.state, deltaTime);
-		// }
-		this.setDirectionVector(player?.pos);
+		super.think(deltaTime);
+		if (debug) { console.log("bef: name, state", this.name, this.state); }
+
 		switch(this.state) {
 		case "idle":
 			this.stateIdle(deltaTime);
@@ -90,13 +89,14 @@ class PyroDroneBrain extends Brain {
 		case "patrol":
 			this.statePatrol(deltaTime);
 			break;
-		case "pursueLastSeen":
-			this.statePursueLastSeen(deltaTime);
+		case "pursue":
+			this.statePursue(deltaTime);
 			break;
 		default:
 			this.stateIdle(deltaTime);
 			break;
 		}
+		if (debug) { console.log("aft: name, state", this.name, this.state); }
 	}
 
 	draw2D() {
@@ -107,7 +107,7 @@ class PyroDroneBrain extends Brain {
 		var lastY = this.pos.y;
 		colorEmptyCircle(lastX, lastY, 3, "green");
 		var nextE = this.#aStarPath[nextI];
-		var goalE = this.lastTargetPos ? this.lastTargetPos : this.#nextPatrolPos;
+		var goalE = this.lastTarget ? this.lastTarget?.pos : this.#nextPatrolPos;
 		colorEmptyCircle(goalE.x, goalE.y, 3, "magenta");
 		colorLine(lastX, lastY, goalE.x, goalE.y, 1, "magenta");
 		colorLine(nextE.x, nextE.y, goalE.x, goalE.y, 1, "yellow");
@@ -119,62 +119,42 @@ class PyroDroneBrain extends Brain {
 	}
 
 	stateIdle(deltaTime) {
-		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
-		if (couldSeePlayer) {
-			if (this.dPrFwDv > 0) {
-				if (player?.brain.dPrFwDv > 0.5) {
-					// flee if player is looking at us
-					this.state = "flee";
-				} else {
-					this.state = "attack";
-				}
+		this.state = "patrol";
+
+		if (this.canSeePlayer) {
+			// is player looking at us?
+			if (this.targetSeesUs &&
+				this.distance <= this.minDistance
+			) {
+				this.state = "flee";
 			} else {
-				this.state = "patrol";
+				this.state = "attack";
 			}
-		} else if (this.lastTargetPos) {
-			const couldSeeLastSpot = lineOfSight(this.pos, this.lastTargetPos, this.level.walls);
-			if (couldSeeLastSpot) {
-				this.setDirectionVector(this.lastTargetPos);
-				this.state = "pursueLastSeen";
-			} else {
-				this.state = "patrol";
-			}
-		} else {
-			this.state = "patrol";
+		} else if (this.lastTarget) {
+			this.setDirectionVector(this.lastTarget.pos);
+			this.state = "pursue";
 		}
 	}
 
 	stateAttack(deltaTime) {
 		this.#aStarPath = [];
-		// go back to idle immediately after attack
-		this.state = 'idle';
 
-		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
-		if (couldSeePlayer) {
-			this.lastTargetPos = { x: player.pos.x, y: player.pos.y };
-
-			this.rotateDelta -= this.dPrRiDv;
-
-			if (this.distance > this.maxDistance) {
-				this.moveDelta.x += 1;
+		if (this.canSeePlayer) {
+			if (this.distance > this.minDistance) {
+				this.rotateDelta -= this.dPrRiDv;
+				this.moveDelta.x += 2;
 				this.rotateDelta += this.turnPreferance * 0.5;
-			} else if (player?.brain.dPrFwDv > 0.5) {
-				// flee if player is looking at us
-				this.state = "flee";
-			} else if (this.distance < this.maxDistance &&
-				this.distance > this.minDistance
-			) {
-				this.moveDelta.x += 1;
-				this.rotateDelta += this.turnPreferance;
 			} else if (this.distance <= this.minDistance) {
 				this.triggerAction();
+				if (this.targetSeesUs) {
+					this.state = "flee";
+				}
 			}
-		} else if (this.lastTargetPos) {
-			const couldSeeLastSpot = lineOfSight(this.pos, this.lastTargetPos, this.level.walls);
-			if (couldSeeLastSpot) {
-				this.setDirectionVector(this.lastTargetPos);
-				this.state = "pursueLastSeen";
-			}
+		} else if (this.lastTarget) {
+			this.setDirectionVector(this.lastTarget.pos);
+			this.state = "pursue";
+		} else {
+			this.state = 'idle'
 		}
 	}
 
@@ -184,12 +164,11 @@ class PyroDroneBrain extends Brain {
 			this.rotateDelta += this.dPrRiDv;
 			this.rotateDelta += this.turnPreferance * 0.5;
 			this.moveDelta.x -= this.dPrFwDv;
-		} else {
+		} else if (this.distance > this.maxDistance) {
 			this.rotateDelta -= this.dPrRiDv;
-			this.moveDelta.x += 0.1;
-			if (this.dPrFwDv > 0.5) {
-				this.state = "idle";
-			}
+			this.moveDelta.x += this.dPrFwDv;
+			this.setDirectionVector(this.lastTarget?.pos);
+			this.state = "idle";
 		}
 	}
 
@@ -228,18 +207,18 @@ class PyroDroneBrain extends Brain {
 					this.pathFinder.aStarSearch(this.pos, this.#nextPatrolPos).path;
 			} while (keepLooping());
 
-			this.#patrolingTime = this.#aStarPath?.length * PATROL_TIME_MULTIPLE ?? 0;
+			this.#patrolingTime = this.#aStarPath?.length * PYRODRONE_PATROL_TIME_MULTIPLE ?? 0;
 		}
 
 		if (this.#patrolingTime === 0) {
 			const nextPatrolChoice = Math.random();
 			if (nextPatrolChoice < 0.8) {
 				// keep trying current path to the position
-				this.#patrolingTime = this.#aStarPath?.length * PATROL_TIME_MULTIPLE ?? 0;
+				this.#patrolingTime = this.#aStarPath?.length * PYRODRONE_PATROL_TIME_MULTIPLE ?? 0;
 			} else if (nextPatrolChoice < 0.97) {
 				// find another path to the same pos
 				this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextPatrolPos).path;
-				this.#patrolingTime = this.#aStarPath?.length * PATROL_TIME_MULTIPLE ?? 0;
+				this.#patrolingTime = this.#aStarPath?.length * PYRODRONE_PATROL_TIME_MULTIPLE ?? 0;
 			} else {
 				// start over with a new patrol pos and path
 				this.#aStarPath = [];
@@ -259,46 +238,27 @@ class PyroDroneBrain extends Brain {
 				this.#aStarPath.length > 0 &&
 				canSeeNextPos
 			) {
-				this.body.rotateSpeed = PYRODRONE_ROTATE_SPEED;
 				this.setDirectionVector(nextE);
 
 				if (this.dPrFwDv > 0.999) {
-					if (Math.random() < 0.2) {
-						// this.moveDelta.x -= this.dPrFwDv;
-						this.#patrolingTime += 2;
-					} else {
-						this.moveDelta.x += this.dPrFwDv;
-						this.#patrolingTime += 1;
-					}
-				} else
-				if (this.dPrFwDv > 0.99) {
-					if (Math.random() < 0.1) {
-						this.moveDelta.x -= this.dPrFwDv;
-						this.rotateDelta -= this.dPrRiDv;
-						this.#patrolingTime += 2;
+					this.moveDelta.x += this.dPrFwDv;
+				} else if (this.dPrFwDv > 0.99) {
+					this.moveDelta.x -= this.dPrFwDv;
+					this.rotateDelta -= this.dPrRiDv;
+					this.#patrolingTime += 1;
 
-						if (Math.random() < 0.5) {
-							this.moveDelta.y -= 2;
-						} else {
-							this.moveDelta.y += 2;
-						}
-						this.#patrolingTime += 1;
+					if (Math.random() < 0.5) {
+						this.moveDelta.y -= 2;
 					} else {
-						this.moveDelta.x += this.dPrFwDv;
-						this.rotateDelta += this.dPrRiDv;
+						this.moveDelta.y += 2;
 					}
+				} else if (this.dPrFwDv > 0.9) {
+					this.moveDelta.x += this.dPrFwDv;
+					this.rotateDelta += this.dPrRiDv;
 				} else {
-					// this.moveDelta.x -= 1;
-					if (this.dPrFwDv > 0.9) {
-						this.rotateDelta += this.dPrRiDv;
-						// this.rotateDelta += this.turnPreferance * 0.5;
-					} else if (this.dPrFwDv > 0) {
-						this.rotateDelta += this.turnPreferance;
-					} else {
-						// this.rotateDelta -= this.turnPreferance;
-					}
+					this.rotateDelta += this.dPrRiDv;
+					this.#patrolingTime += 1;
 				}
-				this.rotateDelta = -this.dPrRiDv;
 
 				const closeEnough =
 					distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
@@ -324,11 +284,13 @@ class PyroDroneBrain extends Brain {
 		}
 	}
 
-	statePursueLastSeen(deltaTime) {
-		if (this.lastTargetPos) {
+	statePursue(deltaTime) {
+		if (this.lastTarget?.pos) {
 			if (this.#aStarPath.length === 0) {
 				this.#aStarPath =
-					this.pathFinder.aStarSearch(this.pos, this.lastTargetPos).path;
+					this.pathFinder.aStarSearch(this.pos, this.lastTarget.pos).path;
+				this.#pursuingTime = 
+					this.#aStarPath?.length * PYRODRONE_PURSUE_TIME_MULTIPLE ?? 0;
 			}
 	
 			const nextI = this.#aStarPath.length - 1;
@@ -337,49 +299,29 @@ class PyroDroneBrain extends Brain {
 				const canSeeNextPos =
 					lineOfSight(this.pos, nextE, this.level.walls);
 	
-				if (this.#aStarPath &&
-					this.#aStarPath.length > 0 &&
-					canSeeNextPos
+				if (this.#aStarPath?.length > 0 && canSeeNextPos
 				) {
 					this.setDirectionVector(nextE);
 	
 					if (this.dPrFwDv > 0.999) {
-						if (Math.random() < 0.2) {
-							// this.moveDelta.x -= this.dPrFwDv;
-							this.#patrolingTime += 2;
-						} else {
-							this.moveDelta.x += this.dPrFwDv;
-							this.#patrolingTime += 1;
-						}
-					} else
-					if (this.dPrFwDv > 0.99) {
-						if (Math.random() < 0.1) {
-							this.moveDelta.x -= this.dPrFwDv;
-							this.rotateDelta -= this.dPrRiDv;
-							this.#patrolingTime += 2;
+						this.moveDelta.x += this.dPrFwDv;
+					} else if (this.dPrFwDv > 0.99) {
+						this.moveDelta.x -= this.dPrFwDv;
+						this.rotateDelta -= this.dPrRiDv;
+						this.#pursuingTime += 1;
 	
-							if (Math.random() < 0.5) {
-								this.moveDelta.y -= 2;
-							} else {
-								this.moveDelta.y += 2;
-							}
-							this.#patrolingTime += 1;
+						if (Math.random() < 0.5) {
+							this.moveDelta.y -= 2;
 						} else {
-							this.moveDelta.x += this.dPrFwDv;
-							this.rotateDelta += this.dPrRiDv;
+							this.moveDelta.y += 2;
 						}
+					} else if (this.dPrFwDv > 0.9) {
+						this.moveDelta.x += this.dPrFwDv;
+						this.rotateDelta += this.dPrRiDv;
 					} else {
-						// this.moveDelta.x -= 1;
-						if (this.dPrFwDv > 0.9) {
-							this.rotateDelta += this.dPrRiDv;
-							// this.rotateDelta += this.turnPreferance * 0.5;
-						} else if (this.dPrFwDv > 0) {
-							this.rotateDelta += this.turnPreferance;
-						} else {
-							// this.rotateDelta -= this.turnPreferance;
-						}
+						this.rotateDelta += this.turnPreferance;
+						this.#pursuingTime += 1;
 					}
-					this.rotateDelta = -this.dPrRiDv;
 	
 					const closeEnough =
 						distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
@@ -387,16 +329,18 @@ class PyroDroneBrain extends Brain {
 						this.#aStarPath.pop();
 					}
 				}
+
+				this.#pursuingTime--;
 			}
 	
 			// the current position is the next pursue position, so start new path
-			const dist = distanceBetweenTwoPoints(this.pos, this.lastTargetPos);
+			const dist = distanceBetweenTwoPoints(this.pos, this.lastTarget.pos);
 			if (dist <= this.body.radius * 2) {
 				// start over with a new pursue pos and path
 				this.#aStarPath = [];
-				this.lastTargetPos = null;
+				this.lastTarget = null;
 			}
-			this.state = "idle";				
 		}
+		this.state = "idle";				
 	}
 }

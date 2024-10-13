@@ -1,5 +1,8 @@
 const ENTITY_ROTATE_SPEED = 2;
 const ENTITY_PATH_ATTEMPTS = 10;
+// 60 degrees forward in FOV; where 30 deg on each side = 90 deg * 1/3
+const ENTITY_FOV_ALIGNMENT_THRESHOLD = 0.67;
+
 class EntityClass {
 	constructor(entityToOverride = {}) {
 		this.name = entityToOverride.name || "";
@@ -232,15 +235,21 @@ class SceneEntity extends EntityClass {
 }
 
 class Brain {
-	// point to North initially
-	#directionVector = { x: 0, y: -1 };
-	#dPrFwDv = 0;
-	#dPrRiDv = 0;
-	#lastTargetPos = null;
+	#directionVector;
+	#dPrFwDv;
+	#dPrRiDv;
+	#lastTarget = null;
+	#fovThreshold = ENTITY_FOV_ALIGNMENT_THRESHOLD;
 
 	constructor(body) {
 		this.body = body;
-		this.setDirectionVector();
+		this.minDistanceSafe = 50 + rndFloat(-10, 10);
+		this.maxDistanceSafe = 150 + rndFloat(-50, 10);
+		this.minDistanceHunt = this.minDistanceSafe;
+		this.maxDistanceHunt = this.maxDistanceSafe;
+		this.minDistance = this.minDistanceSafe;
+		this.maxDistance = this.maxDistanceSafe;
+		this.turnPreferance = rndFloat(-1, 1);
 	}
 
 	get name() {return this.body.name;}
@@ -259,31 +268,104 @@ class Brain {
 	get distance() {return this.body.distance;}
 	get pathFinder() { return this.body.pathFinder; }
 
-	set moveDelta(value) {this.body.moveDelta = value;}
-	set rotateDelta(value) {this.body.rotateDelta = value;}
+	set moveDelta(value) { this.body.moveDelta = value; }
+	set rotateDelta(value) { this.body.rotateDelta = value; }
 
-	triggerAction() {this.body.triggerAction();}
+	triggerAction() { this.body.triggerAction(); }
 
-	think(deltaTime) {}
+	think(deltaTime) {
+		this.inLineOfSight = lineOfSight(this.pos, player.pos, this.level.walls);
+		this.setDirectionVector(player.pos);
+		this.canSeePlayer = 
+			this.dPrFwDv > this.#fovThreshold && 
+			this.inLineOfSight;
+		if (this.canSeePlayer) {
+			if (this.lastTarget) {
+				if (this.lastTarget.pos.x !== player.pos.x ||
+					this.lastTarget.pos.y !== player.pos.y ||
+					this.lastTarget.radius !== player.radius	
+				) {
+					this.lastTarget.pos.x = player.pos.x;
+					this.lastTarget.pos.y = player.pos.y;
+					this.lastTarget.radius = player.radius;		
+				}
+			} else {
+				this.lastTarget = new EntityTarget(player);
+			}
+		}
+		
+		this.lastTarget?.brain.setDirectionVector(this.pos);
+		this.targetSeesUs = 
+			this.lastTarget?.brain.dPrFwDv > this.lastTarget?.brain.fovThreshold && 
+			this.inLineOfSight;
+
+		this.minDistance = this.targetSeesUs ? this.minDistanceSafe : this.minDistanceHunt;
+		this.minDistance += this.lastTarget?.radius ?? 0;
+		this.maxDistance = this.targetSeesUs ? this.maxDistanceSafe : this.maxDistanceHunt;
+	}
 
 	get directionVector() { return this.#directionVector; }
 	get dPrFwDv() { return this.#dPrFwDv; }
 	get dPrRiDv() { return this.#dPrRiDv; }
-	setDirectionVector = (targetPos = this.pos) => {
-		this.#directionVector =
-			normalizeVector(subtractVectors(targetPos, this.pos));
-		this.#dPrFwDv =
-			dotProductOfVectors(this.forward, this.#directionVector);
-		this.#dPrRiDv =
-			dotProductOfVectors(this.right, this.#directionVector);
+
+	setDirectionVector(targetPos) {
+		if (targetPos) {
+			this.#directionVector = 
+				normalizeVector(subtractVectors(targetPos, this.pos));
+			this.#dPrFwDv =
+				dotProductOfVectors(this.forward, this.#directionVector);
+			this.#dPrRiDv =
+				dotProductOfVectors(this.right, this.#directionVector);
+		}
 	}
-	
-	get lastTargetPos() { return this.#lastTargetPos; }
-	set lastTargetPos(pos) { this.#lastTargetPos = pos; }
+
+	get lastTarget() { return this.#lastTarget; }
+	set lastTarget(target) { this.#lastTarget = target; }
+	get fovThreshold() { return this.#fovThreshold; }
+	set fovThreshold(fovt) { this.#fovThreshold = fovt; }
 
 	isInBounds(point) {
 		// measure x, y boundaries from finding eventually ray casting
 		// or communicating with other similar entities
 		return currentMap.isInBounds(point);
 	};
+}
+
+class EntityClone extends EntityClass {
+	constructor(entity) {
+		super(entity);
+		this.name = entity?.name ? entity.name + " Clone" : "Clone";
+		this.pos = { x: entity?.pos.x ?? 0, y: entity?.pos.y ?? 0};
+		this.radius = entity?.radius || 5;
+		this.moveSpeed = entity?.moveSpeed || 20;
+		this.rotateSpeed = entity?.rotateSpeed || 2;
+		this.moveDelta = 
+			{ x: entity?.moveDelta.x ?? 0, y: entity?.moveDelta.y ?? 0};
+		this.rotateDelta = entity?.rotateDelta || 0;
+		this.actionTriggered = entity?.actionTriggered || false;
+		this.level = entity?.level || null;
+		this.distance = entity?.distance || Infinity;
+
+		this.maxHealth = entity?.maxHealth ?? 100;
+		this.health = this.maxHealth;
+
+		this.actionCooldownTime = 
+			entity?.actionCooldownTime || 1.5;
+		this._actionCooldown = this.actionCooldownTime;
+
+		this.pathFinder = new PathFindingComponent(this);
+
+		this.brain = new Brain(this);
+	}
+}
+
+class EntityTarget extends EntityClone {
+	constructor(entity) {
+		super(entity);
+		this.name = entity?.name ? 
+			entity.name + " Target" : 
+			"Target";
+		this.pos = { x: entity?.pos.x ?? 0, y: entity?.pos.y ?? 0 };
+		this.radius = entity?.radius || 5;
+	}
 }

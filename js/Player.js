@@ -17,6 +17,7 @@ class PlayerBrain extends Brain {
 	constructor(body) {
 		super(body);
 
+		this.fovThreshold = ENTITY_FOV_ALIGNMENT_THRESHOLD;
 		this.lookSpeed = 0.75;
 	}
 

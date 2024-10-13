@@ -2,6 +2,7 @@ const LONG_FORAGE_DISTANCE = 200;
 const SHORT_FORAGE_DISTANCE = 5;
 const FORAGE_TIME_MAX = LONG_FORAGE_DISTANCE;
 const FORAGE_TIME_MULTIPLE = 4;
+const PURSUE_TIME_MULTIPLE = 5;
 const BITBUNNY_ROTATE_SPEED = 1.2;
 const BITBUNNY_FORAGE_ROTATE_SPEED = 4;
 
@@ -57,20 +58,16 @@ class BitBunnyRobot extends SceneEntity {
 class BitBunnyBrain extends Brain {
 	#aStarPath = [];
 	#foragingTime = 0;
+	#pursuingTime = 0;
 	#nextForagePos = this.pos;
 
 	constructor(body) {
 		super(body);
-
-		this.minDistance = 50 + rndFloat(-10.10);
-		this.maxDistance = 150 + rndFloat(-50.10);
-
-		this.turnPreferance = rndFloat(-1, 1);
-
 		this.state = "idle";
 	}
 
 	think(deltaTime) {
+		super.think(deltaTime);
 		// if (debug && this.name === 'testBunny1') {
 		// 	console.log("entities.length: ", this.level.entities.length);
 		// 	console.log("aStarPath length: ", this.#aStarPath.length);
@@ -94,7 +91,7 @@ class BitBunnyBrain extends Brain {
 		case "forage":
 			this.stateForage(deltaTime);
 			break;
-		case "pursueLastSeen":
+		case "pursue":
 			this.statePursue(deltaTime);
 			break;
 		default:
@@ -111,7 +108,7 @@ class BitBunnyBrain extends Brain {
 		var lastY = this.pos.y;
 		colorEmptyCircle(lastX, lastY, 3, "green");
 		var nextE = this.#aStarPath[nextI];
-		var goalE = this.lastTargetPos ? this.lastTargetPos : this.#nextForagePos;
+		var goalE = this.lastTarget ? this.lastTarget.pos : this.#nextForagePos;
 		colorEmptyCircle(goalE.x, goalE.y, 3, "magenta");
 		colorLine(lastX, lastY, goalE.x, goalE.y, 1, "magenta");
 		colorLine(nextE.x, nextE.y, goalE.x, goalE.y, 1, "yellow");
@@ -123,15 +120,14 @@ class BitBunnyBrain extends Brain {
 	}
 
 	stateIdle(deltaTime) {
-		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
-		if (couldSeePlayer) {
+		if (this.canSeePlayer) {
 			if (this.dPrFwDv > 0.3) {
 				this.state = "attack";
 			} else {
 				this.state = "forage";
 			}
-		} else if (this.lastTargetPos) {
-			this.state = 'pursueLastSeen'
+		} else if (this.lastTarget?.pos) {
+			this.state = 'pursue'
 		} else {
 			this.state = "forage";
 		}
@@ -140,10 +136,7 @@ class BitBunnyBrain extends Brain {
 	stateAttack(deltaTime) {
 		this.#aStarPath = [];
 		this.body.rotateSpeed = BITBUNNY_ROTATE_SPEED;
-		const couldSeePlayer = lineOfSight(this.pos, player?.pos, this.level.walls);
-		if (couldSeePlayer) {
-			this.lastTargetPos = { x: player.pos.x, y: player.pos.y };
-			
+		if (this.canSeePlayer) {
 			if (this.dPrFwDv > 0.3) {
 				this.rotateDelta -= this.dPrRiDv;
 
@@ -161,8 +154,8 @@ class BitBunnyBrain extends Brain {
 
 				this.triggerAction();
 			}
-		} else if (this.lastTargetPos) {
-			this.state = 'pursueLastSeen'
+		} else if (this.lastTarget?.pos) {
+			this.state = 'pursue'
 		} else {
 			this.state = 'idle';
 		}
@@ -324,76 +317,84 @@ class BitBunnyBrain extends Brain {
 	}
 
 	statePursue(deltaTime) {
-		if (this.#aStarPath.length === 0) {
-			this.#aStarPath =
-				this.pathFinder.aStarSearch(this.pos, this.lastTargetPos).path;
-		}
-
-		const nextI = this.#aStarPath.length - 1;
-		const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
-		if (nextE) {
-			const canSeeNextPos =
-				lineOfSight(this.pos, nextE, this.level.walls);
-
-			if (this.#aStarPath &&
-				this.#aStarPath.length > 0 &&
-				canSeeNextPos
-			) {
-				this.setDirectionVector(nextE);
-
-				if (this.dPrFwDv > 0.999) {
-					if (Math.random() < 0.2) {
-						// this.moveDelta.x -= this.dPrFwDv;
-						this.#foragingTime += 2;
-					} else {
-						this.moveDelta.x += this.dPrFwDv;
-						this.#foragingTime += 1;
-					}
-				} else
-				if (this.dPrFwDv > 0.99) {
-					if (Math.random() < 0.1) {
-						this.moveDelta.x -= this.dPrFwDv;
-						this.rotateDelta -= this.dPrRiDv;
-						this.#foragingTime += 2;
-
-						if (Math.random() < 0.5) {
-							this.moveDelta.y -= 2;
-						} else {
-							this.moveDelta.y += 2;
-						}
-						this.#foragingTime += 1;
-					} else {
-						this.moveDelta.x += this.dPrFwDv;
-						this.rotateDelta += this.dPrRiDv;
-					}
-				} else {
-					// this.moveDelta.x -= 1;
-					if (this.dPrFwDv > 0.9) {
-						this.rotateDelta += this.dPrRiDv;
-						// this.rotateDelta += this.turnPreferance * 0.5;
-					} else if (this.dPrFwDv > 0) {
-						this.rotateDelta += this.turnPreferance;
-					} else {
-						// this.rotateDelta -= this.turnPreferance;
-					}
-				}
-				this.rotateDelta = -this.dPrRiDv;
-
-				const closeEnough =
-					distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
-				if (closeEnough) {
-					this.#aStarPath.pop();
-				}
+		if (this.lastTarget?.pos) {
+			if (this.#aStarPath.length === 0) {
+				this.#aStarPath =
+					this.pathFinder.aStarSearch(this.pos, this.lastTarget.pos).path;
+				this.#pursuingTime = 
+					this.#aStarPath?.length * PURSUE_TIME_MULTIPLE ?? 0;
 			}
-		}
 
-		// the current position is the next forage position, so start new path
-		const dist = distanceBetweenTwoPoints(this.pos, this.lastTargetPos);
-		if (dist <= this.body.radius * 2) {
-			// start over with a new forage pos and path
-			this.#aStarPath = [];
-			this.lastTargetPos = null;
+			const nextI = this.#aStarPath.length - 1;
+			const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
+			if (nextE) {
+				const canSeeNextPos =
+					lineOfSight(this.pos, nextE, this.level.walls);
+
+				if (this.#aStarPath?.length > 0 &&
+					canSeeNextPos
+				) {
+					this.setDirectionVector(nextE);
+
+					if (this.dPrFwDv > 0.999) {
+						if (Math.random() < 0.2) {
+							// this.moveDelta.x -= this.dPrFwDv;
+							this.#pursuingTime += 2;
+						} else {
+							this.moveDelta.x += this.dPrFwDv;
+							this.#pursuingTime += 1;
+						}
+					} else if (this.dPrFwDv > 0.99) {
+						if (Math.random() < 0.1) {
+							this.moveDelta.x -= this.dPrFwDv;
+							this.rotateDelta -= this.dPrRiDv;
+							this.#pursuingTime += 2;
+
+							if (Math.random() < 0.5) {
+								this.moveDelta.y -= 2;
+							} else {
+								this.moveDelta.y += 2;
+							}
+							this.#pursuingTime += 1;
+						} else {
+							this.moveDelta.x += this.dPrFwDv;
+							this.rotateDelta += this.dPrRiDv;
+						}
+					} else {
+						// this.moveDelta.x -= 1;
+						if (this.dPrFwDv > 0.9) {
+							this.rotateDelta += this.dPrRiDv;
+							// this.rotateDelta += this.turnPreferance * 0.5;
+						} else if (this.dPrFwDv > 0) {
+							this.rotateDelta += this.turnPreferance;
+						} else {
+							// this.rotateDelta -= this.turnPreferance;
+						}
+					}
+
+					this.rotateDelta += -this.dPrRiDv;
+
+					const closeEnough =
+						distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
+					if (closeEnough) {
+						this.#aStarPath.pop();
+					}
+				}
+
+				this.#pursuingTime--;
+
+			}
+
+			// the current position is the next pursue position, so start new path
+			const dist = distanceBetweenTwoPoints(this.pos, this.lastTarget.pos);
+			if (dist <= this.body.radius * 2) {
+				// start over with a new pursue pos and path
+				this.#aStarPath = [];
+				this.lastTarget = null;
+			}
+			this.state = "idle";
+		} else {
+			this.state = "idle";				
 		}
-		this.state = "idle";
 	}
 }
