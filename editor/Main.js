@@ -28,7 +28,7 @@ var ctrlKey = false;
 var pFocus = false;
 
 var FOV = 60;
-var heightScale = 8;
+var heightScale = 10;
 
 // Empty classes for level loading
 class PathFindingComponent{};

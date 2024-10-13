@@ -21,7 +21,7 @@ var lastTime = window.performance.now() / 1000;
 var FOV = 60;
 var FOV_TARGET = 60;
 var FOV_CHANGE_DRAG = 6;
-var heightScale = 8; // note: editor uses a different scale
+var heightScale = 10; // note: editor uses a different scale
 
 var mainMenuImage = document.createElement("img"); // create element for main menu background
 mainMenuImage.src = "./source_art/Main_Menu/MainMenu.png"; // attach source for main menu
@@ -127,7 +127,7 @@ function GameStart() {
 	// if (debug) { testPriorityQueue(); }
 	// if (debug) { testAStarSearch(); }
 	// if (debug) { testCircleIsOnLineSegment(); }
-	currentMap = testLevel1.load();
+	S1R1Level.load();
 	// if (debug) { testCircleIsOnWall(currentMap.walls); }
 	// if (debug) { testIsInBounds(); }	
 
@@ -294,9 +294,15 @@ function DeathScreen(){
 	colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
 	colorText("You died", canvas.width/2, canvas.height/2, "white", "30px Arial", "center");
 	colorText("Press Space to return to the title screen", canvas.width/2, canvas.height/2 + 50, "white", "30px Arial", "center");
+	colorText("Press R to return to restart the level", canvas.width/2, canvas.height/2 + 100, "white", "30px Arial", "center");
 
 	if (Key.isJustPressed(Key.SPACE)) {
 		gameState = GAMESTATES.TitleScreen;
+	}
+	if (Key.isJustPressed(Key.R)) {
+		player = new PlayerClass();
+		currentMap.load();
+		gameState = GAMESTATES.GameLoop;
 	}
 }
 

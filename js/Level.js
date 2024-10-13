@@ -26,6 +26,7 @@ function LevelClass() {
 			}
 
 			this._markedForDestruction[i].onDestroy();
+			this._markedForDestruction[i].brain.onDestroy();
 			this.entities.splice(this.entities.indexOf(this._markedForDestruction[i]), 1);
 		}
 		this._markedForDestruction.length = 0;
@@ -34,6 +35,8 @@ function LevelClass() {
 	}
 
 	this.load = function() {
+		currentMap.unload();
+
 		var parsedLevel = null;
 		if (this.levelJSON != "") {
 			parsedLevel = JSON.parse(this.levelJSON);
@@ -120,11 +123,15 @@ function LevelClass() {
 		player.level = this;
 		this.entities.push(player);
 
-		return this;
+		currentMap = this;
 	}
 
 	this.unload = function() {
 		this.onUnload();
+
+		this.walls = [];
+		this.entities = [];
+		this.triggerZones = [];
 	}
 
 	this.getEntityByName = function(name) {

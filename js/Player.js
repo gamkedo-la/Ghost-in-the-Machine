@@ -18,7 +18,7 @@ class PlayerBrain extends Brain {
 		super(body);
 
 		this.fovThreshold = ENTITY_FOV_ALIGNMENT_THRESHOLD;
-		this.lookSpeed = 0.75;
+		this.lookSpeed = 0.5;
 	}
 
 	think(deltaTime) {
@@ -54,6 +54,10 @@ class PlayerBrain extends Brain {
 			}
 
 			return;
+		}
+
+		if (Key.isJustPressed(Key.R)) {
+			this.body.destroy();
 		}
 
 		//player look

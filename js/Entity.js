@@ -304,6 +304,8 @@ class Brain {
 		this.maxDistance = this.targetSeesUs ? this.maxDistanceSafe : this.maxDistanceHunt;
 	}
 
+	onDestroy() {}
+
 	get directionVector() { return this.#directionVector; }
 	get dPrFwDv() { return this.#dPrFwDv; }
 	get dPrRiDv() { return this.#dPrRiDv; }
