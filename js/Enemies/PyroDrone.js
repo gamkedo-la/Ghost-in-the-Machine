@@ -74,7 +74,7 @@ class PyroDroneBrain extends Brain {
 
 	think(deltaTime) {
 		super.think(deltaTime);
-		if (debug) { console.log("bef: name, state", this.name, this.state); }
+		// if (debug) { console.log("bef: name, state", this.name, this.state); }
 
 		switch(this.state) {
 		case "idle":
@@ -96,7 +96,7 @@ class PyroDroneBrain extends Brain {
 			this.stateIdle(deltaTime);
 			break;
 		}
-		if (debug) { console.log("aft: name, state", this.name, this.state); }
+		// if (debug) { console.log("aft: name, state", this.name, this.state); }
 	}
 
 	draw2D() {
