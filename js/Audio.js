@@ -130,8 +130,8 @@ function AudioManager() {
 	this.toggleMute = function() {
 		if (!initialized) this.testInit();
 
-		var newVolume = (masterBus.gain.value === 0 ? 1 : 0);
-		masterBus.gain.setTargetAtTime(newVolume, audioCtx.currentTime, 0.03);
+		var newVolume = (masterBus?.gain.value === 0 ? 1 : 0);
+		masterBus?.gain.setTargetAtTime(newVolume, audioCtx.currentTime, 0.03);
 
 		return newVolume;
 	};
