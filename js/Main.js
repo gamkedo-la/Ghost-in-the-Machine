@@ -84,14 +84,6 @@ function MainLoop(time) {
 	window.requestAnimationFrame(MainLoop);
 }
 
-function CreditsScreen() {
-	colorRect(0,0,800,600, "black");
-	colorText("Press space to continue", canvas.width/2, canvas.height - 50, "white", "30px Arial", "center");
-	if(Key.isJustPressed(Key.SPACE)){
-		GameStart();
-	}
-}
-
 // This function is for non-player key handling (pause, esc, mute, etc.)
 function CheckUIKeys() {
 	if(Key.isJustPressed(Key.P)){
@@ -335,3 +327,89 @@ function WinScreen(){
 		gameState = GAMESTATES.TitleScreen;
 	}
 }
+
+function CreditsScreen() {
+	drawCredits();
+	if(Key.isJustPressed(Key.SPACE)){
+		GameStart();
+	}
+}
+
+function drawCredits() {
+  var context=canvasContext; // patching over different variable name
+  context.fillStyle="black";
+  context.fillRect(0,0,canvas.width,canvas.height);
+  var lineX = 20;
+  var lineY = 15;
+  var creditsSize = 20;
+  var lineSkip = creditsSize+8;
+  context.globalAlpha = 1;
+  context.fillStyle = "rgba(220,220,220,1)";
+  var wasFont = context.font;
+  context.font = creditsSize+"px Arial";
+  var wasAlign=context.textAlign;
+  context.textAlign = "left";
+  for(var i=0;i<this.creditsList.length;i++) {
+      context.fillText(this.creditsList[i],lineX,lineY+=lineSkip);
+  }
+  context.textAlign = wasAlign;
+  context.font = wasFont;
+}
+
+var creditsList=[
+"Michael Fewkes: Project lead, raycasting engine, core gameplay, custom level editor / format / related features, stage design, possession ability and effect, door support, wall textures, NPC system, shadows, input handling, projectile support, HUD, trigger zones, turret functionality, explosion area of effect, win and lose screens",
+"Jason Timms: Bot pathfinding with related data structures and support/debugging functions, bit bunny and pyro drone behaviors, portal support, mute toggle, assorted bug fixing",
+"Stephen \"Arkia\" Hollibaugh: Smooth collision slide, fish eye correction, possession view fix, edge case crash prevention",
+"Jonathan Peterson: Cube robot sprite, blocky turret sprite, blaster projectile with color variants",
+"Christer \"McFunkypants\" Kaitila: Sky and floor rendering, cube robot integration, custom spritesheet support, particle system, sound effect integration",
+"Cindy Andrade: Animated opening title sequence and logo with related integration, flamethrower robot art",
+"Vaan Hope Khani: Intro and outro story writing, explosion sounds",
+"jakeyouh dogwalker: Background music"," ",
+"                                        == PRESS SPACE TO CONTINUE =="];
+
+function lineWrapCredits() {
+    const newCut = [];
+    var maxLineChar = 85;
+    var findEnd;
+
+    for(let i = 0; i < this.creditsList.length; i++) {
+      const currentLine = this.creditsList[i];
+      for(let j = 0; j < currentLine.length; j++) {
+        /*const aChar = currentLine[j];
+        if(aChar === ":") {
+          if(i !== 0) {
+            newCut.push("\n");
+          }
+          newCut.push(currentLine.substring(0, j + 1));
+          newCut.push(currentLine.substring(j + 2, currentLine.length));
+          break;
+        } else*/ if(j === currentLine.length - 1) {
+          if((i === 0) || (i >= this.creditsList.length - 2)) {
+            newCut.push(currentLine);
+          } else {
+            newCut.push(currentLine.substring(0, currentLine.length));
+          }
+        }
+      }
+    }
+
+    const newerCut = [];
+    for(var i=0;i<newCut.length;i++) {
+      while(newCut[i].length > 0) {
+        findEnd = maxLineChar;
+        if(newCut[i].length > maxLineChar) {
+          for(var ii=findEnd;ii>0;ii--) {
+            if(newCut[i].charAt(ii) == " ") {
+              findEnd=ii;
+              break;
+            }
+          }
+        }
+        newerCut.push(newCut[i].substring(0, findEnd));
+        newCut[i] = newCut[i].substring(findEnd, newCut[i].length);
+      }
+    }
+
+    this.creditsList = newerCut;
+  }
+lineWrapCredits();
