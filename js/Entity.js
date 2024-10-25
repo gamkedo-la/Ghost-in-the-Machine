@@ -287,7 +287,9 @@ class Brain {
 				) {
 					this.lastTarget.pos.x = player.pos.x;
 					this.lastTarget.pos.y = player.pos.y;
-					this.lastTarget.radius = player.radius;		
+					this.lastTarget.radius = player.radius;
+					this.lastTarget.forward = player.forward;
+					this.lastTarget.right = player.right;
 				}
 			} else {
 				this.lastTarget = new EntityTarget(player);
@@ -371,3 +373,4 @@ class EntityTarget extends EntityClone {
 		this.radius = entity?.radius || 5;
 	}
 }
+

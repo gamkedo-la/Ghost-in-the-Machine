@@ -1,6 +1,6 @@
 const PYRODRONE_PATROL_TIME_MULTIPLE = 4;
 const PYRODRONE_PURSUE_TIME_MULTIPLE = 5;
-const PYRODRONE_ROTATE_SPEED = 10;
+const PYRODRONE_ROTATE_SPEED = 5;
 
 class PyroDroneRobot extends SceneEntity {
 	constructor(entityToOverride = {}) {
@@ -25,7 +25,6 @@ class PyroDroneRobot extends SceneEntity {
 		let maxDistance = closestIntersection ? distanceBetweenTwoPoints(closestIntersection, this.pos) : 200;
 		let closestEntity = null;
 		let distance = maxDistance;
-		//console.log("Max Distance: " + maxDistance);
 		for (let i = 0; i < this.level.entities.length; i++) {
 			let entity = this.level.entities[i];
 
@@ -89,9 +88,9 @@ class PyroDroneBrain extends Brain {
 		case "patrol":
 			this.statePatrol(deltaTime);
 			break;
-		case "pursue":
-			this.statePursue(deltaTime);
-			break;
+		// case "pursue":
+		// 	this.statePursue(deltaTime);
+		// 	break;
 		default:
 			this.stateIdle(deltaTime);
 			break;
@@ -130,29 +129,31 @@ class PyroDroneBrain extends Brain {
 			} else {
 				this.state = "attack";
 			}
-		} else if (this.lastTarget) {
-			this.setDirectionVector(this.lastTarget.pos);
-			this.state = "pursue";
+		// } else if (this.lastTarget) {
+		// 	this.setDirectionVector(this.lastTarget.pos);
+		// 	this.state = "pursue";
 		}
 	}
 
 	stateAttack(deltaTime) {
 		this.#aStarPath = [];
+		this.#patrolingTime = 0;
+		this.#pursuingTime = 0;
 
 		if (this.canSeePlayer) {
 			if (this.distance > this.minDistance) {
+				this.moveDelta.x += this.dPrFwDv;
 				this.rotateDelta -= this.dPrRiDv;
-				this.moveDelta.x += 2;
-				this.rotateDelta += this.turnPreferance * 0.5;
 			} else if (this.distance <= this.minDistance) {
-				this.triggerAction();
 				if (this.targetSeesUs) {
 					this.state = "flee";
+				} else if (this.distance <= this.minDistanceHunt) {
+					this.triggerAction();
 				}
 			}
-		} else if (this.lastTarget) {
-			this.setDirectionVector(this.lastTarget.pos);
-			this.state = "pursue";
+		// } else if (this.lastTarget) {
+		// 	this.setDirectionVector(this.lastTarget.pos);
+		// 	this.state = "pursue";
 		} else {
 			this.state = 'idle'
 		}
@@ -160,6 +161,9 @@ class PyroDroneBrain extends Brain {
 
 	stateFlee(deltaTime) {
 		this.#aStarPath = [];
+		this.#patrolingTime = 0;
+		this.#pursuingTime = 0;
+
 		if (this.distance < this.maxDistance) {
 			this.rotateDelta += this.dPrRiDv;
 			this.rotateDelta += this.turnPreferance * 0.5;
@@ -173,7 +177,10 @@ class PyroDroneBrain extends Brain {
 	}
 
 	statePatrol(deltaTime) {
-		if (this.#aStarPath.length === 0) {
+		if (this.#aStarPath.length === 0 ||
+			this.#pursuingTime > 0
+		) {
+			this.#aStarPath = [];
 			let loop = 0;
 			const loopMax = ENTITY_PATH_ATTEMPTS;
 			const keepLooping = () =>
@@ -208,14 +215,15 @@ class PyroDroneBrain extends Brain {
 			} while (keepLooping());
 
 			this.#patrolingTime = this.#aStarPath?.length * PYRODRONE_PATROL_TIME_MULTIPLE ?? 0;
+			this.#pursuingTime = 0;
 		}
 
-		if (this.#patrolingTime === 0) {
-			const nextPatrolChoice = Math.random();
-			if (nextPatrolChoice < 0.8) {
+		if (this.#patrolingTime <= 0) {
+			const nextTimerChoice = Math.random();
+			if (nextTimerChoice < 0.8) {
 				// keep trying current path to the position
 				this.#patrolingTime = this.#aStarPath?.length * PYRODRONE_PATROL_TIME_MULTIPLE ?? 0;
-			} else if (nextPatrolChoice < 0.97) {
+			} else if (nextTimerChoice < 0.97) {
 				// find another path to the same pos
 				this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextPatrolPos).path;
 				this.#patrolingTime = this.#aStarPath?.length * PYRODRONE_PATROL_TIME_MULTIPLE ?? 0;
@@ -228,37 +236,48 @@ class PyroDroneBrain extends Brain {
 			}
 		}
 
-		const nextI = this.#aStarPath.length - 1;
+		const nextI = this.#aStarPath?.length - 1;
 		const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
 		if (nextE) {
 			const canSeeNextPos =
 				lineOfSight(this.pos, nextE, this.level.walls);
 
-			if (this.#aStarPath &&
-				this.#aStarPath.length > 0 &&
-				canSeeNextPos
-			) {
+			if (canSeeNextPos) {
 				this.setDirectionVector(nextE);
-
+				
 				if (this.dPrFwDv > 0.999) {
 					this.moveDelta.x += this.dPrFwDv;
-				} else if (this.dPrFwDv > 0.99) {
+				} else if (Math.random() > 0.9) {
 					this.moveDelta.x -= this.dPrFwDv;
-					this.rotateDelta -= this.dPrRiDv;
-					this.#patrolingTime += 1;
+					this.rotateDelta += this.dPrRiDv;
 
 					if (Math.random() < 0.5) {
 						this.moveDelta.y -= 2;
 					} else {
 						this.moveDelta.y += 2;
 					}
-				} else if (this.dPrFwDv > 0.9) {
-					this.moveDelta.x += this.dPrFwDv;
-					this.rotateDelta += this.dPrRiDv;
-				} else {
-					this.rotateDelta += this.dPrRiDv;
+
+					this.#patrolingTime += 2;
+				// } else if (this.dPrFwDv > 0) {
+				// 	this.moveDelta.x += this.dPrFwDv;
+				// 	this.rotateDelta -= this.dPrRiDv; 
+				} else if (this.dPrFwDv >= 0) {
+					this.rotateDelta -= this.dPrRiDv; 
+
 					this.#patrolingTime += 1;
-				}
+				} else if (this.dPrFwDv > -1) {
+					if (this.dPrRiDv > 0) { 
+						this.rotateDelta -= 2 - this.dPrRiDv;
+					} else { 
+						this.rotateDelta -= 2 + this.dPrRiDv;
+					}
+
+					this.#patrolingTime += 1;
+				} else {
+					this.rotateDelta += 2 * this.turnPreferance;
+
+					this.#patrolingTime += 1;
+				} 
 
 				const closeEnough =
 					distanceBetweenTwoPoints(this.pos, nextE) <= this.body.radius;
@@ -286,13 +305,34 @@ class PyroDroneBrain extends Brain {
 
 	statePursue(deltaTime) {
 		if (this.lastTarget?.pos) {
-			if (this.#aStarPath.length === 0) {
+			if (this.#aStarPath.length === 0 ||
+				this.#patrolingTime > 0
+			) {
 				this.#aStarPath =
 					this.pathFinder.aStarSearch(this.pos, this.lastTarget.pos).path;
 				this.#pursuingTime = 
 					this.#aStarPath?.length * PYRODRONE_PURSUE_TIME_MULTIPLE ?? 0;
+				this.#patrolingTime = 0;
 			}
 	
+			if (this.#pursuingTime <= 0) {
+				const nextTimerChoice = Math.random();
+				if (nextTimerChoice > 0.95) {
+					// find another path to the same pos
+					this.#aStarPath = this.pathFinder.aStarSearch(this.pos, this.#nextPatrolPos).path;
+					this.#pursuingTime = this.#aStarPath?.length * PYRODRONE_PURSUE_TIME_MULTIPLE ?? 0;
+				} else if (nextTimerChoice > 0.05) {
+					// keep trying current path to the position
+					this.#pursuingTime = this.#aStarPath?.length * PYRODRONE_PURSUE_TIME_MULTIPLE ?? 0;
+				} else {
+					// start over with a new patrol pos and path
+					this.#aStarPath = [];
+					this.#pursuingTime = 0;
+					this.state = "idle";
+					return;
+				}
+			}
+		
 			const nextI = this.#aStarPath.length - 1;
 			const nextE = nextI >= 0 ? this.#aStarPath[nextI] : null;
 			if (nextE) {
@@ -305,22 +345,15 @@ class PyroDroneBrain extends Brain {
 	
 					if (this.dPrFwDv > 0.999) {
 						this.moveDelta.x += this.dPrFwDv;
-					} else if (this.dPrFwDv > 0.99) {
-						this.moveDelta.x -= this.dPrFwDv;
-						this.rotateDelta -= this.dPrRiDv;
-						this.#pursuingTime += 1;
-	
-						if (Math.random() < 0.5) {
-							this.moveDelta.y -= 2;
-						} else {
-							this.moveDelta.y += 2;
-						}
 					} else if (this.dPrFwDv > 0.9) {
 						this.moveDelta.x += this.dPrFwDv;
-						this.rotateDelta += this.dPrRiDv;
+						this.rotateDelta -= this.dPrRiDv;
+					} else if (this.dPrFwDv > -0.9) {
+						this.rotateDelta -= this.dPrRiDv;
+						this.#pursuingTime += 1;
 					} else {
 						this.rotateDelta += this.turnPreferance;
-						this.#pursuingTime += 1;
+						this.#pursuingTime += 2;
 					}
 	
 					const closeEnough =
@@ -338,6 +371,7 @@ class PyroDroneBrain extends Brain {
 			if (dist <= this.body.radius * 2) {
 				// start over with a new pursue pos and path
 				this.#aStarPath = [];
+				this.#pursuingTime = 0;
 				this.lastTarget = null;
 			}
 		}
