@@ -8,7 +8,8 @@ const GAMESTATES = {
 	GameLoop: 1,
 	Paused: 2,
 	Death: 3,
-	Win: 4
+	Win: 4,
+	Credits: 5
 }
 var gameState = GAMESTATES.TitleScreen;
 
@@ -29,12 +30,14 @@ var HUDImage = new Image();
 HUDImage.src = './images/hud.png';
 
 var titleAnimElem;
+var titleCreditsGuideElem;
 
 window.onload = function() {
 	canvas = document.getElementById('gameCanvas');
 	canvasContext = canvas.getContext('2d');
 	
 	titleAnimElem = document.getElementById("titleAnimation");
+	titleCreditsGuideElem = document.getElementById("creditsHint");
 	var titleAnimationLengthMS = 7000;
 	setTimeout(SwitchTitleAnimForGameCanvas, titleAnimationLengthMS);
 
@@ -43,6 +46,7 @@ window.onload = function() {
 
 function SwitchTitleAnimForGameCanvas() {
 	titleAnimElem.style.display = "none";
+	titleCreditsGuideElem.style.display = "none";
 	canvas.style.display = "block";
 }
 
@@ -71,10 +75,21 @@ function MainLoop(time) {
 	case GAMESTATES.Win:
 		WinScreen();
 		break;
+	case GAMESTATES.Credits:
+		CreditsScreen();
+		break;
 	}
 
 	Key.update();
 	window.requestAnimationFrame(MainLoop);
+}
+
+function CreditsScreen() {
+	colorRect(0,0,800,600, "black");
+	colorText("Press space to continue", canvas.width/2, canvas.height - 50, "white", "30px Arial", "center");
+	if(Key.isJustPressed(Key.SPACE)){
+		GameStart();
+	}
 }
 
 // This function is for non-player key handling (pause, esc, mute, etc.)
@@ -116,6 +131,11 @@ function WaitingForGesture() {
 	if (Key.isJustPressed(Key.SPACE)) {
 		SwitchTitleAnimForGameCanvas();
 		GameStart();
+	}
+	if (Key.isJustPressed(Key.C)) {
+		SwitchTitleAnimForGameCanvas();
+		gameState = GAMESTATES.Credits;
+		console.log("show credits toggle, delaying GameStart...")
 	}
 }
 
