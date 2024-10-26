@@ -52,7 +52,6 @@ class TurretBrain extends Brain {
 			}
 
 		}
-
 	}
 }
 
@@ -108,6 +107,7 @@ class TurretShot extends SceneEntity {
 
 		for (let i = 0; i < this.level.entities.length; i++) {
 			let entity = this.level.entities[i];
+			if (entity == this) continue;
 			if (entity == this.parent) continue;
 
 			let distance = distanceBetweenTwoPoints(this.pos, entity.pos);

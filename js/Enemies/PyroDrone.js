@@ -6,7 +6,7 @@ class PyroDroneRobot extends SceneEntity {
 	constructor(entityToOverride = {}) {
 		super(entityToOverride);
 
-		this.moveSpeed = 50;
+		this.moveSpeed = 20;
 		this.rotateSpeed = PYRODRONE_ROTATE_SPEED;
 
 		this.attackDamage = 100;
@@ -20,32 +20,9 @@ class PyroDroneRobot extends SceneEntity {
 	}
 
 	onAction(deltaTime) {
-		let rayEnd = addVectors(this.pos, scaleVector(this.forward, 200));
-		let closestIntersection = getClosestIntersection(this.pos, rayEnd, this.level.walls);
-		let maxDistance = closestIntersection ? distanceBetweenTwoPoints(closestIntersection, this.pos) : 200;
-		let closestEntity = null;
-		let distance = maxDistance;
-		for (let i = 0; i < this.level.entities.length; i++) {
-			let entity = this.level.entities[i];
-
-			if (this.level.entities[i] == this) continue;
-
-			let nearestPoint = getNearestPointOnLine(this.pos, rayEnd, entity.pos);
-			let distanceFromPoint = distanceBetweenTwoPoints(entity.pos, nearestPoint);
-
-			if (distanceFromPoint < entity.radius) {
-				let newDistance = distanceBetweenTwoPoints(this.pos, entity.pos);
-				if (newDistance < distance) {
-					closestEntity = entity;
-					distance = newDistance;
-				}
-			}
-		}
-		if (closestEntity == null) return;
-
-		closestEntity.takeDamage((1 - distance/maxDistance) * this.attackDamage);
-		sparksFX(this.pos.x,this.pos.y,1);
-		sparksFX(closestEntity.pos.x,closestEntity.pos.y,1);
+		let blast = new PyroBlast({name: this.name + " fire blast", rot:this.rot, level: this.level, parent: this});
+		blast.pos = addVectors(this.pos, scaleVector(this.forward, this.radius + blast.radius + 1));
+		this.level.entities.push(blast);
 	}
 }
 
@@ -147,7 +124,7 @@ class PyroDroneBrain extends Brain {
 			} else if (this.distance <= this.minDistance) {
 				if (this.targetSeesUs) {
 					this.state = "flee";
-				} else if (this.distance <= this.minDistanceHunt) {
+				} else if (this.distance <= this.minDistanceSafe) {
 					this.triggerAction();
 				}
 			}
@@ -377,4 +354,35 @@ class PyroDroneBrain extends Brain {
 		}
 		this.state = "idle";				
 	}
+}
+
+class PyroBlast extends TurretShot {
+	// Attempting to subclass TurretShot class in Turret.js by Michael Fewkes, Christer Kaitila, and possibly others
+	constructor(entityToOverride = {}) {
+		super(entityToOverride);
+			
+		this.moveSpeed = 100;
+		this.maxHealth = 100;
+		this.health = this.maxHealth;
+		this.explosionDamage = 100;
+		this.range = 20;
+		this.parent = entityToOverride.parent || null;
+
+		this.sprite = new SpriteClass(
+			'./images/fireSpritesheet.png', 
+            1, 1, 
+            600, 400
+		);
+		this.radius = 4;
+		this.lifeSpan = 250;
+ 	}
+
+	onUpdatePre(deltaTime) {
+		this.moveDelta.x = 2;
+	}
+
+	onDestroy(deltaTime) {
+		super.onDestroy(deltaTime);
+	}
+
 }
