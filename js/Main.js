@@ -87,7 +87,7 @@ function MainLoop(time) {
 // This function is for non-player key handling (pause, esc, mute, etc.)
 function CheckUIKeys() {
 	if(Key.isJustPressed(Key.P)){
-		if (gameState = GAMESTATES.GameLoop) {
+		if (gameState == GAMESTATES.GameLoop) {
 			gameState = GAMESTATES.Paused;
 		} else if (gameState = GAMESTATES.Paused) {
 			gameState = GAMESTATES.GameLoop;
@@ -365,7 +365,7 @@ var creditsList=[
 "Cindy Andrade: Animated opening title sequence and logo with related integration, flamethrower robot art",
 "Vaan Hope Khani: Intro and outro story writing, explosion sounds",
 "jakeyouh dogwalker: Background music"," ",
-"                                        == PRESS SPACE TO CONTINUE =="];
+"                                        == PRESS SPACE TO CONTINUE =="]
 
 function lineWrapCredits() {
     const newCut = [];
