@@ -165,6 +165,8 @@ function AudioManager() {
 
 //--//music---------------------------------------------------------------------
 	this.playMusic = function(fileNameWithPath, mixVolume = 1) {
+		if (!initialized) this.testInit();
+
 		if (currentMusicTrack != null) {
 			if (fileNameWithPath != currentMusicTrack.fileNameWithPath) {
 				currentMusicTrack.stop();
@@ -186,10 +188,7 @@ function AudioManager() {
 		if (isServer) {
 			//Setup nodes
 			var source = audioCtx.createMediaElementSource(audioFile);
-			var gainNode = audioCtx.createGain();
-
-			source.connect(gainNode);
-			gainNode.connect(musicBus);
+			source.connect(musicBus);
 		}
 
 		audioFile.play();
@@ -278,11 +277,11 @@ function AudioManager() {
 			}
 
 			//Dopler
-			// audioFile.playbackRate = this.rate;
-			// var newDistance = distanceBetweenTwoPoints(listener.pos, this.pos);
-			// var dopler = (lastDistance - newDistance) * DOPLER_SCALE;
-			// audioFile.playbackRate *= clamp(Math.pow(2, dopler), 0.8, 1.2);
-			// lastDistance = newDistance;
+			audioFile.playbackRate = this.rate;
+			var newDistance = distanceBetweenTwoPoints(listener.pos, this.pos);
+			var dopler = (lastDistance - newDistance) * DOPLER_SCALE;
+			audioFile.playbackRate *= clamp(Math.pow(2, dopler), 0.8, 1.2);
+			lastDistance = newDistance;
 		}
 
 		this.play = function() {
@@ -299,10 +298,6 @@ function AudioManager() {
 		this.stop = function() {
 			this.onEnded();
 			audioFile.pause();
-		}
-
-		this.getAudioFile = function() {
-			return audioFile;
 		}
 
 		this.onEnded = function() {

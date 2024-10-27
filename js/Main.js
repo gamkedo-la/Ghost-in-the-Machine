@@ -81,6 +81,7 @@ function MainLoop(time) {
 	}
 
 	Key.update();
+	MusicPlayer.update();
 	window.requestAnimationFrame(MainLoop);
 }
 
@@ -104,16 +105,16 @@ function WaitingForGesture() {
 	if (rndOneIn(90)) {
 		pauseText = pauseText.replaceAll(" ", "");
 	}
-	if (rndOneIn(30)) {
+	if (rndOneIn(80)) {
 		pauseText = pauseText.replaceAll("P", "7");
 	}
-	if (rndOneIn(30)) {
+	if (rndOneIn(70)) {
 		pauseText = pauseText.replaceAll("S", "5");
 	}
-	if (rndOneIn(30)) {
+	if (rndOneIn(60)) {
 		pauseText = pauseText.replaceAll("t", "4");
 	}
-	if (rndOneIn(30)) {
+	if (rndOneIn(50)) {
 		pauseText = pauseText.replaceAll("s", "z");
 	}
 
@@ -134,7 +135,7 @@ function WaitingForGesture() {
 function GameStart() {
 	player = new PlayerClass();
 	AudioMan.setListener(player);
-	S2R1Level.load();
+	S1R1Level.load();
 	gameState = GAMESTATES.GameLoop;
 }
 
@@ -186,7 +187,6 @@ function GameLoop(deltaTime) {
 
 		if (FLOOR_ENABLED) theFloor.draw(player.pos.x,player.pos.y,player.rot);
 
-		// var thisTime = window.performance.now();
 		//3D
 		var numRays = canvas.width;
 		var drawWidth = canvas.width / numRays;
@@ -272,13 +272,8 @@ function GameLoop(deltaTime) {
 		var coolbarWidth = player._actionCooldown / player.actionCooldownTime * 113;
 		if (coolbarWidth < 0) coolbarWidth = 0;
 		colorRect(709 - coolbarWidth, 13, coolbarWidth, 18, 'yellow');
-		colorCircle(745, 65, Math.abs(player.health/player.maxHealth) * 35, 'blue')
-
-		// console.log(window.performance.now() - thisTime);
+		colorCircle(745, 65, Math.abs(player.health/player.maxHealth) * 35, 'blue');
 	}
-	// end of draw block
-
-	// if (debug) { testAStarSearch(); }
 
 	AudioMan.update();
 };
@@ -317,8 +312,8 @@ function WinScreen(){
 
 function CreditsScreen() {
 	drawCredits();
-	if(Key.isJustPressed(Key.SPACE)){
-		GameStart();
+	if(Key.isJustPressed(Key.C)){
+		gameState = GAMESTATES.TitleScreen;
 	}
 }
 
@@ -352,7 +347,7 @@ var creditsList=[
 "Cindy Andrade: Animated opening title sequence and logo with related integration, flamethrower robot art",
 "Vaan Hope Khani: Intro and outro story writing, explosion sounds",
 "jakeyouh dogwalker: Background music"," ",
-"                                        == PRESS SPACE TO CONTINUE =="]
+"                                        == PRESS C TO CONTINUE =="]
 
 function lineWrapCredits() {
     const newCut = [];
