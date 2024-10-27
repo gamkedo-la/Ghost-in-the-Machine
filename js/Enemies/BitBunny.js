@@ -29,6 +29,9 @@ class BitBunnyRobot extends SceneEntity {
 	}
 
 	onAction(deltaTime) {
+		var randomSoundIndex = rndInt(3);
+		AudioMan.createSound3D("./audio/bbshot" + randomSoundIndex + ".ogg", this);
+
 		let rayEnd = addVectors(this.pos, scaleVector(this.forward, 200));
 		let closestIntersection = getClosestIntersection(this.pos, rayEnd, this.level.walls);
 		let maxDistance = closestIntersection ? distanceBetweenTwoPoints(closestIntersection, this.pos) : 200;
@@ -56,6 +59,20 @@ class BitBunnyRobot extends SceneEntity {
 		closestEntity.takeDamage((1 - distance/200) * this.attackDamage);
 		sparksFX(this.pos.x,this.pos.y,1);
 		sparksFX(closestEntity.pos.x,closestEntity.pos.y,1);
+	}
+
+	onTakeDamage(amount) {
+		var randomSoundIndex = rndInt(3);
+		AudioMan.createSound3D("./audio/bbhurt" + randomSoundIndex + ".ogg", this);
+
+		if (this.health <= 10 && this.health > 0) {
+			AudioMan.createSound3D("./audio/bblow.ogg", this, false, 0.5);
+		}
+	}
+
+	onDestroy() {
+		var randomSoundIndex = rndInt(2);
+		AudioMan.createSound3D("./audio/bbdeath" + randomSoundIndex + ".ogg", this);
 	}
 }
 
