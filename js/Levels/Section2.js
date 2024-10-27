@@ -48,6 +48,7 @@ S2R1Level.onLoad = function() {
 		if (entity == player) {
 			// S2R2Level.startIndex = 0;
 			// S2R2Level.load();
+			gameState = GAMESTATES.Win;
 		}
 	}
 }
