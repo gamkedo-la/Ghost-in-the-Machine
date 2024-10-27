@@ -9,7 +9,8 @@ const GAMESTATES = {
 	Paused: 2,
 	Death: 3,
 	Win: 4,
-	Credits: 5
+	Credits: 5,
+	Intro: 6
 }
 var gameState = GAMESTATES.TitleScreen;
 
@@ -28,6 +29,10 @@ var mainMenuImage = document.createElement("img"); // create element for main me
 mainMenuImage.src = "./source_art/Main_Menu/MainMenu.png"; // attach source for main menu
 var HUDImage = new Image();
 HUDImage.src = './images/hud.png';
+var introImage = new Image();
+introImage.src = './images/Intro.png';
+var winImage = new Image();
+winImage.src = './images/Outro.png';
 
 var titleAnimElem;
 var titleCreditsGuideElem;
@@ -78,6 +83,9 @@ function MainLoop(time) {
 	case GAMESTATES.Credits:
 		CreditsScreen();
 		break;
+	case GAMESTATES.Intro:
+		IntroScreen();
+		break;
 	}
 
 	Key.update();
@@ -123,7 +131,7 @@ function WaitingForGesture() {
 
 	if (Key.isJustPressed(Key.SPACE)) {
 		SwitchTitleAnimForGameCanvas();
-		GameStart();
+		gameState = GAMESTATES.Intro;
 	}
 	if (Key.isJustPressed(Key.C)) {
 		SwitchTitleAnimForGameCanvas();
@@ -300,10 +308,18 @@ function DeathScreen(){
 	}
 }
 
+function IntroScreen(){
+	colorRect(0,0,canvas.width,canvas.height, "gray");
+	canvasContext.drawImage(introImage,0,0,canvas.width,canvas.height);
+
+	if (Key.isJustPressed(Key.SPACE)) {
+		GameStart();
+	}
+}
+
 function WinScreen(){
-	colorRect(0,0,canvas.width,canvas.height, "gray"); // draw a Pause Screen
-	colorText("You win", canvas.width/2, canvas.height/2, "white", "30px Arial", "center");
-	colorText("Press Space to return to the title screen", canvas.width/2, canvas.height/2 + 50, "white", "30px Arial", "center");
+	colorRect(0,0,canvas.width,canvas.height, "gray");
+	canvasContext.drawImage(winImage,0,0,canvas.width,canvas.height);
 
 	if (Key.isJustPressed(Key.SPACE)) {
 		gameState = GAMESTATES.TitleScreen;
@@ -318,24 +334,24 @@ function CreditsScreen() {
 }
 
 function drawCredits() {
-  var context=canvasContext; // patching over different variable name
-  context.fillStyle="black";
-  context.fillRect(0,0,canvas.width,canvas.height);
-  var lineX = 20;
-  var lineY = 15;
-  var creditsSize = 20;
-  var lineSkip = creditsSize+8;
-  context.globalAlpha = 1;
-  context.fillStyle = "rgba(220,220,220,1)";
-  var wasFont = context.font;
-  context.font = creditsSize+"px Arial";
-  var wasAlign=context.textAlign;
-  context.textAlign = "left";
-  for(var i=0;i<this.creditsList.length;i++) {
-      context.fillText(this.creditsList[i],lineX,lineY+=lineSkip);
-  }
-  context.textAlign = wasAlign;
-  context.font = wasFont;
+	var context=canvasContext; // patching over different variable name
+	context.fillStyle="black";
+	context.fillRect(0,0,canvas.width,canvas.height);
+	var lineX = 20;
+	var lineY = 15;
+	var creditsSize = 20;
+	var lineSkip = creditsSize+8;
+	context.globalAlpha = 1;
+	context.fillStyle = "rgba(220,220,220,1)";
+	var wasFont = context.font;
+	context.font = creditsSize+"px Arial";
+	var wasAlign=context.textAlign;
+	context.textAlign = "left";
+	for(var i=0;i<this.creditsList.length;i++) {
+			context.fillText(this.creditsList[i],lineX,lineY+=lineSkip);
+	}
+	context.textAlign = wasAlign;
+	context.font = wasFont;
 }
 
 var creditsList=[
@@ -350,48 +366,48 @@ var creditsList=[
 "                                        == PRESS C TO CONTINUE =="]
 
 function lineWrapCredits() {
-    const newCut = [];
-    var maxLineChar = 85;
-    var findEnd;
+		const newCut = [];
+		var maxLineChar = 85;
+		var findEnd;
 
-    for(let i = 0; i < this.creditsList.length; i++) {
-      const currentLine = this.creditsList[i];
-      for(let j = 0; j < currentLine.length; j++) {
-        /*const aChar = currentLine[j];
-        if(aChar === ":") {
-          if(i !== 0) {
-            newCut.push("\n");
-          }
-          newCut.push(currentLine.substring(0, j + 1));
-          newCut.push(currentLine.substring(j + 2, currentLine.length));
-          break;
-        } else*/ if(j === currentLine.length - 1) {
-          if((i === 0) || (i >= this.creditsList.length - 2)) {
-            newCut.push(currentLine);
-          } else {
-            newCut.push(currentLine.substring(0, currentLine.length));
-          }
-        }
-      }
-    }
+		for(let i = 0; i < this.creditsList.length; i++) {
+			const currentLine = this.creditsList[i];
+			for(let j = 0; j < currentLine.length; j++) {
+				/*const aChar = currentLine[j];
+				if(aChar === ":") {
+					if(i !== 0) {
+						newCut.push("\n");
+					}
+					newCut.push(currentLine.substring(0, j + 1));
+					newCut.push(currentLine.substring(j + 2, currentLine.length));
+					break;
+				} else*/ if(j === currentLine.length - 1) {
+					if((i === 0) || (i >= this.creditsList.length - 2)) {
+						newCut.push(currentLine);
+					} else {
+						newCut.push(currentLine.substring(0, currentLine.length));
+					}
+				}
+			}
+		}
 
-    const newerCut = [];
-    for(var i=0;i<newCut.length;i++) {
-      while(newCut[i].length > 0) {
-        findEnd = maxLineChar;
-        if(newCut[i].length > maxLineChar) {
-          for(var ii=findEnd;ii>0;ii--) {
-            if(newCut[i].charAt(ii) == " ") {
-              findEnd=ii;
-              break;
-            }
-          }
-        }
-        newerCut.push(newCut[i].substring(0, findEnd));
-        newCut[i] = newCut[i].substring(findEnd, newCut[i].length);
-      }
-    }
+		const newerCut = [];
+		for(var i=0;i<newCut.length;i++) {
+			while(newCut[i].length > 0) {
+				findEnd = maxLineChar;
+				if(newCut[i].length > maxLineChar) {
+					for(var ii=findEnd;ii>0;ii--) {
+						if(newCut[i].charAt(ii) == " ") {
+							findEnd=ii;
+							break;
+						}
+					}
+				}
+				newerCut.push(newCut[i].substring(0, findEnd));
+				newCut[i] = newCut[i].substring(findEnd, newCut[i].length);
+			}
+		}
 
-    this.creditsList = newerCut;
-  }
+		this.creditsList = newerCut;
+	}
 lineWrapCredits();
