@@ -25,8 +25,8 @@ function LevelClass() {
 				gameState = GAMESTATES.Death;
 			}
 
-			this._markedForDestruction[i].onDestroy();
 			this._markedForDestruction[i].brain.onDestroy();
+			this._markedForDestruction[i].onDestroy();
 			this.entities.splice(this.entities.indexOf(this._markedForDestruction[i]), 1);
 		}
 		this._markedForDestruction.length = 0;
@@ -65,6 +65,9 @@ function LevelClass() {
 						break;
 					case "Turret":
 						newEntity = new TurretRobot(parsedLevel.entities[i]);
+						break;
+					case "PyroDrone":
+						newEntity = new PyroDroneRobot(parsedLevel.entities[i]);
 						break;
 					default:
 						newEntity = new SceneEntity(parsedLevel.entities[i]);
@@ -115,8 +118,6 @@ function LevelClass() {
 		populateAudioNodesFromWallEdges(this.walls);
 		cullAudioNodesThatDontConnectToPoint(this.playerStart, this.walls);
 
-		this.onLoad();
-
 		player.pos.x = this.playerStart.x;
 		player.pos.y = this.playerStart.y;
 		player.rot = this.playerStart.rot;
@@ -124,6 +125,8 @@ function LevelClass() {
 		this.entities.push(player);
 
 		currentMap = this;
+
+		this.onLoad();
 	}
 
 	this.unload = function() {

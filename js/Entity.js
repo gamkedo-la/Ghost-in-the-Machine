@@ -23,7 +23,7 @@ class EntityClass {
 		this.level = entityToOverride.level || null;
 		this.distance = Infinity;
 
-		this.maxHealth = entityToOverride.maxHealth || 50;
+		this.maxHealth = entityToOverride.maxHealth || 40;
 		this.health = this.maxHealth;
 
 		this.actionCooldownTime = 1.5;

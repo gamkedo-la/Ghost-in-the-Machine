@@ -23,7 +23,7 @@ const ADD_ENTITY = 1;
 var entityMode = SELECT_ENTITY;
 var currentEntityRoboType = "undefined";
 var defaultEntityRoboType = "undefined";
-var entityRoboTypesList = ["BitBunny", "Turret", "undefined"];
+var entityRoboTypesList = ["BitBunny", "Turret", "PyroDrone", "undefined"];
 
 const SELECT_AREA = 0;
 const ADD_CIRCLE_AREA = 1;

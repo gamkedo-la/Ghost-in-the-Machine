@@ -134,15 +134,7 @@ function WaitingForGesture() {
 function GameStart() {
 	player = new PlayerClass();
 	AudioMan.setListener(player);
-
-	// if (debug) { testAllHeaps(); }
-	// if (debug) { testPriorityQueue(); }
-	// if (debug) { testAStarSearch(); }
-	// if (debug) { testCircleIsOnLineSegment(); }
-	S1R3Level.load();
-	// if (debug) { testCircleIsOnWall(currentMap.walls); }
-	// if (debug) { testIsInBounds(); }	
-
+	S1R1Level.load();
 	gameState = GAMESTATES.GameLoop;
 }
 
@@ -198,7 +190,7 @@ function GameLoop(deltaTime) {
 		//3D
 		var numRays = canvas.width;
 		var drawWidth = canvas.width / numRays;
-		var drawDistance = 600;
+		var drawDistance = 800;
 		var wallHeight = heightScale;
 		var rays = [];
 		for (var i = 0; i < numRays; i ++) {

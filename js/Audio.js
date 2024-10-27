@@ -94,6 +94,7 @@ function AudioManager() {
 
 		for (var i = currentSoundSources.length-1; i >= 0; i--) {
 			currentSoundSources[i].update();
+			if (currentSoundSources[i].ended) currentSoundSources.splice(i, 1);
 		}
 
 		if (debug) {
@@ -208,12 +209,9 @@ function AudioManager() {
 		return newSound;
 	};
 
-	this.removeSound3D = function(sound3D) {
-		currentSoundSources.splice(currentSoundSources.indexOf(sound3D), 1);
-	}
-
 	function Sound3D(fileNameWithPath, parent, looping = false, mixVolume = 1, rate = 1, preservesPitch = false) {
 		this.fileNameWithPath = fileNameWithPath;
+		this.ended = false;
 		this.mixVolume = mixVolume;
 		this.rate = rate;
 		this.parent = parent;
@@ -290,15 +288,17 @@ function AudioManager() {
 		this.play = function() {
 			//Dont play if out of range
 			if (distanceBetweenTwoPoints(listener.pos, this.pos) > DROPOFF_MAX && !looping) {
-				return false;
+				this.onEnded();
+				return;
 			}
 
 			audioFile.currentTime = 0;
-			return audioFile.play();
+			audioFile.play();
 		}
 
 		this.stop = function() {
-			return audioFile.pause();
+			this.onEnded();
+			audioFile.pause();
 		}
 
 		this.getAudioFile = function() {
@@ -306,7 +306,7 @@ function AudioManager() {
 		}
 
 		this.onEnded = function() {
-			AudioMan.removeSound3D(this);
+			this.ended = true;
 		}
 	};
 

@@ -15,8 +15,6 @@ class TurretRobot extends SceneEntity {
 		this.sprite.yScale = 1.3;
 
 		this.brain = new TurretBrain(this);
-
-		this.fireSound = AudioMan.createSound3D("./audio/turretFire.wav", this);
 		
 	}
 

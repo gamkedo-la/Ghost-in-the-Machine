@@ -4,6 +4,8 @@ class PlayerClass extends BitBunnyRobot{
 
 		this.name = "Player";
 
+		this.attackDamage = 20;
+
 		this.brain = new PlayerBrain(this);
 	}
 
