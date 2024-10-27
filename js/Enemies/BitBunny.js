@@ -13,7 +13,11 @@ class BitBunnyRobot extends SceneEntity {
 		this.moveSpeed = 40;
 		this.rotateSpeed = BITBUNNY_ROTATE_SPEED;
 
-		this.attackDamage = 10;
+
+		this.attackDamage = 15;
+
+		this.maxHealth = 30;
+		this.health = this.maxHealth;
 
 		this.sprite = new SpriteClass(
 			'./images/cubeRobotSS.png',
@@ -49,7 +53,7 @@ class BitBunnyRobot extends SceneEntity {
 		}
 		if (closestEntity == null) return;
 
-		closestEntity.takeDamage((1 - distance/maxDistance) * this.attackDamage);
+		closestEntity.takeDamage((1 - distance/200) * this.attackDamage);
 		sparksFX(this.pos.x,this.pos.y,1);
 		sparksFX(closestEntity.pos.x,closestEntity.pos.y,1);
 	}

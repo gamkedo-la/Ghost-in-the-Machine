@@ -40,37 +40,23 @@ S1R2Level.onLoad = function() {
 		}
 	}
 
-	this.getEntityByName("Byjator").health = 30;
+	this.getEntityByName("Byjator").health = 15;
 	this.getEntityByName("Byjator").brain.onDestroy = function(deltaTime) {
 		this.level.opendoor = true;
 	}
 }
 S1R2Level.onUpdate = function(deltaTime) {
 	if (this.opendoor) {
-		if (dotProductOfVectors({x:-1,y:0}, player.forward) >= 0.8) return;
 		if (this.doorwall.p1.x > this.doorwall.p1OpenPos.x) {
-			this.doorwall.p1.x--;
-		}
-		if (this.doorwall.p1.x < this.doorwall.p1OpenPos.x) {
-			this.doorwall.p1.x++;
-		}
-		if (this.doorwall.p1.y > this.doorwall.p1OpenPos.y) {
-			this.doorwall.p1.y--;
-		}
-		if (this.doorwall.p1.y < this.doorwall.p1OpenPos.y) {
-			this.doorwall.p1.y++;
-		}
-	} else {
-		if (this.doorwall.p1.x > this.doorwall.p1ClosePos.x) {
 			this.doorwall.p1.x -= 0.1;
 		}
-		if (this.doorwall.p1.x < this.doorwall.p1ClosePos.x) {
+		if (this.doorwall.p1.x < this.doorwall.p1OpenPos.x) {
 			this.doorwall.p1.x += 0.1;
 		}
-		if (this.doorwall.p1.y > this.doorwall.p1ClosePos.y) {
+		if (this.doorwall.p1.y > this.doorwall.p1OpenPos.y) {
 			this.doorwall.p1.y -= 0.1;
 		}
-		if (this.doorwall.p1.y < this.doorwall.p1ClosePos.y) {
+		if (this.doorwall.p1.y < this.doorwall.p1OpenPos.y) {
 			this.doorwall.p1.y += 0.1;
 		}
 	}

@@ -23,7 +23,7 @@ class EntityClass {
 		this.level = entityToOverride.level || null;
 		this.distance = Infinity;
 
-		this.maxHealth = entityToOverride.maxHealth || 100;
+		this.maxHealth = entityToOverride.maxHealth || 50;
 		this.health = this.maxHealth;
 
 		this.actionCooldownTime = 1.5;
@@ -93,15 +93,15 @@ class EntityClass {
 				if (distApart < this.radius + ent.radius) {
 					//deltaX += ent.brain.directionVector.x * distApart;
 					//deltaY += ent.brain.directionVector.y * distApart;
-          
-          // Get penetration vector
-          var pDirection = normalizeVector(subtractVectors(this.pos, ent.pos));
-          var pMagnitude = (this.radius + ent.radius) - distApart;
-          var pVector = scaleVector(pDirection, pMagnitude);
-          
-          // Move entity out of collision
-          deltaX += pVector.x;
-          deltaY += pVector.y;
+		  
+					// Get penetration vector
+					var pDirection = normalizeVector(subtractVectors(this.pos, ent.pos));
+					var pMagnitude = (this.radius + ent.radius) - distApart;
+					var pVector = scaleVector(pDirection, pMagnitude);
+		  
+					// Move entity out of collision
+					deltaX += pVector.x;
+					deltaY += pVector.y;
 
 					// deltaX *= Math.floor(Math.random() * 3) - 1;
 					// deltaY *= Math.floor(Math.random() * 3) - 1;
@@ -113,20 +113,13 @@ class EntityClass {
 			var newPos = {x:this.pos.x + deltaX, y:this.pos.y + deltaY};
 			let wallCollisions = 0;
 			for (var i in this.level.walls) {
-				const nearestPoint = 
-					getNearestPointOnLine(
-						this.level.walls[i].p1, 
-						this.level.walls[i].p2, 
-						newPos);
+				const nearestPoint = getNearestPointOnLine(this.level.walls[i].p1, this.level.walls[i].p2, newPos);
 				if (distanceBetweenTwoPoints(nearestPoint, newPos) < this.radius) {
 					// Collide and Slide
-					wallCollisions++;
-					if (wallCollisions > 1) {
-						deltaX = 0;
-						deltaY = 0;
-						this.onCollisionWall();
-						break;
-					}
+					deltaX = 0;
+					deltaY = 0;
+					this.onCollisionWall();
+					break;
 
 					const toLineVec = subtractVectors(nearestPoint, newPos);
 					if (toLineVec.x !== 0) { deltaX = 0; }
@@ -211,12 +204,12 @@ class SceneEntity extends EntityClass {
 	}
 
 	draw3D() {
-	    if (this === player) return;
-    
+		if (this === player) return;
+	
 		var drawAngle = wrap(radToDeg(angleBetweenTwoPoints(player.pos, this.pos) - player.rot), -180, 180);
 
-	    var vectorFromPlayer = subtractVectors(this.pos, player.pos);
-	    var renderDistance = Math.max(player.radius, dotProductOfVectors(vectorFromPlayer, player.forward));
+		var vectorFromPlayer = subtractVectors(this.pos, player.pos);
+		var renderDistance = Math.max(player.radius, dotProductOfVectors(vectorFromPlayer, player.forward));
 		var size = heightScale * canvas.height / renderDistance;
 		var drawX = canvas.width*0.5 + drawAngle * canvas.width/FOV;
 		var drawY = canvas.height*0.5;
@@ -283,7 +276,7 @@ class Brain {
 			if (this.lastTarget) {
 				if (this.lastTarget.pos.x !== player.pos.x ||
 					this.lastTarget.pos.y !== player.pos.y ||
-					this.lastTarget.radius !== player.radius	
+					this.lastTarget.radius !== player.radius    
 				) {
 					this.lastTarget.pos.x = player.pos.x;
 					this.lastTarget.pos.y = player.pos.y;

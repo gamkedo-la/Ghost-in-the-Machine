@@ -8,28 +8,25 @@ class TurretRobot extends SceneEntity {
 
 		this.sprite = new SpriteClass(
 			'./images/blocky-turret.png', 
-            12, 1, 
-            400, 400
+			12, 1, 
+			400, 400
 		);
 		this.sprite.xScale = 1.3;
 		this.sprite.yScale = 1.3;
 
 		this.brain = new TurretBrain(this);
 
-       // the 3d sound code changes this.pos.x and y if we simply use "this" as the parent below
-       // let posObj = this;
-       let posObj = {pos:{x:this.pos.x,y:this.pos.y}};
-       this.fireSound = AudioMan.createSound3D("./audio/turretFire.wav", posObj, false, 1, 1, false);
-       this.explosionSound = AudioMan.createSound3D("./audio/explosionShort.wav", posObj, false, 1, 1, false);
-        
+		this.fireSound = AudioMan.createSound3D("./audio/turretFire.wav", this);
+		
 	}
 
 	onAction(deltaTime) {
 		let shot = new TurretShot({name: this.name + " shot", rot:this.rot, level: this.level, parent: this});
 		shot.pos = addVectors(this.pos, scaleVector(this.forward, this.radius + shot.radius + 1));
 		this.level.entities.push(shot);
+		
 
-        this.fireSound.play();
+		var fireSound = AudioMan.createSound3D("./audio/turretFire.wav", this);
 	}
 }
 
@@ -65,45 +62,41 @@ class TurretShot extends SceneEntity {
 		this.maxHealth = 1;
 		this.health = this.maxHealth;
 
-		this.explosionDamage = 50;
+		this.explosionDamage = 30;
 		this.range = 10;
 		this.parent = entityToOverride.parent || null;
 
 		this.sprite = new SpriteClass(
 			'./images/projectile-1-blue.png', 
-            12, 1, 
-            400, 400
+			12, 1, 
+			400, 400
 		);
 		this.radius = 2;
- 	}
+	}
 
 	onUpdatePre(deltaTime) {
 		this.moveDelta.x = 1;
 	}
 
 	onAction() {
-		this.level.markForDestruction(this);
+		this.destroy();
 	}
 
 	onCollisionWall() {
-		this.level.markForDestruction(this);
+		this.destroy();
 	}
 
 	onCollisionEntity(other) {
 		if (other == this.parent) return;
 
-		this.level.markForDestruction(this);
+		this.destroy();
 	}
 
 	onDestroy() {
 		//Explosion code
 		sparksFX(this.pos.x,this.pos.y,15);
 
-        if (this.parent && this.parent.explosionSound) {
-            this.parent.explosionSound.pos.x = this.pos.x;
-            this.parent.explosionSound.pos.y = this.pos.y;
-            this.parent.explosionSound.play();
-        }
+		var explosionSound = AudioMan.createSound3D("./audio/explosionShort.wav", this);
 
 		for (let i = 0; i < this.level.entities.length; i++) {
 			let entity = this.level.entities[i];

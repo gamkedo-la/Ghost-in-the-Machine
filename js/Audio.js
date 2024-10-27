@@ -1,6 +1,4 @@
 var isServer = window.location.protocol == 'file:' ? false : true;
-var printcycle = false;
-var printlist = [];
 
 var AudioMan = new AudioManager();
 
@@ -96,7 +94,6 @@ function AudioManager() {
 
 		for (var i = currentSoundSources.length-1; i >= 0; i--) {
 			currentSoundSources[i].update();
-			if (currentSoundSources[i].isEnded()) currentSoundSources.splice(i, 1);
 		}
 
 		if (debug) {
@@ -111,18 +108,6 @@ function AudioManager() {
 					}
 				}
 			}
-
-			/*for (var i in currentAudGeo) {
-				colorEmptyCircle(currentAudGeo[i].point.x, currentAudGeo[i].point.y, 3, "blue");
-				if (lineOfSight(currentAudGeo[i].point, listener.pos, currentMap.walls)) {
-					colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, listener.pos.x, listener.pos.y, 1, "blue");
-					for (var j in currentAudGeo[i].connections) {
-						colorLine(currentAudGeo[i].point.x, currentAudGeo[i].point.y, 
-							currentAudGeo[currentAudGeo[i].connections[j]].point.x, currentAudGeo[currentAudGeo[i].connections[j]].point.y, 1, "darkblue");
-					}
-				}
-			}*/
-
 		}
 	};
 
@@ -219,8 +204,13 @@ function AudioManager() {
 
 		var newSound = new Sound3D(fileNameWithPath, parent, looping, mixVolume, rate, preservesPitch);
 		currentSoundSources.push(newSound);
+		newSound.play();
 		return newSound;
 	};
+
+	this.removeSound3D = function(sound3D) {
+		currentSoundSources.splice(currentSoundSources.indexOf(sound3D), 1);
+	}
 
 	function Sound3D(fileNameWithPath, parent, looping = false, mixVolume = 1, rate = 1, preservesPitch = false) {
 		this.fileNameWithPath = fileNameWithPath;
@@ -270,9 +260,11 @@ function AudioManager() {
 			audioFile.volume *= calcuateVolumeDropoff(this.pos);
 		}
 
+		audioFile.onended = (e) => { this.onEnded(); }
+
 
 		this.update = function() {
-			//if (audioFile.paused) return;
+			if (audioFile.paused) return;
 
 			//Recalculate position
 			this.pos = calculatePropogationPosition(this.parent.pos);
@@ -313,8 +305,8 @@ function AudioManager() {
 			return audioFile;
 		}
 
-		this.isEnded = function() {
-			return audioFile.ended;
+		this.onEnded = function() {
+			AudioMan.removeSound3D(this);
 		}
 	};
 
@@ -392,7 +384,6 @@ function AudioManager() {
 	function calculatePropogationPosition(location) {
 		//Return if in line of sight
 		if (lineOfSight(location, listener.pos, currentMap.walls)) {
-			//printlist.push("lineOfSight");
 			return location;
 		}
 
@@ -403,7 +394,6 @@ function AudioManager() {
 		for (var i in currentAudGeo) {
 			//If AudGeo has lineOfSight to the listener, use checkAudGeo() to find the distance through the network back to the sound location
 			if (lineOfSight(listener.pos, currentAudGeo[i].point, currentMap.walls)) { //LineOfSight to listener
-				//printlist.push("* checking from " + i);
 				var newDistance = checkAudGeo(i, location, []); //Recursive function to find shortest distance through node netowrk
 				if (newDistance < distance) { //If a shorter distance than curent holding, replace with this distance and AudGeo
 					distance = newDistance;
@@ -432,14 +422,12 @@ function AudioManager() {
 
 		//In line of sight to source, no more work for this branch
 		if (lineOfSight(currentAudGeo[pointToCheck].point, location, currentMap.walls)) {
-			//printlist.push(pointToCheck + " lineOfSight");
 			return distanceBetweenTwoPoints(currentAudGeo[pointToCheck].point, location);
 		}
 
 		//Checks each connection recursively for the shortest distance to lineOfSight of the source
 		for (var i in currentAudGeo[pointToCheck].connections) {
 
-			//printlist.push("looking up " + pointToCheck + " to " + currentAudGeo[pointToCheck].connections[i]);
 			//Skips over nodes we've already visited
 			var oldPoint = false;
 			for (var j in newPointsChecked) { //Error: timeout, but only sometimes
@@ -457,8 +445,6 @@ function AudioManager() {
 				pos = currentAudGeo[currentAudGeo[pointToCheck].connections[i]].point;
 			}
 		}
-
-		//printlist.push(pointToCheck + " passing back");
 
 		return distance + distanceBetweenTwoPoints(currentAudGeo[pointToCheck].point, pos);
 	}
@@ -496,8 +482,6 @@ function populateAudioNodesFromWallEdges(walls) {
 			positions.push(JSON.stringify(walls[i].p2));
 		}
 	}
-
-	// console.log(positions);
 
 	for (var j = 0; j < positions.length; j++) {
 		var audGeoPoint = JSON.parse(positions[j]);
@@ -538,8 +522,6 @@ function cullAudioNodesThatDontConnectToPoint(point, walls) {
 		}
 	}
 
-	// console.log(stack)
-
 	while (stack.length > 0) {
 		var index =  stack.pop();
 		if (visited.includes(index)) continue;
@@ -552,8 +534,6 @@ function cullAudioNodesThatDontConnectToPoint(point, walls) {
 		}
 	}
 
-	// console.log(visited);
-
 	for (var i = 0; i < visited.length; i++) {
 		audGeoPoints.push(currentAudGeo[visited[i]].point);
 	}
@@ -565,17 +545,14 @@ function generateAudGeo(walls) {
 	currentAudGeo = new Array();
 
 	for (var i in audGeoPoints) {
-		//console.log("Checking point " + i);
 		var connect = [];
 
 		for (var j in audGeoPoints) {
 			if (i == j) continue;
-			//console.log("--Against point " + j);
 			var clear = true;
 
 			for (var k in walls) {
 				if (isLineIntersecting(audGeoPoints[i], audGeoPoints[j], walls[k].p1, walls[k].p2)) {
-					//console.log(walls[k]);
 					clear = false;
 				}
 			}

@@ -364,7 +364,7 @@ class PyroBlast extends TurretShot {
 		this.moveSpeed = 100;
 		this.maxHealth = 100;
 		this.health = this.maxHealth;
-		this.explosionDamage = 100;
+		this.explosionDamage = 20;
 		this.range = 20;
 		this.parent = entityToOverride.parent || null;
 
