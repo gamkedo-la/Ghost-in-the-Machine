@@ -134,7 +134,7 @@ function WaitingForGesture() {
 function GameStart() {
 	player = new PlayerClass();
 	AudioMan.setListener(player);
-	S1R1Level.load();
+	S2R1Level.load();
 	gameState = GAMESTATES.GameLoop;
 }
 

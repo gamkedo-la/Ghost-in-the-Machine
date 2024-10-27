@@ -97,7 +97,7 @@ class TurretShot extends SceneEntity {
 		//Explosion code
 		sparksFX(this.pos.x,this.pos.y,15);
 
-		AudioMan.createSound3D("./audio/explosionShort.wav", this);
+		AudioMan.createSound3D("./audio/explosionShort.wav", this, false, 0.5);
 
 		for (let i = 0; i < this.level.entities.length; i++) {
 			let entity = this.level.entities[i];

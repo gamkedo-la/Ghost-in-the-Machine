@@ -23,6 +23,14 @@ class PyroDroneRobot extends SceneEntity {
 		let blast = new PyroBlast({name: this.name + " fire blast", rot:this.rot, level: this.level, parent: this});
 		blast.pos = addVectors(this.pos, scaleVector(this.forward, this.radius + blast.radius + 1));
 		this.level.entities.push(blast);
+
+		var randomSoundIndex = rndInt(3);
+		AudioMan.createSound3D("./audio/pdblast" + randomSoundIndex + ".ogg", this);
+	}
+
+	onDestroy() {
+		var randomSoundIndex = rndInt(2);
+		AudioMan.createSound3D("./audio/pddeath" + randomSoundIndex + ".ogg", this);
 	}
 }
 
@@ -364,8 +372,8 @@ class PyroBlast extends TurretShot {
 		this.moveSpeed = 100;
 		this.maxHealth = 100;
 		this.health = this.maxHealth;
-		this.explosionDamage = 20;
-		this.range = 20;
+		this.explosionDamage = 40;
+		this.range = 10;
 		this.parent = entityToOverride.parent || null;
 
 		this.sprite = new SpriteClass(
@@ -375,6 +383,8 @@ class PyroBlast extends TurretShot {
 		);
 		this.radius = 4;
 		this.lifeSpan = 250;
+
+		this.sound = AudioMan.createSound3D("./audio/pdflame.ogg", this);
  	}
 
 	onUpdatePre(deltaTime) {
@@ -382,6 +392,7 @@ class PyroBlast extends TurretShot {
 	}
 
 	onDestroy(deltaTime) {
+		this.sound.stop();
 		super.onDestroy(deltaTime);
 	}
 
